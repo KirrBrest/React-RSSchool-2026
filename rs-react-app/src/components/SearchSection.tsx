@@ -1,8 +1,25 @@
-import { Component } from 'react';
+import { Component, type ChangeEvent } from 'react';
+import { readStoredSearchTerm } from '../storage/searchTermStorage';
 import './SearchSection.css';
 
-export class SearchSection extends Component {
+type SearchSectionState = {
+  searchTerm: string;
+};
+
+export class SearchSection extends Component<Record<string, never>, SearchSectionState> {
+  constructor(props: Record<string, never>) {
+    super(props);
+    this.state = {
+      searchTerm: readStoredSearchTerm(),
+    };
+  }
+
+  private handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    this.setState({ searchTerm: event.target.value });
+  };
+
   render() {
+    const { searchTerm } = this.state;
     return (
       <section className="search-section" aria-label="Search">
         <div className="search-section__inner">
@@ -13,6 +30,8 @@ export class SearchSection extends Component {
               className="search-section__input"
               type="search"
               name="search-query"
+              value={searchTerm}
+              onChange={this.handleSearchChange}
               placeholder="e.g. skywalker, falcon, coruscant…"
               autoComplete="off"
               spellCheck={false}
