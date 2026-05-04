@@ -51,3 +51,15 @@
   color: var(--color-text-muted);
   letter-spacing: 0.02em;
 }
+
+.results-section__error {
+  margin: 0;
+  flex: 1;
+  padding: 0.9rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #fecaca;
+  background-color: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.45);
+  border-radius: 6px;
+}

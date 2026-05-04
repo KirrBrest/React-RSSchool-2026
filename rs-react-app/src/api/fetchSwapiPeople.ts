@@ -32,7 +32,7 @@ export class SwapiPeopleApi {
     const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`SWAPI request failed: ${res.status}`);
+      throw new Error(`SWAPI_HTTP_${res.status}`);
     }
     return (await res.json()) as SwapiPeopleListResponse;
   }

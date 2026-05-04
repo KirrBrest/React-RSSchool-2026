@@ -10,13 +10,16 @@ export type ResultsSectionProps = {
   items: PersonResultItem[];
   hasSearched: boolean;
   isLoading: boolean;
+  errorMessage: string | null;
   pagination: PeoplePaginationProps | null;
 };
 
 export class ResultsSection extends Component<ResultsSectionProps> {
   render() {
-    const { items, hasSearched, isLoading, pagination } = this.props;
+    const { items, hasSearched, isLoading, errorMessage, pagination } =
+      this.props;
     const hasItems = items.length > 0;
+    const showError = Boolean(errorMessage);
 
     return (
       <section
@@ -37,11 +40,16 @@ export class ResultsSection extends Component<ResultsSectionProps> {
               Run a search to load people from SWAPI.
             </p>
           )}
-          {!isLoading && hasSearched && !hasItems && (
+          {!isLoading && hasSearched && showError && (
+            <div className="results-section__error" role="alert">
+              {errorMessage}
+            </div>
+          )}
+          {!isLoading && hasSearched && !showError && !hasItems && (
             <p className="results-section__placeholder">No matching people.</p>
           )}
           {!isLoading && hasItems && <CardList items={items} />}
-          {!isLoading && hasSearched && pagination && (
+          {!isLoading && hasSearched && !showError && pagination && (
             <PeoplePagination
               page={pagination.page}
               totalCount={pagination.totalCount}

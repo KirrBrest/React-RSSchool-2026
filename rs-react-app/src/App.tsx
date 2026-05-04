@@ -4,6 +4,7 @@ import { ResultsSection } from './components/ResultsSection';
 import { SwapiPeopleApi } from './api/fetchSwapiPeople';
 import { SwapiPersonResultMapper } from './utils/mapSwapiPersonToResult';
 import { SearchTermStorage } from './storage/searchTermStorage';
+import { AppFetchErrorMessage } from './utils/AppFetchErrorMessage';
 import type { PersonResultItem } from './types/personResultItem';
 import './App.css';
 
@@ -12,6 +13,7 @@ type AppState = {
   hasSearched: boolean;
   lastFetchedTerm: string | null;
   isLoading: boolean;
+  errorMessage: string | null;
   listPage: number;
   listHasNext: boolean;
   listHasPrev: boolean;
@@ -31,6 +33,7 @@ export default class App extends Component<Record<string, never>, AppState> {
       hasSearched: false,
       lastFetchedTerm: null,
       isLoading: true,
+      errorMessage: null,
       listPage: 1,
       listHasNext: false,
       listHasPrev: false,
@@ -63,6 +66,7 @@ export default class App extends Component<Record<string, never>, AppState> {
       this.setState({
         isLoading: false,
         hasSearched: true,
+        errorMessage: null,
         results: data.results.map((person) =>
           SwapiPersonResultMapper.toItem(person)
         ),
@@ -72,10 +76,11 @@ export default class App extends Component<Record<string, never>, AppState> {
         listHasPrev: data.previous !== null,
         listTotalCount: data.count,
       });
-    } catch {
+    } catch (reason: unknown) {
       this.setState({
         isLoading: false,
         hasSearched: true,
+        errorMessage: AppFetchErrorMessage.fromUnknown(reason),
         results: [],
         listHasNext: false,
         listHasPrev: false,
@@ -117,6 +122,7 @@ export default class App extends Component<Record<string, never>, AppState> {
       results,
       hasSearched,
       isLoading,
+      errorMessage,
       lastFetchedTerm,
       listPage,
       listHasNext,
@@ -126,6 +132,7 @@ export default class App extends Component<Record<string, never>, AppState> {
 
     const showPagination =
       hasSearched &&
+      errorMessage === null &&
       lastFetchedTerm === '' &&
       (listHasNext || listHasPrev);
 
@@ -136,6 +143,7 @@ export default class App extends Component<Record<string, never>, AppState> {
           items={results}
           hasSearched={hasSearched}
           isLoading={isLoading}
+          errorMessage={errorMessage}
           pagination={
             showPagination
               ? {
