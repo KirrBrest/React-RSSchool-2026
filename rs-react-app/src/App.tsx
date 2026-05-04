@@ -18,6 +18,8 @@ type AppState = {
   listHasNext: boolean;
   listHasPrev: boolean;
   listTotalCount: number;
+  /** Triggers a render-time throw for error boundary testing. */
+  simulateCrash: boolean;
 };
 
 type FetchOptions = {
@@ -38,8 +40,13 @@ export default class App extends Component<Record<string, never>, AppState> {
       listHasNext: false,
       listHasPrev: false,
       listTotalCount: 0,
+      simulateCrash: false,
     };
   }
+
+  private handleSimulateError = (): void => {
+    this.setState({ simulateCrash: true });
+  };
 
   componentDidMount(): void {
     void this.fetchAndSetResults(SearchTermStorage.read(), {
@@ -128,7 +135,12 @@ export default class App extends Component<Record<string, never>, AppState> {
       listHasNext,
       listHasPrev,
       listTotalCount,
+      simulateCrash,
     } = this.state;
+
+    if (simulateCrash) {
+      throw new Error('Simulated application error (error boundary test)');
+    }
 
     const showPagination =
       hasSearched &&
@@ -157,6 +169,15 @@ export default class App extends Component<Record<string, never>, AppState> {
               : null
           }
         />
+        <div className="app__error-test">
+          <button
+            type="button"
+            className="app__error-test-button"
+            onClick={this.handleSimulateError}
+          >
+            Simulate error
+          </button>
+        </div>
       </div>
     );
   }
