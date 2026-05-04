@@ -1,19 +1,39 @@
-import type { SwapiPeopleListResponse, SwapiPerson } from '../types/swapiPeople';
-
-const PEOPLE_ENDPOINT = 'https://swapi.dev/api/people/';
+import type { SwapiPeopleListResponse } from '../types/swapiPeople';
 
 export class SwapiPeopleApi {
-  static async search(rawTerm: string): Promise<SwapiPerson[]> {
+  static readonly pageSize = 10;
+
+  private static apiBase(): string {
+    if (typeof window === 'undefined') {
+      return 'https://swapi.py4e.com/api';
+    }
+    const { hostname } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '/swapi';
+    }
+    return 'https://swapi.py4e.com/api';
+  }
+
+  static async fetchPeople(
+    rawTerm: string,
+    page: number
+  ): Promise<SwapiPeopleListResponse> {
     const term = rawTerm.trim();
-    const url =
-      term === ''
-        ? PEOPLE_ENDPOINT
-        : `${PEOPLE_ENDPOINT}?search=${encodeURIComponent(term)}`;
+    const safePage = page < 1 ? 1 : page;
+    const peoplePath = `${SwapiPeopleApi.apiBase()}/people/`;
+    const params = new URLSearchParams();
+    if (term !== '') {
+      params.set('search', term);
+    }
+    if (safePage > 1) {
+      params.set('page', String(safePage));
+    }
+    const qs = params.toString();
+    const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`SWAPI request failed: ${res.status}`);
     }
-    const data = (await res.json()) as SwapiPeopleListResponse;
-    return data.results ?? [];
+    return (await res.json()) as SwapiPeopleListResponse;
   }
 }

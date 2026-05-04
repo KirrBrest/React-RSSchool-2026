@@ -11,10 +11,16 @@ type AppState = {
   results: PersonResultItem[];
   hasSearched: boolean;
   lastFetchedTerm: string | null;
+  isLoading: boolean;
+  listPage: number;
+  listHasNext: boolean;
+  listHasPrev: boolean;
+  listTotalCount: number;
 };
 
 type FetchOptions = {
   skipIfUnchanged: boolean;
+  page?: number;
 };
 
 export default class App extends Component<Record<string, never>, AppState> {
@@ -24,12 +30,18 @@ export default class App extends Component<Record<string, never>, AppState> {
       results: [],
       hasSearched: false,
       lastFetchedTerm: null,
+      isLoading: true,
+      listPage: 1,
+      listHasNext: false,
+      listHasPrev: false,
+      listTotalCount: 0,
     };
   }
 
   componentDidMount(): void {
     void this.fetchAndSetResults(SearchTermStorage.read(), {
       skipIfUnchanged: false,
+      page: 1,
     });
   }
 
@@ -37,34 +49,106 @@ export default class App extends Component<Record<string, never>, AppState> {
     trimmedTerm: string,
     options: FetchOptions
   ): Promise<void> => {
-    if (options.skipIfUnchanged && trimmedTerm === this.state.lastFetchedTerm) {
+    const page = options.page ?? 1;
+    if (
+      options.skipIfUnchanged &&
+      trimmedTerm === this.state.lastFetchedTerm &&
+      page === this.state.listPage
+    ) {
       return;
     }
+    this.setState({ isLoading: true });
     try {
-      const people = await SwapiPeopleApi.search(trimmedTerm);
+      const data = await SwapiPeopleApi.fetchPeople(trimmedTerm, page);
       this.setState({
+        isLoading: false,
         hasSearched: true,
-        results: people.map((person) => SwapiPersonResultMapper.toItem(person)),
+        results: data.results.map((person) =>
+          SwapiPersonResultMapper.toItem(person)
+        ),
         lastFetchedTerm: trimmedTerm,
+        listPage: page,
+        listHasNext: data.next !== null,
+        listHasPrev: data.previous !== null,
+        listTotalCount: data.count,
       });
     } catch {
       this.setState({
+        isLoading: false,
         hasSearched: true,
         results: [],
+        listHasNext: false,
+        listHasPrev: false,
       });
     }
   };
 
   private handleSearch = async (trimmedTerm: string): Promise<void> => {
-    await this.fetchAndSetResults(trimmedTerm, { skipIfUnchanged: true });
+    await this.fetchAndSetResults(trimmedTerm, {
+      skipIfUnchanged: true,
+      page: 1,
+    });
+  };
+
+  private handlePageNext = (): void => {
+    const { listPage, listHasNext, lastFetchedTerm } = this.state;
+    if (!listHasNext || lastFetchedTerm !== '') {
+      return;
+    }
+    void this.fetchAndSetResults('', {
+      skipIfUnchanged: false,
+      page: listPage + 1,
+    });
+  };
+
+  private handlePagePrev = (): void => {
+    const { listPage, listHasPrev, lastFetchedTerm } = this.state;
+    if (!listHasPrev || lastFetchedTerm !== '') {
+      return;
+    }
+    void this.fetchAndSetResults('', {
+      skipIfUnchanged: false,
+      page: listPage - 1,
+    });
   };
 
   render() {
-    const { results, hasSearched } = this.state;
+    const {
+      results,
+      hasSearched,
+      isLoading,
+      lastFetchedTerm,
+      listPage,
+      listHasNext,
+      listHasPrev,
+      listTotalCount,
+    } = this.state;
+
+    const showPagination =
+      hasSearched &&
+      lastFetchedTerm === '' &&
+      (listHasNext || listHasPrev);
+
     return (
       <div className="app">
         <SearchSection onSearch={this.handleSearch} />
-        <ResultsSection items={results} hasSearched={hasSearched} />
+        <ResultsSection
+          items={results}
+          hasSearched={hasSearched}
+          isLoading={isLoading}
+          pagination={
+            showPagination
+              ? {
+                  page: listPage,
+                  totalCount: listTotalCount,
+                  hasNext: listHasNext,
+                  hasPrev: listHasPrev,
+                  onNext: this.handlePageNext,
+                  onPrev: this.handlePagePrev,
+                }
+              : null
+          }
+        />
       </div>
     );
   }

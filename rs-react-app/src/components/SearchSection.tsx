@@ -1,4 +1,4 @@
-import { Component, type ChangeEvent } from 'react';
+import { Component, type ChangeEvent, type FormEvent } from 'react';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import './SearchSection.css';
 
@@ -22,7 +22,8 @@ export class SearchSection extends Component<SearchSectionProps, SearchSectionSt
     this.setState({ searchTerm: event.target.value });
   };
 
-  private handleSearchClick = () => {
+  private handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     const trimmed = this.state.searchTerm.trim();
     const stored = SearchTermStorage.read();
     if (trimmed !== stored) {
@@ -37,7 +38,10 @@ export class SearchSection extends Component<SearchSectionProps, SearchSectionSt
       <section className="search-section" aria-label="Search">
         <div className="search-section__inner">
           <h2 className="search-section__title">Search</h2>
-          <div className="search-section__row">
+          <form
+            className="search-section__form"
+            onSubmit={this.handleFormSubmit}
+          >
             <div className="search-section__field">
               <input
                 id="search-query"
@@ -52,14 +56,10 @@ export class SearchSection extends Component<SearchSectionProps, SearchSectionSt
                 aria-label="Search query"
               />
             </div>
-            <button
-              type="button"
-              className="search-section__submit"
-              onClick={this.handleSearchClick}
-            >
+            <button type="submit" className="search-section__submit">
               Search
             </button>
-          </div>
+          </form>
         </div>
       </section>
     );

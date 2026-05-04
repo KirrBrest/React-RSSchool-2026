@@ -1,0 +1,47 @@
+.people-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.people-pagination__status {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  min-width: 7.5rem;
+  text-align: center;
+}
+
+.people-pagination__btn {
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.people-pagination__btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background-color: var(--color-surface-raised);
+}
+
+.people-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.people-pagination__btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
