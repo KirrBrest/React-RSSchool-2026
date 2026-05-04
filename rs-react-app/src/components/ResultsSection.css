@@ -14,6 +14,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .results-section__title {
@@ -29,5 +30,6 @@
   margin: 0;
   flex: 1;
   font-size: 0.9rem;
+  line-height: 1.5;
   color: var(--color-text-muted);
 }
