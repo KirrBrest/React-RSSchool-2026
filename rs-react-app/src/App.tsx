@@ -3,6 +3,7 @@ import { SearchSection } from './components/SearchSection';
 import { ResultsSection } from './components/ResultsSection';
 import { SwapiPeopleApi } from './api/fetchSwapiPeople';
 import { SwapiPersonResultMapper } from './utils/mapSwapiPersonToResult';
+import { SearchTermStorage } from './storage/searchTermStorage';
 import type { PersonResultItem } from './types/personResultItem';
 import './App.css';
 
@@ -20,16 +21,27 @@ export default class App extends Component<Record<string, never>, AppState> {
     };
   }
 
-  private handleSearch = async (trimmedTerm: string): Promise<void> => {
-    this.setState({ hasSearched: true });
+  componentDidMount(): void {
+    void this.fetchAndSetResults(SearchTermStorage.read());
+  }
+
+  private fetchAndSetResults = async (trimmedTerm: string): Promise<void> => {
     try {
       const people = await SwapiPeopleApi.search(trimmedTerm);
       this.setState({
+        hasSearched: true,
         results: people.map((person) => SwapiPersonResultMapper.toItem(person)),
       });
     } catch {
-      this.setState({ results: [] });
+      this.setState({
+        hasSearched: true,
+        results: [],
+      });
     }
+  };
+
+  private handleSearch = async (trimmedTerm: string): Promise<void> => {
+    await this.fetchAndSetResults(trimmedTerm);
   };
 
   render() {
