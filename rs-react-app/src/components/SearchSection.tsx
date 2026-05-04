@@ -23,7 +23,12 @@ export class SearchSection extends Component<SearchSectionProps, SearchSectionSt
   };
 
   private handleSearchClick = () => {
-    this.props.onSearch(this.state.searchTerm.trim());
+    const trimmed = this.state.searchTerm.trim();
+    const stored = SearchTermStorage.read();
+    if (trimmed !== stored) {
+      SearchTermStorage.write(trimmed);
+    }
+    this.props.onSearch(trimmed);
   };
 
   render() {
