@@ -1,9 +1,17 @@
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-raised: #21262d;
+  --color-border: #30363d;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-accent: #58a6ff;
+  font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Segoe UI Mono',
+    Consolas, monospace;
   line-height: 1.5;
   font-weight: 400;
-  color: #213547;
-  background-color: #ffffff;
+  color: var(--color-text);
+  background-color: var(--color-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
