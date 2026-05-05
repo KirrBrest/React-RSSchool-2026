@@ -5,27 +5,8 @@ import { SwapiPeopleApi } from './api/fetchSwapiPeople';
 import { SwapiPersonResultMapper } from './utils/mapSwapiPersonToResult';
 import { SearchTermStorage } from './storage/searchTermStorage';
 import { AppFetchErrorMessage } from './utils/AppFetchErrorMessage';
-import type { PersonResultItem } from './types/personResultItem';
+import type { AppState, FetchOptions } from './types';
 import './App.css';
-
-type AppState = {
-  results: PersonResultItem[];
-  hasSearched: boolean;
-  lastFetchedTerm: string | null;
-  isLoading: boolean;
-  errorMessage: string | null;
-  listPage: number;
-  listHasNext: boolean;
-  listHasPrev: boolean;
-  listTotalCount: number;
-  /** Triggers a render-time throw for error boundary testing. */
-  simulateCrash: boolean;
-};
-
-type FetchOptions = {
-  skipIfUnchanged: boolean;
-  page?: number;
-};
 
 export default class App extends Component<Record<string, never>, AppState> {
   constructor(props: Record<string, never>) {

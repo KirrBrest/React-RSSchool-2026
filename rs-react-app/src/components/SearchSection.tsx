@@ -1,14 +1,7 @@
 import { Component, type ChangeEvent, type FormEvent } from 'react';
 import { SearchTermStorage } from '../storage/searchTermStorage';
+import type { SearchSectionProps, SearchSectionState } from '../types';
 import './SearchSection.css';
-
-export type SearchSectionProps = {
-  onSearch: (trimmedTerm: string) => void;
-};
-
-type SearchSectionState = {
-  searchTerm: string;
-};
 
 export class SearchSection extends Component<SearchSectionProps, SearchSectionState> {
   constructor(props: SearchSectionProps) {

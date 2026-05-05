@@ -1,11 +1,7 @@
 import { Component } from 'react';
 import { Card } from './Card';
-import type { PersonResultItem } from '../types/personResultItem';
+import type { CardListProps } from '../types';
 import './CardList.css';
-
-export type CardListProps = {
-  items: PersonResultItem[];
-};
 
 export class CardList extends Component<CardListProps> {
   render() {

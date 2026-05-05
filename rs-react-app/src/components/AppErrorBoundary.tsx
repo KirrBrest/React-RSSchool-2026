@@ -1,14 +1,6 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ErrorInfo } from 'react';
+import type { AppErrorBoundaryProps, AppErrorBoundaryState } from '../types';
 import './AppErrorBoundary.css';
-
-type AppErrorBoundaryProps = {
-  children: ReactNode;
-};
-
-type AppErrorBoundaryState = {
-  hasError: boolean;
-  resetKey: number;
-};
 
 export class AppErrorBoundary extends Component<
   AppErrorBoundaryProps,

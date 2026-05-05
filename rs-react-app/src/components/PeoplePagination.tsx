@@ -1,15 +1,7 @@
 import { Component } from 'react';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
+import type { PeoplePaginationProps } from '../types';
 import './PeoplePagination.css';
-
-export type PeoplePaginationProps = {
-  page: number;
-  totalCount: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-  onNext: () => void;
-  onPrev: () => void;
-};
 
 export class PeoplePagination extends Component<PeoplePaginationProps> {
   render() {

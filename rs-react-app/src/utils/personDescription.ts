@@ -1,4 +1,4 @@
-import type { SwapiPerson } from '../types/swapiPeople';
+import type { SwapiPerson } from '../types';
 
 export class SwapiPersonDescription {
   static build(person: SwapiPerson): string {

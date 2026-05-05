@@ -2,17 +2,8 @@ import { Component } from 'react';
 import { CardList } from './CardList';
 import { LoadingIndicator } from './LoadingIndicator';
 import { PeoplePagination } from './PeoplePagination';
-import type { PersonResultItem } from '../types/personResultItem';
-import type { PeoplePaginationProps } from './PeoplePagination';
+import type { ResultsSectionProps } from '../types';
 import './ResultsSection.css';
-
-export type ResultsSectionProps = {
-  items: PersonResultItem[];
-  hasSearched: boolean;
-  isLoading: boolean;
-  errorMessage: string | null;
-  pagination: PeoplePaginationProps | null;
-};
 
 export class ResultsSection extends Component<ResultsSectionProps> {
   render() {

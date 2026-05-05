@@ -1,5 +1,4 @@
-import type { SwapiPerson } from '../types/swapiPeople';
-import type { PersonResultItem } from '../types/personResultItem';
+import type { PersonResultItem, SwapiPerson } from '../types';
 import { SwapiPersonDescription } from './personDescription';
 
 export class SwapiPersonResultMapper {

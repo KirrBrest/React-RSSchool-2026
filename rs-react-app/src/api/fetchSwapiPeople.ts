@@ -1,4 +1,4 @@
-import type { SwapiPeopleListResponse } from '../types/swapiPeople';
+import type { SwapiPeopleListResponse } from '../types';
 
 export class SwapiPeopleApi {
   static readonly pageSize = 10;
