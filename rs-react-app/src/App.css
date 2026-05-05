@@ -1,0 +1,36 @@
+.app {
+  box-sizing: border-box;
+  min-height: 100vh;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.app__error-test {
+  margin-top: auto;
+  padding-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.app__error-test-button {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.app__error-test-button:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.app__error-test-button:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
+}
