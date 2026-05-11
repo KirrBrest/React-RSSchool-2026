@@ -2,7 +2,7 @@ import { render, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { ResultsSection } from '../components/ResultsSection';
-import { withinRenderedRoot } from './withinRenderedRoot';
+import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('LoadingIndicator', () => {
   beforeEach(() => {

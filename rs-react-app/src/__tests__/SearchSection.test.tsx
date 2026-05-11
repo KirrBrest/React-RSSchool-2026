@@ -2,7 +2,7 @@ import { render, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SearchSection } from '../components/SearchSection';
 import { SearchTermStorage } from '../storage/searchTermStorage';
-import { withinRenderedRoot } from './withinRenderedRoot';
+import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 const storageKey = SearchTermStorage.storageKey;
 

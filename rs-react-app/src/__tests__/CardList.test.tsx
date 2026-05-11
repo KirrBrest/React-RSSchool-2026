@@ -2,7 +2,7 @@ import { render, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CardList } from '../components/CardList';
 import type { PersonResultItem } from '../types';
-import { withinRenderedRoot } from './withinRenderedRoot';
+import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('CardList', () => {
   beforeEach(() => {

@@ -1,7 +1,7 @@
 import { render, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { Card } from '../components/Card';
-import { withinRenderedRoot } from './withinRenderedRoot';
+import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('Card', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
-import { withinRenderedRoot } from './withinRenderedRoot';
+import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('ResultsSection', () => {
   beforeEach(() => {
