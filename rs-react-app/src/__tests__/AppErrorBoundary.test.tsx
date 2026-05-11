@@ -103,5 +103,23 @@ describe('AppErrorBoundary', () => {
       ).toBe(true);
       err.mockRestore();
     });
+
+    it('recovers when try again is clicked', () => {
+      const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+      render(
+        <AppErrorBoundary>
+          <BoundaryHarness />
+        </AppErrorBoundary>
+      );
+      fireEvent.click(
+        screen.getByRole('button', { name: 'cause-child-error' })
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      expect(
+        screen.getByRole('button', { name: 'cause-child-error' })
+      ).toBeInTheDocument();
+      expect(screen.getByText('child-ok')).toBeInTheDocument();
+      err.mockRestore();
+    });
   });
 });

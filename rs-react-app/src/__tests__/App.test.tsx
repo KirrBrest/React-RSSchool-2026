@@ -11,6 +11,7 @@ import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
@@ -23,6 +24,19 @@ vi.mock('../api/fetchSwapiPeople', () => ({
 }));
 
 const fetchPeople = vi.mocked(SwapiPeopleApi.fetchPeople);
+
+function listResponse(options: {
+  count: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}): SwapiPeopleListResponse {
+  return {
+    count: options.count,
+    next: options.hasNext ? 'next' : null,
+    previous: options.hasPrev ? 'prev' : null,
+    results: [],
+  };
+}
 
 describe('App', () => {
   beforeEach(() => {
@@ -144,6 +158,59 @@ describe('App', () => {
         expect(root.getByLabelText('Search query')).toHaveValue('solo');
       });
       expect(localStorage.getItem(SearchTermStorage.storageKey)).toBe('solo');
+    });
+  });
+
+  describe('pagination', () => {
+    it('skips API call when search term and page are unchanged', async () => {
+      fetchPeople.mockResolvedValue(emptyPeopleList());
+      const view = render(<App />);
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
+      });
+
+      fetchPeople.mockClear();
+      fireEvent.click(root.getByRole('button', { name: 'Search' }));
+
+      await waitFor(() => {
+        expect(fetchPeople).not.toHaveBeenCalled();
+      });
+    });
+
+    it('loads next and previous pages when pagination is available', async () => {
+      fetchPeople
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: true, hasPrev: false })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: true, hasPrev: false })
+        );
+
+      const view = render(<App />);
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
+      });
+
+      await waitFor(() => {
+        expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('', 1);
+      });
     });
   });
 
