@@ -35,7 +35,7 @@ const reactNamespaceHookSelectors = forbiddenReactHookImports.map((name) => ({
 }));
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
