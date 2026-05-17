@@ -33,6 +33,8 @@ export default function App() {
   );
   const initialLoadDoneRef = useRef(false);
 
+  const pageInUrl = parsePageParam(searchParams.get('page'));
+
   const syncPageInUrl = useCallback(
     (page: number) => {
       setSearchParams(
@@ -98,44 +100,68 @@ export default function App() {
       return;
     }
     initialLoadDoneRef.current = true;
-    const page = parsePageParam(searchParams.get('page'));
+    const page = searchParams.has('page')
+      ? parsePageParam(searchParams.get('page'))
+      : 1;
+    if (!searchParams.has('page')) {
+      syncPageInUrl(1);
+    }
     void fetchAndSetResults(SearchTermStorage.read(), {
       skipIfUnchanged: false,
       page,
     });
-  }, [fetchAndSetResults, searchParams]);
+  }, [fetchAndSetResults, searchParams, syncPageInUrl]);
+
+  useEffect(() => {
+    if (!initialLoadDoneRef.current) {
+      return;
+    }
+    const page = parsePageParam(searchParams.get('page'));
+    const { listPage, lastFetchedTerm, isLoading } = stateRef.current;
+    if (isLoading || page === listPage) {
+      return;
+    }
+    void fetchAndSetResults(lastFetchedTerm ?? '', {
+      skipIfUnchanged: false,
+      page,
+    });
+  }, [searchParams, fetchAndSetResults]);
+
+  const handleSearchInputChange = useCallback(() => {
+    if (parsePageParam(searchParams.get('page')) === 1) {
+      return;
+    }
+    syncPageInUrl(1);
+  }, [searchParams, syncPageInUrl]);
 
   const handleSearch = useCallback(
     async (trimmedTerm: string): Promise<void> => {
+      if (pageInUrl !== 1) {
+        syncPageInUrl(1);
+      }
       await fetchAndSetResults(trimmedTerm, {
         skipIfUnchanged: true,
         page: 1,
       });
     },
-    [fetchAndSetResults]
+    [fetchAndSetResults, pageInUrl, syncPageInUrl]
   );
 
   const handlePageNext = useCallback((): void => {
-    const { listPage, listHasNext, lastFetchedTerm } = stateRef.current;
-    if (!listHasNext || lastFetchedTerm !== '') {
+    const { listPage, listHasNext } = stateRef.current;
+    if (!listHasNext) {
       return;
     }
-    void fetchAndSetResults('', {
-      skipIfUnchanged: false,
-      page: listPage + 1,
-    });
-  }, [fetchAndSetResults]);
+    syncPageInUrl(listPage + 1);
+  }, [syncPageInUrl]);
 
   const handlePagePrev = useCallback((): void => {
-    const { listPage, listHasPrev, lastFetchedTerm } = stateRef.current;
-    if (!listHasPrev || lastFetchedTerm !== '') {
+    const { listPage, listHasPrev } = stateRef.current;
+    if (!listHasPrev) {
       return;
     }
-    void fetchAndSetResults('', {
-      skipIfUnchanged: false,
-      page: listPage - 1,
-    });
-  }, [fetchAndSetResults]);
+    syncPageInUrl(listPage - 1);
+  }, [syncPageInUrl]);
 
   const handleSimulateError = (): void => {
     setState((prev) => ({ ...prev, simulateCrash: true }));
@@ -146,8 +172,6 @@ export default function App() {
     hasSearched,
     isLoading,
     errorMessage,
-    lastFetchedTerm,
-    listPage,
     listHasNext,
     listHasPrev,
     listTotalCount,
@@ -160,13 +184,16 @@ export default function App() {
 
   const showPagination =
     hasSearched &&
+    !isLoading &&
     errorMessage === null &&
-    lastFetchedTerm === '' &&
     (listHasNext || listHasPrev);
 
   return (
     <div className="app">
-      <SearchSection onSearch={handleSearch} />
+      <SearchSection
+        onSearch={handleSearch}
+        onSearchInputChange={handleSearchInputChange}
+      />
       <ResultsSection
         items={results}
         hasSearched={hasSearched}
@@ -175,7 +202,7 @@ export default function App() {
         pagination={
           showPagination
             ? {
-                page: listPage,
+                page: pageInUrl,
                 totalCount: listTotalCount,
                 hasNext: listHasNext,
                 hasPrev: listHasPrev,

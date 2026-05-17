@@ -3,11 +3,15 @@ import { useSearchTermStorage } from '../hooks/useSearchTermStorage';
 import type { SearchSectionProps } from '../types';
 import './SearchSection.css';
 
-export function SearchSection({ onSearch }: SearchSectionProps) {
+export function SearchSection({
+  onSearch,
+  onSearchInputChange,
+}: SearchSectionProps) {
   const { searchTerm, setSearchTerm, persistSearchTerm } = useSearchTermStorage();
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    onSearchInputChange();
   };
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {

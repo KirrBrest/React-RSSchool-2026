@@ -1,4 +1,11 @@
-import { screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  cleanup,
+} from '@testing-library/react';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
@@ -31,6 +38,14 @@ function listResponse(options: {
     previous: options.hasPrev ? 'prev' : null,
     results: [],
   };
+}
+
+function renderAppAt(path: string) {
+  const router = createMemoryRouter([{ path: '/', element: <App /> }], {
+    initialEntries: [path],
+  });
+  const view = render(<RouterProvider router={router} />);
+  return { view, router };
 }
 
 describe('App', () => {
@@ -205,6 +220,127 @@ describe('App', () => {
       fireEvent.click(root.getByRole('button', { name: 'Previous' }));
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('', 1);
+      });
+    });
+
+    it('loads the page number from the URL on first visit', async () => {
+      renderAppAt('/?page=2');
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 2);
+      });
+    });
+
+    it('updates the URL when moving to another page', async () => {
+      fetchPeople
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: true, hasPrev: false })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        );
+      const { view, router } = renderAppAt('/?page=1');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(router.state.location.search).toBe('?page=2');
+      });
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
+      });
+    });
+
+    it('resets the page query to 1 when the search input changes', async () => {
+      const { view, router } = renderAppAt('/?page=2');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 2);
+      });
+
+      fireEvent.change(root.getByLabelText('Search query'), {
+        target: { value: 'a' },
+      });
+
+      await waitFor(() => {
+        expect(router.state.location.search).toBe('?page=1');
+      });
+    });
+
+    it('paginates search results when more than one page exists', async () => {
+      fetchPeople
+        .mockReset()
+        .mockResolvedValueOnce(emptyPeopleList())
+        .mockResolvedValueOnce(
+          listResponse({ count: 15, hasNext: true, hasPrev: false })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 15, hasNext: false, hasPrev: true })
+        );
+      const { view, router } = renderAppAt('/?page=1');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
+      });
+
+      fireEvent.change(root.getByLabelText('Search query'), {
+        target: { value: 'sky' },
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Search' }));
+
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('sky', 1);
+      });
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+        expect(
+          root.getByRole('button', { name: 'Next' })
+        ).not.toBeDisabled();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('sky', 2);
+      });
+      await waitFor(() => {
+        expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(router.state.location.search).toBe('?page=2');
+      });
+    });
+
+    it('does not show pagination controls while results are loading', async () => {
+      let resolveData!: (value: ReturnType<typeof emptyPeopleList>) => void;
+      const pending = new Promise<ReturnType<typeof emptyPeopleList>>(
+        (resolve) => {
+          resolveData = resolve;
+        }
+      );
+      fetchPeople.mockReturnValue(pending);
+      const { view } = renderAppAt('/?page=1');
+      const root = withinRenderedRoot(view);
+
+      expect(
+        root.queryByRole('navigation', { name: 'People list pages' })
+      ).not.toBeInTheDocument();
+
+      resolveData(
+        listResponse({ count: 20, hasNext: true, hasPrev: false })
+      );
+
+      await waitFor(() => {
+        expect(
+          root.getByRole('navigation', { name: 'People list pages' })
+        ).toBeInTheDocument();
       });
     });
   });

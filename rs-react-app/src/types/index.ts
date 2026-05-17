@@ -54,6 +54,7 @@ export type AppErrorBoundaryState = {
 
 export type SearchSectionProps = {
   onSearch: (trimmedTerm: string) => void;
+  onSearchInputChange: () => void;
 };
 
 export type PeoplePaginationProps = {
