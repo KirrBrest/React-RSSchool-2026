@@ -14,6 +14,7 @@ import {
   extractPersonId,
   parseDetailsParam,
 } from './utils/extractPersonId';
+import { QUERY_PARAMS } from './constants';
 import type { AppState, FetchOptions } from './types';
 import './App.css';
 
@@ -41,8 +42,10 @@ export default function App() {
     null
   );
   const homeMountHandledRef = useRef(false);
-  const pageInUrl = parsePageParam(searchParams.get('page'));
-  const selectedDetailsId = parseDetailsParam(searchParams.get('details'));
+  const pageInUrl = parsePageParam(searchParams.get(QUERY_PARAMS.page));
+  const selectedDetailsId = parseDetailsParam(
+    searchParams.get('details')
+  );
   const isDetailsOpen = location.pathname === '/details';
 
   const updatePageInUrl = useCallback(
@@ -51,7 +54,7 @@ export default function App() {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          next.set('page', String(page));
+          next.set(QUERY_PARAMS.page, String(page));
           if (clearDetails) {
             next.delete('details');
           }
@@ -61,7 +64,7 @@ export default function App() {
       );
       if (clearDetails && location.pathname === '/details') {
         const next = new URLSearchParams(searchParams);
-        next.set('page', String(page));
+        next.set(QUERY_PARAMS.page, String(page));
         next.delete('details');
         navigate(
           { pathname: '/', search: buildSearchParamsString(next) },
@@ -77,8 +80,8 @@ export default function App() {
       const id = extractPersonId(personRef);
       const next = new URLSearchParams(searchParams);
       next.set('details', id);
-      if (!next.has('page')) {
-        next.set('page', '1');
+      if (!next.has(QUERY_PARAMS.page)) {
+        next.set(QUERY_PARAMS.page, '1');
       }
       navigate(
         { pathname: '/details', search: buildSearchParamsString(next) },
@@ -180,10 +183,10 @@ export default function App() {
     }
     homeMountHandledRef.current = true;
     const term = SearchTermStorage.read();
-    const page = searchParams.has('page')
-      ? parsePageParam(searchParams.get('page'))
+    const page = searchParams.has(QUERY_PARAMS.page)
+      ? parsePageParam(searchParams.get(QUERY_PARAMS.page))
       : 1;
-    if (!searchParams.has('page')) {
+    if (!searchParams.has(QUERY_PARAMS.page)) {
       updatePageInUrl(page);
     }
     const cachedList = HomeListSnapshot.readMatching(term, page);
@@ -210,7 +213,7 @@ export default function App() {
   }, [fetchAndSetResults, updatePageInUrl, searchParams]);
 
   useEffect(() => {
-    const page = parsePageParam(searchParams.get('page'));
+    const page = parsePageParam(searchParams.get(QUERY_PARAMS.page));
     const { listPage, lastFetchedTerm, isLoading } = stateRef.current;
     if (isLoading || page === listPage) {
       return;
@@ -225,7 +228,7 @@ export default function App() {
     if (isDetailsOpen) {
       closeDetails();
     }
-    if (parsePageParam(searchParams.get('page')) === 1) {
+    if (parsePageParam(searchParams.get(QUERY_PARAMS.page)) === 1) {
       return;
     }
     updatePageInUrl(1, { clearDetails: true });

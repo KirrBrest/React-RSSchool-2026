@@ -1,9 +1,12 @@
+import {
+  QUERY_PARAMS,
+  SWAPI_API_BASE,
+  SWAPI_DEV_PROXY_BASE,
+  SWAPI_LOCAL_DEV_HOSTNAMES,
+  SWAPI_PAGE_SIZE,
+} from '../constants';
 import type { SwapiPeopleListResponse, SwapiPerson } from '../types';
 import { isSwapiPeopleListResponse, isSwapiPerson } from '../types/guards';
-
-const SWAPI_API_BASE = 'https://swapi.py4e.com/api';
-const SWAPI_DEV_PROXY_BASE = '/swapi';
-const SWAPI_LOCAL_DEV_HOSTNAMES = ['localhost', '127.0.0.1'];
 
 function apiBase(): string {
   if (typeof window === 'undefined') {
@@ -28,7 +31,7 @@ async function fetchPeople(
     params.set('search', term);
   }
   if (safePage > 1) {
-    params.set('page', String(safePage));
+    params.set(QUERY_PARAMS.page, String(safePage));
   }
   const qs = params.toString();
   const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
@@ -61,7 +64,7 @@ async function fetchPerson(personId: string): Promise<SwapiPerson> {
 }
 
 export const SwapiPeopleApi = {
-  pageSize: 10,
+  pageSize: SWAPI_PAGE_SIZE,
   fetchPeople,
   fetchPerson,
 };

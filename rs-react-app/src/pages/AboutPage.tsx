@@ -1,11 +1,12 @@
 import { AppNav } from '../components/AppNav';
+import {
+  AUTHOR_BIO,
+  AUTHOR_EMAIL,
+  AUTHOR_GITHUB,
+  AUTHOR_NAME,
+  RS_SCHOOL_REACT_COURSE_URL,
+} from '../constants';
 import './AboutPage.css';
-
-const RS_SCHOOL_REACT_COURSE_URL = 'https://rs.school/courses/reactjs';
-const AUTHOR_NAME = 'Kiryl Lukashchuk';
-const AUTHOR_BIO = 'I run a construction company and am the father of a large family, where patience and multitasking skills are cultivated—ideal qualities for development. In this project, I tried to prove that I can work equally confidently with both building architecture and application architecture.';
-const AUTHOR_GITHUB = 'https://github.com/KirrBrest';
-const AUTHOR_EMAIL = 'Lukashchuk.Kiryl@gmail.com';
 
 export function AboutPage() {
   return (

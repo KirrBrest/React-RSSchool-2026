@@ -1,4 +1,4 @@
-import type { SwapiPeopleListResponse, SwapiPerson } from './index';
+import type { SwapiPeopleListResponse, SwapiPerson } from '../swapi';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -38,10 +38,4 @@ export function isSwapiPeopleListResponse(
     Array.isArray(value.results) &&
     value.results.every(isSwapiPerson)
   );
-}
-
-export function isHTMLElement(
-  element: Element | null
-): element is HTMLElement {
-  return element !== null && element instanceof HTMLElement;
 }

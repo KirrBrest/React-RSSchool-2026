@@ -1,21 +1,12 @@
-import type { PersonResultItem } from '../types';
+import type { HomeListSnapshot as HomeListSnapshotData } from '../types';
 
-export type HomeListSnapshot = {
-  term: string;
-  page: number;
-  results: PersonResultItem[];
-  listHasNext: boolean;
-  listHasPrev: boolean;
-  listTotalCount: number;
-};
+let snapshot: HomeListSnapshotData | null = null;
 
-let snapshot: HomeListSnapshot | null = null;
-
-function save(data: HomeListSnapshot): void {
+function save(data: HomeListSnapshotData): void {
   snapshot = data;
 }
 
-function readMatching(term: string, page: number): HomeListSnapshot | null {
+function readMatching(term: string, page: number): HomeListSnapshotData | null {
   if (snapshot === null) {
     return null;
   }

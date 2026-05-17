@@ -1,11 +1,11 @@
-const storageKey = 'swapi-explorer-search-term';
+import { SEARCH_TERM_STORAGE_KEY } from '../constants';
 
 function read(): string {
   if (typeof window === 'undefined') {
     return '';
   }
   try {
-    const raw = window.localStorage.getItem(storageKey);
+    const raw = window.localStorage.getItem(SEARCH_TERM_STORAGE_KEY);
     if (raw === null) {
       return '';
     }
@@ -22,9 +22,9 @@ function write(term: string): void {
   const normalized = term.trim();
   try {
     if (normalized === '') {
-      window.localStorage.removeItem(storageKey);
+      window.localStorage.removeItem(SEARCH_TERM_STORAGE_KEY);
     } else {
-      window.localStorage.setItem(storageKey, normalized);
+      window.localStorage.setItem(SEARCH_TERM_STORAGE_KEY, normalized);
     }
   } catch {
     return;
@@ -32,7 +32,7 @@ function write(term: string): void {
 }
 
 export const SearchTermStorage = {
-  storageKey,
+  storageKey: SEARCH_TERM_STORAGE_KEY,
   read,
   write,
 };

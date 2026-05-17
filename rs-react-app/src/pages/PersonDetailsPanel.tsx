@@ -5,18 +5,8 @@ import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { buildSearchParamsString } from '../utils/buildSearchParamsString';
 import { parseDetailsParam } from '../utils/extractPersonId';
-import type { SwapiPerson } from '../types';
+import type { DetailsState, PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
-
-type DetailsState = {
-  person: SwapiPerson | null;
-  isLoading: boolean;
-  errorMessage: string | null;
-};
-
-type PersonDetailsContentProps = {
-  personId: string;
-};
 
 function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
   const [state, setState] = useState<DetailsState>({
