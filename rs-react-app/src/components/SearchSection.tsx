@@ -1,10 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { SearchTermStorage } from '../storage/searchTermStorage';
+import { type ChangeEvent, type FormEvent } from 'react';
+import { useSearchTermStorage } from '../hooks/useSearchTermStorage';
 import type { SearchSectionProps } from '../types';
 import './SearchSection.css';
 
 export function SearchSection({ onSearch }: SearchSectionProps) {
-  const [searchTerm, setSearchTerm] = useState(() => SearchTermStorage.read());
+  const { searchTerm, setSearchTerm, persistSearchTerm } = useSearchTermStorage();
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -12,11 +12,7 @@ export function SearchSection({ onSearch }: SearchSectionProps) {
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const trimmed = searchTerm.trim();
-    const stored = SearchTermStorage.read();
-    if (trimmed !== stored) {
-      SearchTermStorage.write(trimmed);
-    }
+    const trimmed = persistSearchTerm(searchTerm);
     onSearch(trimmed);
   };
 

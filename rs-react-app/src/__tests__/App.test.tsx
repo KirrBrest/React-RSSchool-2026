@@ -1,13 +1,8 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  cleanup,
-} from '@testing-library/react';
+import { screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
+import { renderWithRouter } from './renderWithRouter.tsx';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
@@ -53,7 +48,7 @@ describe('App', () => {
 
   describe('integration', () => {
     it('makes initial API call on component mount', async () => {
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledWith('', 1);
@@ -63,7 +58,7 @@ describe('App', () => {
 
     it('handles search term from localStorage on initial load', async () => {
       localStorage.setItem(SearchTermStorage.storageKey, 'stored-query');
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       expect(
         root.getByLabelText('Search query')
@@ -81,7 +76,7 @@ describe('App', () => {
         }
       );
       fetchPeople.mockReturnValue(pending);
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       expect(root.getByText('Loading data…')).toBeInTheDocument();
       resolveData(emptyPeopleList());
@@ -93,7 +88,7 @@ describe('App', () => {
 
   describe('API integration', () => {
     it('calls API with correct parameters when the user searches', async () => {
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -110,7 +105,7 @@ describe('App', () => {
 
     it('handles successful API responses', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      render(<App />);
+      renderWithRouter(<App />);
       await waitFor(() => {
         expect(
           screen.getByRole('heading', { name: 'Luke Skywalker' })
@@ -120,7 +115,7 @@ describe('App', () => {
 
     it('handles API error responses', async () => {
       fetchPeople.mockRejectedValue(new Error('SWAPI_HTTP_500'));
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       const expected = AppFetchErrorMessage.fromUnknown(
         new Error('SWAPI_HTTP_500')
@@ -134,7 +129,7 @@ describe('App', () => {
   describe('state management', () => {
     it('updates visible results when the API returns people', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       await waitFor(() => {
         expect(
           withinRenderedRoot(view).getByText(
@@ -145,7 +140,7 @@ describe('App', () => {
     });
 
     it('manages search term state through search and storage', async () => {
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -164,7 +159,7 @@ describe('App', () => {
   describe('pagination', () => {
     it('skips API call when search term and page are unchanged', async () => {
       fetchPeople.mockResolvedValue(emptyPeopleList());
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -191,7 +186,7 @@ describe('App', () => {
           listResponse({ count: 20, hasNext: true, hasPrev: false })
         );
 
-      const view = render(<App />);
+      const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -217,7 +212,7 @@ describe('App', () => {
   describe('error button', () => {
     it('throws when simulate error is clicked and triggers error boundary fallback UI', async () => {
       const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-      render(
+      renderWithRouter(
         <AppErrorBoundary>
           <App />
         </AppErrorBoundary>

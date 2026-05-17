@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SearchSection } from './components/SearchSection';
 import { ResultsSection } from './components/ResultsSection';
 import { SwapiPeopleApi } from './api/fetchSwapiPeople';
 import { SwapiPersonResultMapper } from './utils/mapSwapiPersonToResult';
 import { SearchTermStorage } from './storage/searchTermStorage';
 import { AppFetchErrorMessage } from './utils/AppFetchErrorMessage';
+import { parsePageParam } from './utils/parsePageParam';
 import type { AppState, FetchOptions } from './types';
 import './App.css';
 
@@ -22,11 +24,27 @@ const initialAppState: AppState = {
 };
 
 export default function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [state, setState] = useState<AppState>(initialAppState);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastSuccessfulFetchRef = useRef<{ term: string; page: number } | null>(
     null
+  );
+  const initialLoadDoneRef = useRef(false);
+
+  const syncPageInUrl = useCallback(
+    (page: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('page', String(page));
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
   );
 
   const fetchAndSetResults = useCallback(
@@ -45,6 +63,7 @@ export default function App() {
       try {
         const data = await SwapiPeopleApi.fetchPeople(trimmedTerm, page);
         lastSuccessfulFetchRef.current = { term: trimmedTerm, page };
+        syncPageInUrl(page);
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -71,15 +90,20 @@ export default function App() {
         }));
       }
     },
-    []
+    [syncPageInUrl]
   );
 
   useEffect(() => {
+    if (initialLoadDoneRef.current) {
+      return;
+    }
+    initialLoadDoneRef.current = true;
+    const page = parsePageParam(searchParams.get('page'));
     void fetchAndSetResults(SearchTermStorage.read(), {
       skipIfUnchanged: false,
-      page: 1,
+      page,
     });
-  }, [fetchAndSetResults]);
+  }, [fetchAndSetResults, searchParams]);
 
   const handleSearch = useCallback(
     async (trimmedTerm: string): Promise<void> => {
