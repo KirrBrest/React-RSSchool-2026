@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { testDetailHandlers } from './testDetailHandlers.ts';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('ResultsSection', () => {
@@ -27,10 +28,11 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('article')).toHaveLength(2);
+      expect(region.getAllByRole('button')).toHaveLength(2);
     });
 
     it('displays no results message when data array is empty', () => {
@@ -41,6 +43,7 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
@@ -57,6 +60,7 @@ describe('ResultsSection', () => {
           isLoading
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
@@ -79,11 +83,12 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
       expect(
-        region.getByRole('heading', { name: 'Han Solo' })
+        region.getByRole('button', { name: 'View details for Han Solo' })
       ).toBeInTheDocument();
       expect(region.getByText('Smuggler')).toBeInTheDocument();
     });
@@ -99,10 +104,11 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('article')).toHaveLength(1);
+      expect(region.getAllByRole('button')).toHaveLength(1);
     });
   });
 
@@ -116,6 +122,7 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={message}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
@@ -133,6 +140,7 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={message}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);
@@ -152,6 +160,7 @@ describe('ResultsSection', () => {
           isLoading={false}
           errorMessage={message}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       const region = withinRenderedRoot(view);

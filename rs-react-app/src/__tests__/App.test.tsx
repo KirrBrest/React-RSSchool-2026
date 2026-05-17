@@ -8,10 +8,12 @@ import {
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
+import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { renderWithRouter } from './renderWithRouter.tsx';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
+import { HomeListSnapshot } from '../storage/homeListSnapshot';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
@@ -22,10 +24,12 @@ vi.mock('../api/fetchSwapiPeople', () => ({
   SwapiPeopleApi: {
     pageSize: 10,
     fetchPeople: vi.fn(),
+    fetchPerson: vi.fn(),
   },
 }));
 
 const fetchPeople = vi.mocked(SwapiPeopleApi.fetchPeople);
+const fetchPerson = vi.mocked(SwapiPeopleApi.fetchPerson);
 
 function listResponse(options: {
   count: number;
@@ -41,9 +45,18 @@ function listResponse(options: {
 }
 
 function renderAppAt(path: string) {
-  const router = createMemoryRouter([{ path: '/', element: <App /> }], {
-    initialEntries: [path],
-  });
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/',
+        element: <App />,
+        children: [{ path: 'details', element: <PersonDetailsPanel /> }],
+      },
+    ],
+    {
+      initialEntries: [path],
+    }
+  );
   const view = render(<RouterProvider router={router} />);
   return { view, router };
 }
@@ -52,8 +65,10 @@ describe('App', () => {
   beforeEach(() => {
     cleanup();
     localStorage.clear();
+    HomeListSnapshot.clear();
     vi.clearAllMocks();
     fetchPeople.mockResolvedValue(emptyPeopleList());
+    fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
   });
 
   afterEach(() => {
@@ -63,7 +78,7 @@ describe('App', () => {
 
   describe('integration', () => {
     it('renders navigation link to About', () => {
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(root.getByRole('link', { name: 'About' })).toHaveAttribute(
         'href',
@@ -72,7 +87,7 @@ describe('App', () => {
     });
 
     it('makes initial API call on component mount', async () => {
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledWith('', 1);
@@ -82,7 +97,7 @@ describe('App', () => {
 
     it('handles search term from localStorage on initial load', async () => {
       localStorage.setItem(SearchTermStorage.storageKey, 'stored-query');
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(
         root.getByLabelText('Search query')
@@ -100,7 +115,7 @@ describe('App', () => {
         }
       );
       fetchPeople.mockReturnValue(pending);
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(root.getByText('Loading data…')).toBeInTheDocument();
       resolveData(emptyPeopleList());
@@ -112,7 +127,7 @@ describe('App', () => {
 
   describe('API integration', () => {
     it('calls API with correct parameters when the user searches', async () => {
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -129,17 +144,17 @@ describe('App', () => {
 
     it('handles successful API responses', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      renderWithRouter(<App />);
+      renderWithRouter();
       await waitFor(() => {
         expect(
-          screen.getByRole('heading', { name: 'Luke Skywalker' })
+          screen.getByRole('button', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
     });
 
     it('handles API error responses', async () => {
       fetchPeople.mockRejectedValue(new Error('SWAPI_HTTP_500'));
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       const expected = AppFetchErrorMessage.fromUnknown(
         new Error('SWAPI_HTTP_500')
@@ -153,7 +168,7 @@ describe('App', () => {
   describe('state management', () => {
     it('updates visible results when the API returns people', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       await waitFor(() => {
         expect(
           withinRenderedRoot(view).getByText(
@@ -164,7 +179,7 @@ describe('App', () => {
     });
 
     it('manages search term state through search and storage', async () => {
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -183,7 +198,7 @@ describe('App', () => {
   describe('pagination', () => {
     it('skips API call when search term and page are unchanged', async () => {
       fetchPeople.mockResolvedValue(emptyPeopleList());
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -210,7 +225,7 @@ describe('App', () => {
           listResponse({ count: 20, hasNext: true, hasPrev: false })
         );
 
-      const view = renderWithRouter(<App />);
+      const view = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -354,14 +369,119 @@ describe('App', () => {
     });
   });
 
+  describe('master-detail', () => {
+    it('does not show the details panel on initial load', async () => {
+      const { view } = renderAppAt('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      expect(
+        root.queryByRole('region', { name: 'Person details' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('opens details in the outlet when a result card is clicked', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderAppAt('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+        expect(router.state.location.search).toContain('details=1');
+      });
+      await waitFor(() => {
+        expect(fetchPerson).toHaveBeenCalledWith('1');
+      });
+      expect(
+        root.getByRole('region', { name: 'Person details' })
+      ).toBeInTheDocument();
+    });
+
+    it('closes the details panel when Close is clicked', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderAppAt('/details?page=1&details=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'Close details' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Close details' }));
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/');
+        expect(router.state.location.search).toBe('?page=1');
+      });
+      expect(
+        root.queryByRole('region', { name: 'Person details' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('restores details after remount when returning from another route', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const first = renderAppAt('/details?page=1&details=1');
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledTimes(1);
+      });
+      first.view.unmount();
+      const second = renderAppAt('/details?page=1&details=1');
+      await waitFor(() => {
+        expect(second.router.state.location.pathname).toBe('/details');
+        expect(second.router.state.location.search).toContain('details=1');
+        expect(
+          screen.getByRole('region', { name: 'Person details' })
+        ).toBeInTheDocument();
+      });
+      expect(fetchPeople).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps details in the URL after the list fetch finishes', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { router } = renderAppAt('/details?page=1&details=1');
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+        expect(router.state.location.search).toContain('details=1');
+      });
+    });
+
+    it('syncs details from a direct visit to /?page=1&details=1', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { router } = renderAppAt('/?page=1&details=1');
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+        expect(router.state.location.search).toContain('details=1');
+      });
+    });
+  });
+
   describe('error button', () => {
     it('throws when simulate error is clicked and triggers error boundary fallback UI', async () => {
       const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-      renderWithRouter(
-        <AppErrorBoundary>
-          <App />
-        </AppErrorBoundary>
+      const router = createMemoryRouter(
+        [
+          {
+            path: '/',
+            element: (
+              <AppErrorBoundary>
+                <App />
+              </AppErrorBoundary>
+            ),
+            children: [{ path: 'details', element: <PersonDetailsPanel /> }],
+          },
+        ],
+        { initialEntries: ['/?page=1'] }
       );
+      render(<RouterProvider router={router} />);
       await waitFor(() => {
         expect(screen.getByText('No matching people.')).toBeInTheDocument();
       });

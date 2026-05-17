@@ -1,15 +1,19 @@
-import type { SwapiPeopleListResponse } from '../types';
-import { isSwapiPeopleListResponse } from '../types/guards';
+import type { SwapiPeopleListResponse, SwapiPerson } from '../types';
+import { isSwapiPeopleListResponse, isSwapiPerson } from '../types/guards';
+
+const SWAPI_API_BASE = 'https://swapi.py4e.com/api';
+const SWAPI_DEV_PROXY_BASE = '/swapi';
+const SWAPI_LOCAL_DEV_HOSTNAMES = ['localhost', '127.0.0.1'];
 
 function apiBase(): string {
   if (typeof window === 'undefined') {
-    return 'https://swapi.py4e.com/api';
+    return SWAPI_API_BASE;
   }
   const { hostname } = window.location;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return '/swapi';
+  if (SWAPI_LOCAL_DEV_HOSTNAMES.includes(hostname)) {
+    return SWAPI_DEV_PROXY_BASE;
   }
-  return 'https://swapi.py4e.com/api';
+  return SWAPI_API_BASE;
 }
 
 async function fetchPeople(
@@ -39,7 +43,25 @@ async function fetchPeople(
   return payload;
 }
 
+async function fetchPerson(personId: string): Promise<SwapiPerson> {
+  const safeId = personId.trim();
+  if (safeId === '') {
+    throw new Error('SWAPI_INVALID_PERSON_ID');
+  }
+  const url = `${apiBase()}/people/${safeId}/`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`SWAPI_HTTP_${res.status}`);
+  }
+  const payload: unknown = await res.json();
+  if (!isSwapiPerson(payload)) {
+    throw new Error('SWAPI_INVALID_RESPONSE');
+  }
+  return payload;
+}
+
 export const SwapiPeopleApi = {
   pageSize: 10,
   fetchPeople,
+  fetchPerson,
 };

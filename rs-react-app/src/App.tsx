@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AppNav } from './components/AppNav';
 import { SearchSection } from './components/SearchSection';
 import { ResultsSection } from './components/ResultsSection';
 import { SwapiPeopleApi } from './api/fetchSwapiPeople';
 import { SwapiPersonResultMapper } from './utils/mapSwapiPersonToResult';
 import { SearchTermStorage } from './storage/searchTermStorage';
+import { HomeListSnapshot } from './storage/homeListSnapshot';
 import { AppFetchErrorMessage } from './utils/AppFetchErrorMessage';
 import { parsePageParam } from './utils/parsePageParam';
+import { buildSearchParamsString } from './utils/buildSearchParamsString';
+import {
+  extractPersonId,
+  parseDetailsParam,
+} from './utils/extractPersonId';
 import type { AppState, FetchOptions } from './types';
 import './App.css';
 
@@ -26,29 +32,90 @@ const initialAppState: AppState = {
 
 export default function App() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [state, setState] = useState<AppState>(initialAppState);
   const stateRef = useRef(state);
   stateRef.current = state;
   const lastSuccessfulFetchRef = useRef<{ term: string; page: number } | null>(
     null
   );
-  const initialLoadDoneRef = useRef(false);
-
+  const homeMountHandledRef = useRef(false);
   const pageInUrl = parsePageParam(searchParams.get('page'));
+  const selectedDetailsId = parseDetailsParam(searchParams.get('details'));
+  const isDetailsOpen = location.pathname === '/details';
 
-  const syncPageInUrl = useCallback(
-    (page: number) => {
+  const updatePageInUrl = useCallback(
+    (page: number, options?: { clearDetails?: boolean }) => {
+      const clearDetails = options?.clearDetails === true;
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set('page', String(page));
+          if (clearDetails) {
+            next.delete('details');
+          }
           return next;
         },
         { replace: true }
       );
+      if (clearDetails && location.pathname === '/details') {
+        const next = new URLSearchParams(searchParams);
+        next.set('page', String(page));
+        next.delete('details');
+        navigate(
+          { pathname: '/', search: buildSearchParamsString(next) },
+          { replace: true }
+        );
+      }
     },
-    [setSearchParams]
+    [setSearchParams, location.pathname, navigate, searchParams]
   );
+
+  const openDetails = useCallback(
+    (personRef: string): void => {
+      const id = extractPersonId(personRef);
+      const next = new URLSearchParams(searchParams);
+      next.set('details', id);
+      if (!next.has('page')) {
+        next.set('page', '1');
+      }
+      navigate(
+        { pathname: '/details', search: buildSearchParamsString(next) },
+        { replace: false }
+      );
+    },
+    [navigate, searchParams]
+  );
+
+  const closeDetails = useCallback((): void => {
+    if (!isDetailsOpen) {
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('details');
+    navigate(
+      { pathname: '/', search: buildSearchParamsString(next) },
+      { replace: true }
+    );
+  }, [isDetailsOpen, navigate, searchParams]);
+
+  useEffect(() => {
+    const details = parseDetailsParam(searchParams.get('details'));
+    if (details !== null && location.pathname === '/') {
+      navigate(
+        { pathname: '/details', search: buildSearchParamsString(searchParams) },
+        { replace: true }
+      );
+    }
+    if (details === null && location.pathname === '/details') {
+      const next = new URLSearchParams(searchParams);
+      navigate(
+        { pathname: '/', search: buildSearchParamsString(next) },
+        { replace: true }
+      );
+    }
+  }, [location.pathname, navigate, searchParams]);
 
   const fetchAndSetResults = useCallback(
     async (trimmedTerm: string, options: FetchOptions): Promise<void> => {
@@ -66,19 +133,30 @@ export default function App() {
       try {
         const data = await SwapiPeopleApi.fetchPeople(trimmedTerm, page);
         lastSuccessfulFetchRef.current = { term: trimmedTerm, page };
-        syncPageInUrl(page);
+        const results = data.results.map((person) =>
+          SwapiPersonResultMapper.toItem(person)
+        );
+        const listHasNext = data.next !== null;
+        const listHasPrev = data.previous !== null;
+        HomeListSnapshot.save({
+          term: trimmedTerm,
+          page,
+          results,
+          listHasNext,
+          listHasPrev,
+          listTotalCount: data.count,
+        });
+        updatePageInUrl(page);
         setState((prev) => ({
           ...prev,
           isLoading: false,
           hasSearched: true,
           errorMessage: null,
-          results: data.results.map((person) =>
-            SwapiPersonResultMapper.toItem(person)
-          ),
+          results,
           lastFetchedTerm: trimmedTerm,
           listPage: page,
-          listHasNext: data.next !== null,
-          listHasPrev: data.previous !== null,
+          listHasNext,
+          listHasPrev,
           listTotalCount: data.count,
         }));
       } catch (reason: unknown) {
@@ -93,30 +171,45 @@ export default function App() {
         }));
       }
     },
-    [syncPageInUrl]
+    [updatePageInUrl]
   );
 
   useEffect(() => {
-    if (initialLoadDoneRef.current) {
+    if (homeMountHandledRef.current) {
       return;
     }
-    initialLoadDoneRef.current = true;
+    homeMountHandledRef.current = true;
+    const term = SearchTermStorage.read();
     const page = searchParams.has('page')
       ? parsePageParam(searchParams.get('page'))
       : 1;
     if (!searchParams.has('page')) {
-      syncPageInUrl(1);
+      updatePageInUrl(page);
     }
-    void fetchAndSetResults(SearchTermStorage.read(), {
+    const cachedList = HomeListSnapshot.readMatching(term, page);
+    if (cachedList !== null) {
+      lastSuccessfulFetchRef.current = { term, page };
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        hasSearched: true,
+        errorMessage: null,
+        results: cachedList.results,
+        lastFetchedTerm: term,
+        listPage: page,
+        listHasNext: cachedList.listHasNext,
+        listHasPrev: cachedList.listHasPrev,
+        listTotalCount: cachedList.listTotalCount,
+      }));
+      return;
+    }
+    void fetchAndSetResults(term, {
       skipIfUnchanged: false,
       page,
     });
-  }, [fetchAndSetResults, searchParams, syncPageInUrl]);
+  }, [fetchAndSetResults, updatePageInUrl, searchParams]);
 
   useEffect(() => {
-    if (!initialLoadDoneRef.current) {
-      return;
-    }
     const page = parsePageParam(searchParams.get('page'));
     const { listPage, lastFetchedTerm, isLoading } = stateRef.current;
     if (isLoading || page === listPage) {
@@ -129,23 +222,29 @@ export default function App() {
   }, [searchParams, fetchAndSetResults]);
 
   const handleSearchInputChange = useCallback(() => {
+    if (isDetailsOpen) {
+      closeDetails();
+    }
     if (parsePageParam(searchParams.get('page')) === 1) {
       return;
     }
-    syncPageInUrl(1);
-  }, [searchParams, syncPageInUrl]);
+    updatePageInUrl(1, { clearDetails: true });
+  }, [closeDetails, isDetailsOpen, searchParams, updatePageInUrl]);
 
   const handleSearch = useCallback(
     async (trimmedTerm: string): Promise<void> => {
+      if (isDetailsOpen) {
+        closeDetails();
+      }
       if (pageInUrl !== 1) {
-        syncPageInUrl(1);
+        updatePageInUrl(1, { clearDetails: true });
       }
       await fetchAndSetResults(trimmedTerm, {
         skipIfUnchanged: true,
         page: 1,
       });
     },
-    [fetchAndSetResults, pageInUrl, syncPageInUrl]
+    [closeDetails, fetchAndSetResults, isDetailsOpen, pageInUrl, updatePageInUrl]
   );
 
   const handlePageNext = useCallback((): void => {
@@ -153,20 +252,26 @@ export default function App() {
     if (!listHasNext) {
       return;
     }
-    syncPageInUrl(listPage + 1);
-  }, [syncPageInUrl]);
+    updatePageInUrl(listPage + 1, { clearDetails: true });
+  }, [updatePageInUrl]);
 
   const handlePagePrev = useCallback((): void => {
     const { listPage, listHasPrev } = stateRef.current;
     if (!listHasPrev) {
       return;
     }
-    syncPageInUrl(listPage - 1);
-  }, [syncPageInUrl]);
+    updatePageInUrl(listPage - 1, { clearDetails: true });
+  }, [updatePageInUrl]);
 
   const handleSimulateError = (): void => {
     setState((prev) => ({ ...prev, simulateCrash: true }));
   };
+
+  const handleMainPanelClick = useCallback((): void => {
+    if (isDetailsOpen) {
+      closeDetails();
+    }
+  }, [closeDetails, isDetailsOpen]);
 
   const {
     results,
@@ -196,24 +301,42 @@ export default function App() {
         onSearch={handleSearch}
         onSearchInputChange={handleSearchInputChange}
       />
-      <ResultsSection
-        items={results}
-        hasSearched={hasSearched}
-        isLoading={isLoading}
-        errorMessage={errorMessage}
-        pagination={
-          showPagination
-            ? {
-                page: pageInUrl,
-                totalCount: listTotalCount,
-                hasNext: listHasNext,
-                hasPrev: listHasPrev,
-                onNext: handlePageNext,
-                onPrev: handlePagePrev,
-              }
-            : null
+      <div
+        className={
+          isDetailsOpen
+            ? 'app__split app__split--open'
+            : 'app__split'
         }
-      />
+      >
+        <div className="app__master">
+          <ResultsSection
+            items={results}
+            hasSearched={hasSearched}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+            pagination={
+              showPagination
+                ? {
+                    page: pageInUrl,
+                    totalCount: listTotalCount,
+                    hasNext: listHasNext,
+                    hasPrev: listHasPrev,
+                    onNext: handlePageNext,
+                    onPrev: handlePagePrev,
+                  }
+                : null
+            }
+            selectedItemId={selectedDetailsId}
+            onItemSelect={openDetails}
+            onMainPanelClick={handleMainPanelClick}
+          />
+        </div>
+        {isDetailsOpen && (
+          <aside className="app__detail" onClick={(event) => event.stopPropagation()}>
+            <Outlet />
+          </aside>
+        )}
+      </div>
       <div className="app__error-test">
         <button
           type="button"

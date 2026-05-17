@@ -1,11 +1,41 @@
+import type { KeyboardEvent, MouseEvent } from 'react';
 import type { CardProps } from '../types';
 import './Card.css';
 
-export function Card({ name, description }: CardProps) {
+export function Card({
+  id,
+  name,
+  description,
+  isSelected,
+  onSelect,
+}: CardProps) {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onSelect(id);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect(id);
+    }
+  };
+
   return (
-    <article className="result-card">
-      <h3 className="result-card__name">{name}</h3>
-      <p className="result-card__description">{description}</p>
-    </article>
+    <button
+      type="button"
+      className={
+        isSelected
+          ? 'result-card result-card--selected'
+          : 'result-card'
+      }
+      aria-pressed={isSelected}
+      aria-label={`View details for ${name || 'person'}`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      <span className="result-card__name">{name}</span>
+      <span className="result-card__description">{description}</span>
+    </button>
   );
 }

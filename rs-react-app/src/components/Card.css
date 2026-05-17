@@ -1,13 +1,33 @@
 .result-card {
+  display: block;
+  width: 100%;
   margin: 0;
   padding: 0.85rem 1rem;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.result-card:hover {
+  border-color: var(--color-accent);
+}
+
+.result-card--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.result-card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .result-card__name {
+  display: block;
   margin: 0 0 0.45rem;
   font-size: 1rem;
   font-weight: 600;
@@ -17,6 +37,7 @@
 }
 
 .result-card__description {
+  display: block;
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.45;

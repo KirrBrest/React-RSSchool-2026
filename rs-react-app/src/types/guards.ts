@@ -8,7 +8,7 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
 
-function isSwapiPerson(value: unknown): value is SwapiPerson {
+export function isSwapiPerson(value: unknown): value is SwapiPerson {
   if (!isRecord(value)) {
     return false;
   }

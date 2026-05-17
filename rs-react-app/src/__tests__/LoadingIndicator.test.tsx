@@ -2,6 +2,7 @@ import { render, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { ResultsSection } from '../components/ResultsSection';
+import { testDetailHandlers } from './testDetailHandlers.ts';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('LoadingIndicator', () => {
@@ -30,6 +31,7 @@ describe('LoadingIndicator', () => {
           isLoading
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       expect(
@@ -43,6 +45,7 @@ describe('LoadingIndicator', () => {
           isLoading={false}
           errorMessage={null}
           pagination={null}
+          {...testDetailHandlers}
         />
       );
       expect(

@@ -72,13 +72,21 @@ export type ResultsSectionProps = {
   isLoading: boolean;
   errorMessage: string | null;
   pagination: PeoplePaginationProps | null;
+  selectedItemId: string | null;
+  onItemSelect: (id: string) => void;
+  onMainPanelClick: () => void;
 };
 
 export type CardProps = {
+  id: string;
   name: string;
   description: string;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
 };
 
 export type CardListProps = {
   items: PersonResultItem[];
+  selectedItemId: string | null;
+  onItemSelect: (id: string) => void;
 };
