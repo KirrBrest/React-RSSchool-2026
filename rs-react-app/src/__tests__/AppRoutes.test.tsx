@@ -38,4 +38,20 @@ describe('AppRoutes', () => {
       screen.getByRole('link', { name: 'RS School React course' })
     ).toBeInTheDocument();
   });
+
+  it('renders the not-found page for unknown paths', () => {
+    render(
+      <MemoryRouter initialEntries={['/no-such-page']}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Page not found' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute(
+      'href',
+      '/'
+    );
+    expect(screen.queryByText('Mock app home route')).not.toBeInTheDocument();
+  });
 });
