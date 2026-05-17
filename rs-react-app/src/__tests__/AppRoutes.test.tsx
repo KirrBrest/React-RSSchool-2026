@@ -26,4 +26,16 @@ describe('AppRoutes', () => {
     );
     expect(screen.getByText('Mock app home route')).toBeInTheDocument();
   });
+
+  it('renders the about route at /about', () => {
+    render(
+      <MemoryRouter initialEntries={['/about']}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'RS School React course' })
+    ).toBeInTheDocument();
+  });
 });

@@ -62,6 +62,15 @@ describe('App', () => {
   });
 
   describe('integration', () => {
+    it('renders navigation link to About', () => {
+      const view = renderWithRouter(<App />);
+      const root = withinRenderedRoot(view);
+      expect(root.getByRole('link', { name: 'About' })).toHaveAttribute(
+        'href',
+        '/about'
+      );
+    });
+
     it('makes initial API call on component mount', async () => {
       const view = renderWithRouter(<App />);
       const root = withinRenderedRoot(view);

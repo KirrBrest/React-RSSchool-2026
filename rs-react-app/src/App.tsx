@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { AppNav } from './components/AppNav';
 import { SearchSection } from './components/SearchSection';
 import { ResultsSection } from './components/ResultsSection';
 import { SwapiPeopleApi } from './api/fetchSwapiPeople';
@@ -190,6 +191,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <AppNav />
       <SearchSection
         onSearch={handleSearch}
         onSearchInputChange={handleSearchInputChange}
