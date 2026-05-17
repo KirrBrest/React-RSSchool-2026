@@ -1,0 +1,3 @@
+[build]
+  command = "cd rs-react-app && npm ci && npm run build"
+  publish = "rs-react-app/dist"

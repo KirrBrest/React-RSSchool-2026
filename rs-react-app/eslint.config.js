@@ -7,33 +7,6 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
-const forbiddenReactHookImports = [
-  'useActionState',
-  'useCallback',
-  'useContext',
-  'useDebugValue',
-  'useDeferredValue',
-  'useEffect',
-  'useFormStatus',
-  'useId',
-  'useImperativeHandle',
-  'useInsertionEffect',
-  'useLayoutEffect',
-  'useMemo',
-  'useOptimistic',
-  'useReducer',
-  'useRef',
-  'useState',
-  'useSyncExternalStore',
-  'useTransition',
-];
-
-const reactNamespaceHookSelectors = forbiddenReactHookImports.map((name) => ({
-  selector: `MemberExpression[object.name="React"][property.name="${name}"]`,
-  message:
-    'Hooks are forbidden in this task; use class components and lifecycle methods.',
-}));
-
 export default defineConfig([
   globalIgnores(['dist', 'coverage']),
   {
@@ -71,12 +44,9 @@ export default defineConfig([
         {
           paths: [
             {
-              name: 'react',
-              importNames: forbiddenReactHookImports,
-              message:
-                'Hooks are forbidden in this task; use class components and lifecycle methods.',
+              name: 'redux',
+              message: 'External state managers are not allowed by task requirements.',
             },
-            { name: 'redux', message: 'External state managers are not allowed by task requirements.' },
             {
               name: 'react-redux',
               message: 'External state managers are not allowed by task requirements.',
@@ -85,10 +55,22 @@ export default defineConfig([
               name: '@reduxjs/toolkit',
               message: 'External state managers are not allowed by task requirements.',
             },
-            { name: 'zustand', message: 'External state managers are not allowed by task requirements.' },
-            { name: 'jotai', message: 'External state managers are not allowed by task requirements.' },
-            { name: 'recoil', message: 'External state managers are not allowed by task requirements.' },
-            { name: 'mobx', message: 'External state managers are not allowed by task requirements.' },
+            {
+              name: 'zustand',
+              message: 'External state managers are not allowed by task requirements.',
+            },
+            {
+              name: 'jotai',
+              message: 'External state managers are not allowed by task requirements.',
+            },
+            {
+              name: 'recoil',
+              message: 'External state managers are not allowed by task requirements.',
+            },
+            {
+              name: 'mobx',
+              message: 'External state managers are not allowed by task requirements.',
+            },
             {
               name: 'mobx-react',
               message: 'External state managers are not allowed by task requirements.',
@@ -146,7 +128,6 @@ export default defineConfig([
           ],
         },
       ],
-      'no-restricted-syntax': ['error', ...reactNamespaceHookSelectors],
     },
   },
 ]);

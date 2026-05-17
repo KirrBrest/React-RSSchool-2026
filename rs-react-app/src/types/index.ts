@@ -56,10 +56,6 @@ export type SearchSectionProps = {
   onSearch: (trimmedTerm: string) => void;
 };
 
-export type SearchSectionState = {
-  searchTerm: string;
-};
-
 export type PeoplePaginationProps = {
   page: number;
   totalCount: number;
