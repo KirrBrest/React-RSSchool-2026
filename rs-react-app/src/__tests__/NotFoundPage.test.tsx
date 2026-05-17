@@ -23,7 +23,7 @@ describe('NotFoundPage', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'The page you are looking for does not exist or has been moved.'
+        'Ooops! The page you are looking for does not exist or has been moved.'
       )
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute(
