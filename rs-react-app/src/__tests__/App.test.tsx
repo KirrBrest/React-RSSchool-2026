@@ -1,16 +1,16 @@
 import {
-  render,
   screen,
   fireEvent,
   waitFor,
   cleanup,
 } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
-import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
-import { renderWithRouter } from './renderWithRouter.tsx';
+import {
+  renderWithAppRoutes,
+  renderWithRouter,
+} from './renderWithRouter.tsx';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { HomeListSnapshot } from '../storage/homeListSnapshot';
@@ -44,23 +44,6 @@ function listResponse(options: {
   };
 }
 
-function renderAppAt(path: string) {
-  const router = createMemoryRouter(
-    [
-      {
-        path: '/',
-        element: <App />,
-        children: [{ path: 'details', element: <PersonDetailsPanel /> }],
-      },
-    ],
-    {
-      initialEntries: [path],
-    }
-  );
-  const view = render(<RouterProvider router={router} />);
-  return { view, router };
-}
-
 describe('App', () => {
   beforeEach(() => {
     cleanup();
@@ -78,7 +61,7 @@ describe('App', () => {
 
   describe('integration', () => {
     it('renders navigation link to About', () => {
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(root.getByRole('link', { name: 'About' })).toHaveAttribute(
         'href',
@@ -87,7 +70,7 @@ describe('App', () => {
     });
 
     it('makes initial API call on component mount', async () => {
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledWith('', 1);
@@ -97,7 +80,7 @@ describe('App', () => {
 
     it('handles search term from localStorage on initial load', async () => {
       localStorage.setItem(SearchTermStorage.storageKey, 'stored-query');
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(
         root.getByLabelText('Search query')
@@ -115,7 +98,7 @@ describe('App', () => {
         }
       );
       fetchPeople.mockReturnValue(pending);
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       expect(root.getByText('Loading data…')).toBeInTheDocument();
       resolveData(emptyPeopleList());
@@ -127,7 +110,7 @@ describe('App', () => {
 
   describe('API integration', () => {
     it('calls API with correct parameters when the user searches', async () => {
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -154,7 +137,7 @@ describe('App', () => {
 
     it('handles API error responses', async () => {
       fetchPeople.mockRejectedValue(new Error('SWAPI_HTTP_500'));
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       const expected = AppFetchErrorMessage.fromUnknown(
         new Error('SWAPI_HTTP_500')
@@ -168,7 +151,7 @@ describe('App', () => {
   describe('state management', () => {
     it('updates visible results when the API returns people', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       await waitFor(() => {
         expect(
           withinRenderedRoot(view).getByText(
@@ -179,7 +162,7 @@ describe('App', () => {
     });
 
     it('manages search term state through search and storage', async () => {
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -198,7 +181,7 @@ describe('App', () => {
   describe('pagination', () => {
     it('skips API call when search term and page are unchanged', async () => {
       fetchPeople.mockResolvedValue(emptyPeopleList());
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -225,7 +208,7 @@ describe('App', () => {
           listResponse({ count: 20, hasNext: true, hasPrev: false })
         );
 
-      const view = renderWithRouter();
+      const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -248,7 +231,7 @@ describe('App', () => {
     });
 
     it('loads the page number from the URL on first visit', async () => {
-      renderAppAt('/?page=2');
+      renderWithRouter('/?page=2');
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledWith('', 2);
       });
@@ -262,7 +245,7 @@ describe('App', () => {
         .mockResolvedValueOnce(
           listResponse({ count: 20, hasNext: false, hasPrev: true })
         );
-      const { view, router } = renderAppAt('/?page=1');
+      const { view, router } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -280,7 +263,7 @@ describe('App', () => {
     });
 
     it('resets the page query to 1 when the search input changes', async () => {
-      const { view, router } = renderAppAt('/?page=2');
+      const { view, router } = renderWithRouter('/?page=2');
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -306,7 +289,7 @@ describe('App', () => {
         .mockResolvedValueOnce(
           listResponse({ count: 15, hasNext: false, hasPrev: true })
         );
-      const { view, router } = renderAppAt('/?page=1');
+      const { view, router } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -350,7 +333,7 @@ describe('App', () => {
         }
       );
       fetchPeople.mockReturnValue(pending);
-      const { view } = renderAppAt('/?page=1');
+      const { view } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
 
       expect(
@@ -371,7 +354,7 @@ describe('App', () => {
 
   describe('master-detail', () => {
     it('does not show the details panel on initial load', async () => {
-      const { view } = renderAppAt('/?page=1');
+      const { view } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
@@ -383,7 +366,7 @@ describe('App', () => {
 
     it('opens details in the outlet when a result card is clicked', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const { view, router } = renderAppAt('/?page=1');
+      const { view, router } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
@@ -407,7 +390,7 @@ describe('App', () => {
 
     it('closes the details panel when Close is clicked', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const { view, router } = renderAppAt('/details?page=1&details=1');
+      const { view, router } = renderWithRouter('/details?page=1&details=1');
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
@@ -426,12 +409,12 @@ describe('App', () => {
 
     it('restores details after remount when returning from another route', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const first = renderAppAt('/details?page=1&details=1');
+      const first = renderWithRouter('/details?page=1&details=1');
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledTimes(1);
       });
       first.view.unmount();
-      const second = renderAppAt('/details?page=1&details=1');
+      const second = renderWithRouter('/details?page=1&details=1');
       await waitFor(() => {
         expect(second.router.state.location.pathname).toBe('/details');
         expect(second.router.state.location.search).toContain('details=1');
@@ -444,7 +427,7 @@ describe('App', () => {
 
     it('keeps details in the URL after the list fetch finishes', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const { router } = renderAppAt('/details?page=1&details=1');
+      const { router } = renderWithRouter('/details?page=1&details=1');
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalled();
       });
@@ -456,7 +439,7 @@ describe('App', () => {
 
     it('syncs details from a direct visit to /?page=1&details=1', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const { router } = renderAppAt('/?page=1&details=1');
+      const { router } = renderWithRouter('/?page=1&details=1');
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
         expect(router.state.location.search).toContain('details=1');
@@ -467,21 +450,12 @@ describe('App', () => {
   describe('error button', () => {
     it('throws when simulate error is clicked and triggers error boundary fallback UI', async () => {
       const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const router = createMemoryRouter(
-        [
-          {
-            path: '/',
-            element: (
-              <AppErrorBoundary>
-                <App />
-              </AppErrorBoundary>
-            ),
-            children: [{ path: 'details', element: <PersonDetailsPanel /> }],
-          },
-        ],
-        { initialEntries: ['/?page=1'] }
+      renderWithAppRoutes(
+        '/?page=1',
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
       );
-      render(<RouterProvider router={router} />);
       await waitFor(() => {
         expect(screen.getByText('No matching people.')).toBeInTheDocument();
       });

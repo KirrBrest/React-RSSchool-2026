@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
-import { buildSearchParamsString } from '../utils/buildSearchParamsString';
+import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
 import type { DetailsState, PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
@@ -98,12 +98,7 @@ export function PersonDetailsPanel() {
   const personId = parseDetailsParam(searchParams.get('details'));
 
   const closeDetails = useCallback((): void => {
-    const next = new URLSearchParams(searchParams);
-    next.delete('details');
-    navigate(
-      { pathname: '/', search: buildSearchParamsString(next) },
-      { replace: true }
-    );
+    navigate(closeDetailsLocation(searchParams), { replace: true });
   }, [navigate, searchParams]);
 
   return (
