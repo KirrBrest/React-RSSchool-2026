@@ -1,25 +1,34 @@
-import { Component } from 'react';
 import { CardList } from './CardList';
 import { LoadingIndicator } from './LoadingIndicator';
 import { PeoplePagination } from './PeoplePagination';
 import type { ResultsSectionProps } from '../types';
 import './ResultsSection.css';
 
-export class ResultsSection extends Component<ResultsSectionProps> {
-  render() {
-    const { items, hasSearched, isLoading, errorMessage, pagination } =
-      this.props;
-    const hasItems = items.length > 0;
-    const showError = Boolean(errorMessage);
+export function ResultsSection({
+  items,
+  hasSearched,
+  isLoading,
+  errorMessage,
+  pagination,
+  selectedItemId,
+  onItemSelect,
+  onMainPanelClick,
+}: ResultsSectionProps) {
+  const hasItems = items.length > 0;
+  const showError = Boolean(errorMessage);
 
-    return (
-      <section
-        className="results-section"
-        aria-label="Results"
-        aria-busy={isLoading}
-      >
-        <div className="results-section__inner">
-          <h2 className="results-section__title">Results</h2>
+  return (
+    <section
+      className="results-section"
+      aria-label="Results"
+      aria-busy={isLoading}
+    >
+      <div className="results-section__inner">
+        <h2 className="results-section__title">Results</h2>
+        <div
+          className="results-section__content"
+          onClick={onMainPanelClick}
+        >
           {isLoading && (
             <div className="results-section__loading">
               <LoadingIndicator />
@@ -39,19 +48,27 @@ export class ResultsSection extends Component<ResultsSectionProps> {
           {!isLoading && hasSearched && !showError && !hasItems && (
             <p className="results-section__placeholder">No matching people.</p>
           )}
-          {!isLoading && hasItems && <CardList items={items} />}
-          {!isLoading && hasSearched && !showError && pagination && (
-            <PeoplePagination
-              page={pagination.page}
-              totalCount={pagination.totalCount}
-              hasNext={pagination.hasNext}
-              hasPrev={pagination.hasPrev}
-              onNext={pagination.onNext}
-              onPrev={pagination.onPrev}
+          {!isLoading && hasItems && (
+            <CardList
+              items={items}
+              selectedItemId={selectedItemId}
+              onItemSelect={onItemSelect}
             />
           )}
+          {!isLoading && hasSearched && !showError && pagination && (
+            <div onClick={(event) => event.stopPropagation()}>
+              <PeoplePagination
+                page={pagination.page}
+                totalCount={pagination.totalCount}
+                hasNext={pagination.hasNext}
+                hasPrev={pagination.hasPrev}
+                onNext={pagination.onNext}
+                onPrev={pagination.onPrev}
+              />
+            </div>
+          )}
         </div>
-      </section>
-    );
-  }
+      </div>
+    </section>
+  );
 }

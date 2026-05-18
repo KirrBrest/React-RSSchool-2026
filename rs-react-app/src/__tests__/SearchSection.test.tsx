@@ -20,7 +20,10 @@ describe('SearchSection', () => {
   describe('rendering', () => {
     it('renders search input and search button', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const region = withinRenderedRoot(view);
       expect(region.getByLabelText('Search query')).toBeInTheDocument();
       expect(region.getByRole('button', { name: 'Search' })).toBeInTheDocument();
@@ -29,7 +32,10 @@ describe('SearchSection', () => {
     it('displays previously saved search term from localStorage on mount', () => {
       localStorage.setItem(storageKey, 'stored-value');
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       expect(withinRenderedRoot(view).getByLabelText('Search query')).toHaveValue(
         'stored-value'
       );
@@ -37,7 +43,10 @@ describe('SearchSection', () => {
 
     it('shows empty input when no saved term exists', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       expect(withinRenderedRoot(view).getByLabelText('Search query')).toHaveValue(
         ''
       );
@@ -47,7 +56,10 @@ describe('SearchSection', () => {
   describe('user interaction', () => {
     it('updates input value when user types', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const input = withinRenderedRoot(view).getByLabelText('Search query');
       fireEvent.change(input, { target: { value: 'typed value' } });
       expect(input).toHaveValue('typed value');
@@ -55,7 +67,10 @@ describe('SearchSection', () => {
 
     it('saves search term to localStorage when search button is clicked', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const region = withinRenderedRoot(view);
       fireEvent.change(region.getByLabelText('Search query'), {
         target: { value: 'persisted' },
@@ -67,7 +82,10 @@ describe('SearchSection', () => {
 
     it('trims whitespace from search input before saving', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const region = withinRenderedRoot(view);
       fireEvent.change(region.getByLabelText('Search query'), {
         target: { value: '  trimmed term  ' },
@@ -79,7 +97,10 @@ describe('SearchSection', () => {
 
     it('triggers search callback with correct parameters', () => {
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const region = withinRenderedRoot(view);
       fireEvent.change(region.getByLabelText('Search query'), {
         target: { value: 'skywalker' },
@@ -94,7 +115,10 @@ describe('SearchSection', () => {
     it('retrieves saved search term on component mount', () => {
       localStorage.setItem(storageKey, 'from-storage');
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       expect(withinRenderedRoot(view).getByLabelText('Search query')).toHaveValue(
         'from-storage'
       );
@@ -103,7 +127,10 @@ describe('SearchSection', () => {
     it('overwrites existing localStorage value when new search is performed', () => {
       localStorage.setItem(storageKey, 'first');
       const onSearch = vi.fn();
-      const view = render(<SearchSection onSearch={onSearch} />);
+      const onSearchInputChange = vi.fn();
+      const view = render(
+        <SearchSection onSearch={onSearch} onSearchInputChange={onSearchInputChange} />
+      );
       const region = withinRenderedRoot(view);
       expect(region.getByLabelText('Search query')).toHaveValue('first');
       fireEvent.change(region.getByLabelText('Search query'), {

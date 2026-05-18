@@ -54,6 +54,48 @@ describe('SwapiPeopleApi.fetchPeople', () => {
     expect(result).toEqual(payload);
   });
 
+  it('throws when response JSON does not match SWAPI list shape', async () => {
+    const response = new Response(JSON.stringify({ invalid: true }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(SwapiPeopleApi.fetchPeople('', 1)).rejects.toEqual(
+      new Error('SWAPI_INVALID_RESPONSE')
+    );
+  });
+
+  it('fetches a single person by id', async () => {
+    const person = {
+      name: 'Luke Skywalker',
+      height: '172',
+      mass: '77',
+      hair_color: 'blond',
+      skin_color: 'fair',
+      eye_color: 'blue',
+      birth_year: '19BBY',
+      gender: 'male',
+      url: 'https://swapi.py4e.com/api/people/1/',
+    };
+    const response = new Response(JSON.stringify(person), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await SwapiPeopleApi.fetchPerson('1');
+
+    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/1/');
+    expect(result).toEqual(person);
+  });
+
   it('throws a descriptive error when HTTP status is not ok', async () => {
     const badResponse = new Response('', {
       status: 503,

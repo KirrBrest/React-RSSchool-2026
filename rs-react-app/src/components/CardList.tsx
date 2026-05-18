@@ -1,19 +1,29 @@
-import { Component } from 'react';
 import { Card } from './Card';
+import { extractPersonId } from '../utils/extractPersonId';
 import type { CardListProps } from '../types';
 import './CardList.css';
 
-export class CardList extends Component<CardListProps> {
-  render() {
-    const { items } = this.props;
-    return (
-      <ul className="card-list" aria-label="Search results">
-        {items.map((item) => (
-          <li key={item.id} className="card-list__item">
-            <Card name={item.name} description={item.description} />
-          </li>
-        ))}
-      </ul>
-    );
-  }
+export function CardList({
+  items,
+  selectedItemId,
+  onItemSelect,
+}: CardListProps) {
+  return (
+    <ul className="card-list" aria-label="Search results">
+      {items.map((item) => (
+        <li key={item.id} className="card-list__item">
+          <Card
+            id={item.id}
+            name={item.name}
+            description={item.description}
+            isSelected={
+              selectedItemId !== null &&
+              extractPersonId(item.id) === selectedItemId
+            }
+            onSelect={onItemSelect}
+          />
+        </li>
+      ))}
+    </ul>
+  );
 }

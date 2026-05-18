@@ -9,6 +9,56 @@
   gap: 0;
 }
 
+.app__split {
+  --app-workspace-min-height: clamp(22rem, 42vh, calc(100vh - 13rem));
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: var(--app-workspace-min-height);
+}
+
+.app__split--open {
+  max-width: none;
+}
+
+@media (min-width: 768px) {
+  .app:has(.app__split--open) {
+    max-width: 1100px;
+  }
+
+  .app__split--open {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.app__master {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: var(--app-workspace-min-height);
+}
+
+.app__split--open .app__master {
+  flex: 1 1 50%;
+}
+
+.app__detail {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: var(--app-workspace-min-height);
+}
+
+@media (min-width: 768px) {
+  .app__split--open .app__detail {
+    flex: 1 1 50%;
+  }
+}
+
 .app__error-test {
   margin-top: auto;
   padding-top: 1rem;

@@ -1,39 +1,70 @@
-import type { SwapiPeopleListResponse } from '../types';
+import {
+  QUERY_PARAMS,
+  SWAPI_API_BASE,
+  SWAPI_DEV_PROXY_BASE,
+  SWAPI_LOCAL_DEV_HOSTNAMES,
+  SWAPI_PAGE_SIZE,
+} from '../constants';
+import type { SwapiPeopleListResponse, SwapiPerson } from '../types';
+import { isSwapiPeopleListResponse, isSwapiPerson } from '../types/guards';
 
-export class SwapiPeopleApi {
-  static readonly pageSize = 10;
-
-  private static apiBase(): string {
-    if (typeof window === 'undefined') {
-      return 'https://swapi.py4e.com/api';
-    }
-    const { hostname } = window.location;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return '/swapi';
-    }
-    return 'https://swapi.py4e.com/api';
+function apiBase(): string {
+  if (typeof window === 'undefined') {
+    return SWAPI_API_BASE;
   }
-
-  static async fetchPeople(
-    rawTerm: string,
-    page: number
-  ): Promise<SwapiPeopleListResponse> {
-    const term = rawTerm.trim();
-    const safePage = page < 1 ? 1 : page;
-    const peoplePath = `${SwapiPeopleApi.apiBase()}/people/`;
-    const params = new URLSearchParams();
-    if (term !== '') {
-      params.set('search', term);
-    }
-    if (safePage > 1) {
-      params.set('page', String(safePage));
-    }
-    const qs = params.toString();
-    const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`SWAPI_HTTP_${res.status}`);
-    }
-    return (await res.json()) as SwapiPeopleListResponse;
+  const { hostname } = window.location;
+  if (SWAPI_LOCAL_DEV_HOSTNAMES.includes(hostname)) {
+    return SWAPI_DEV_PROXY_BASE;
   }
+  return SWAPI_API_BASE;
 }
+
+async function fetchPeople(
+  rawTerm: string,
+  page: number
+): Promise<SwapiPeopleListResponse> {
+  const term = rawTerm.trim();
+  const safePage = page < 1 ? 1 : page;
+  const peoplePath = `${apiBase()}/people/`;
+  const params = new URLSearchParams();
+  if (term !== '') {
+    params.set('search', term);
+  }
+  if (safePage > 1) {
+    params.set(QUERY_PARAMS.page, String(safePage));
+  }
+  const qs = params.toString();
+  const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`SWAPI_HTTP_${res.status}`);
+  }
+  const payload: unknown = await res.json();
+  if (!isSwapiPeopleListResponse(payload)) {
+    throw new Error('SWAPI_INVALID_RESPONSE');
+  }
+  return payload;
+}
+
+async function fetchPerson(personId: string): Promise<SwapiPerson> {
+  const safeId = personId.trim();
+  if (safeId === '') {
+    throw new Error('SWAPI_INVALID_PERSON_ID');
+  }
+  const url = `${apiBase()}/people/${safeId}/`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`SWAPI_HTTP_${res.status}`);
+  }
+  const payload: unknown = await res.json();
+  if (!isSwapiPerson(payload)) {
+    throw new Error('SWAPI_INVALID_RESPONSE');
+  }
+  return payload;
+}
+
+export const SwapiPeopleApi = {
+  pageSize: SWAPI_PAGE_SIZE,
+  fetchPeople,
+  fetchPerson,
+};

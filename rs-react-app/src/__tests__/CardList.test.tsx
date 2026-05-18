@@ -1,5 +1,5 @@
 import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CardList } from '../components/CardList';
 import type { PersonResultItem } from '../types';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
@@ -20,9 +20,15 @@ describe('CardList', () => {
         { id: '2', name: 'B', description: 'Db' },
         { id: '3', name: 'C', description: 'Dc' },
       ];
-      const view = render(<CardList items={items} />);
+      const view = render(
+        <CardList
+          items={items}
+          selectedItemId={null}
+          onItemSelect={vi.fn()}
+        />
+      );
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('article')).toHaveLength(3);
+      expect(region.getAllByRole('button')).toHaveLength(3);
     });
   });
 
@@ -31,10 +37,16 @@ describe('CardList', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: 'Leia Organa', description: 'Princess of Alderaan' },
       ];
-      const view = render(<CardList items={items} />);
+      const view = render(
+        <CardList
+          items={items}
+          selectedItemId={null}
+          onItemSelect={vi.fn()}
+        />
+      );
       const region = withinRenderedRoot(view);
       expect(
-        region.getByRole('heading', { name: 'Leia Organa' })
+        region.getByRole('button', { name: 'View details for Leia Organa' })
       ).toBeInTheDocument();
       expect(
         region.getByText('Princess of Alderaan')
@@ -45,13 +57,18 @@ describe('CardList', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: '', description: '' },
       ];
-      const view = render(<CardList items={items} />);
+      const view = render(
+        <CardList
+          items={items}
+          selectedItemId={null}
+          onItemSelect={vi.fn()}
+        />
+      );
       const region = withinRenderedRoot(view);
       expect(
         region.getByRole('list', { name: 'Search results' })
       ).toBeInTheDocument();
-      expect(region.getAllByRole('article')).toHaveLength(1);
-      expect(region.getByRole('heading', { level: 3 })).toHaveTextContent('');
+      expect(region.getAllByRole('button')).toHaveLength(1);
     });
   });
 });
