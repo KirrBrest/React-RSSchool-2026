@@ -12,6 +12,8 @@ import {
   renderWithRouter,
   resetStoreState,
 } from './renderWithRouter.tsx';
+import { store } from '../store';
+import { selectSelectedItems } from '../store/selectedItemsSlice';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { HomeListSnapshot } from '../storage/homeListSnapshot';
@@ -473,6 +475,124 @@ describe('App', () => {
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
         expect(router.state.location.search).toContain('details=1');
+      });
+    });
+  });
+
+  describe('selected items', () => {
+    it('selects an item via checkbox without opening details', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
+      });
+      expect(router.state.location.pathname).toBe('/');
+      expect(
+        root.queryByRole('region', { name: 'Person details' })
+      ).not.toBeInTheDocument();
+      expect(selectSelectedItems(store.getState())).toHaveLength(1);
+    });
+
+    it('opens details without changing checkbox selection', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+      });
+      expect(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      ).not.toBeChecked();
+      expect(selectSelectedItems(store.getState())).toHaveLength(0);
+    });
+
+    it('removes an item from state when unselected', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).not.toBeChecked();
+      });
+      expect(selectSelectedItems(store.getState())).toHaveLength(0);
+    });
+
+    it('keeps checkbox selections after page navigation', async () => {
+      fetchPeople
+        .mockResolvedValueOnce({
+          ...onePersonSwapiList(),
+          count: 20,
+          next: 'next',
+          previous: null,
+        })
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        )
+        .mockResolvedValueOnce({
+          ...onePersonSwapiList(),
+          count: 20,
+          next: 'next',
+          previous: null,
+        });
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(selectSelectedItems(store.getState())).toHaveLength(1);
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      await waitFor(() => {
+        expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
+      });
+      expect(selectSelectedItems(store.getState())).toHaveLength(1);
+      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
       });
     });
   });

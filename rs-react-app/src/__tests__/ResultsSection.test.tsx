@@ -1,14 +1,28 @@
 import { render, cleanup } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { ReduxProvider } from '../store/ReduxProvider';
+import { resetStoreState } from './renderWithRouter.tsx';
 import { testDetailHandlers } from './testDetailHandlers.ts';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
+
+function renderResultsSection(
+  props: ComponentProps<typeof ResultsSection>
+) {
+  return render(
+    <ReduxProvider>
+      <ResultsSection {...props} />
+    </ReduxProvider>
+  );
+}
 
 describe('ResultsSection', () => {
   beforeEach(() => {
     cleanup();
+    resetStoreState();
   });
 
   afterEach(() => {
@@ -21,31 +35,27 @@ describe('ResultsSection', () => {
         { id: '1', name: 'One', description: 'D1' },
         { id: '2', name: 'Two', description: 'D2' },
       ];
-      const view = render(
-        <ResultsSection
-          items={items}
-          hasSearched
-          isLoading={false}
-          errorMessage={null}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getAllByRole('button')).toHaveLength(2);
     });
 
     it('displays no results message when data array is empty', () => {
-      const view = render(
-        <ResultsSection
-          items={[]}
-          hasSearched
-          isLoading={false}
-          errorMessage={null}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(
         region.getByText('No matching people.')
@@ -53,16 +63,14 @@ describe('ResultsSection', () => {
     });
 
     it('shows loading state while fetching data', () => {
-      const view = render(
-        <ResultsSection
-          items={[]}
-          hasSearched={false}
-          isLoading
-          errorMessage={null}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: false,
+        isLoading: true,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getByText('Loading data…')).toBeInTheDocument();
       expect(
@@ -76,16 +84,14 @@ describe('ResultsSection', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: 'Han Solo', description: 'Smuggler' },
       ];
-      const view = render(
-        <ResultsSection
-          items={items}
-          hasSearched
-          isLoading={false}
-          errorMessage={null}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(
         region.getByRole('button', { name: 'View details for Han Solo' })
@@ -98,16 +104,14 @@ describe('ResultsSection', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: '', description: '' },
       ];
-      const view = render(
-        <ResultsSection
-          items={items}
-          hasSearched
-          isLoading={false}
-          errorMessage={null}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getAllByRole('button')).toHaveLength(1);
     });
@@ -116,16 +120,14 @@ describe('ResultsSection', () => {
   describe('error handling', () => {
     it('displays error message when API call fails', () => {
       const message = AppFetchErrorMessage.fromUnknown(new Error('SWAPI_HTTP_404'));
-      const view = render(
-        <ResultsSection
-          items={[]}
-          hasSearched
-          isLoading={false}
-          errorMessage={message}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: message,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getByRole('alert')).toHaveTextContent(message);
     });
@@ -134,16 +136,14 @@ describe('ResultsSection', () => {
       const message = AppFetchErrorMessage.fromUnknown(
         new Error('SWAPI_HTTP_422')
       );
-      const view = render(
-        <ResultsSection
-          items={[]}
-          hasSearched
-          isLoading={false}
-          errorMessage={message}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: message,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getByRole('alert')).toHaveTextContent(
         'The server could not fulfill this request (HTTP 422). Try different keywords or try again later.'
@@ -154,16 +154,14 @@ describe('ResultsSection', () => {
       const message = AppFetchErrorMessage.fromUnknown(
         new Error('SWAPI_HTTP_503')
       );
-      const view = render(
-        <ResultsSection
-          items={[]}
-          hasSearched
-          isLoading={false}
-          errorMessage={message}
-          pagination={null}
-          {...testDetailHandlers}
-        />
-      );
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        errorMessage: message,
+        pagination: null,
+        ...testDetailHandlers,
+      });
       const region = withinRenderedRoot(view);
       expect(region.getByRole('alert')).toHaveTextContent(
         'The service is temporarily unavailable (HTTP 503). Please try again in a few minutes.'

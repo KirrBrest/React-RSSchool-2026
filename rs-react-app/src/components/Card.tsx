@@ -1,34 +1,66 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
 import type { CardProps } from '../types';
 import './Card.css';
 
-export function Card({ id, name, isSelected, onSelect }: CardProps) {
-  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
+export function Card({
+  id,
+  name,
+  isDetailsSelected,
+  isChecked,
+  onToggleCheck,
+  onOpenDetails,
+}: CardProps) {
+  const personLabel = name || 'person';
+
+  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>): void => {
     event.stopPropagation();
-    onSelect(id);
+    onToggleCheck();
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
+  const handleOpenDetails = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    onOpenDetails(id);
+  };
+
+  const handleOpenDetailsKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>
+  ): void => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      onSelect(id);
+      onOpenDetails(id);
     }
   };
 
+  const classNames = ['result-card'];
+  if (isDetailsSelected) {
+    classNames.push('result-card--selected');
+  }
+  if (isChecked) {
+    classNames.push('result-card--checked');
+  }
+
   return (
-    <button
-      type="button"
-      className={
-        isSelected
-          ? 'result-card result-card--selected'
-          : 'result-card'
-      }
-      aria-pressed={isSelected}
-      aria-label={`View details for ${name || 'person'}`}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
+    <div
+      className={classNames.join(' ')}
+      onClick={(event) => event.stopPropagation()}
     >
-      <span className="result-card__name">{name}</span>
-    </button>
+      <input
+        type="checkbox"
+        className="result-card__checkbox"
+        checked={isChecked}
+        onChange={handleCheckboxChange}
+        aria-label={`Select ${personLabel}`}
+      />
+      <button
+        type="button"
+        className="result-card__open"
+        aria-pressed={isDetailsSelected}
+        aria-label={`View details for ${personLabel}`}
+        onClick={handleOpenDetails}
+        onKeyDown={handleOpenDetailsKeyDown}
+      >
+        <span className="result-card__name">{name}</span>
+      </button>
+    </div>
   );
 }

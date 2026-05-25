@@ -2,11 +2,29 @@ import { render, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CardList } from '../components/CardList';
 import type { PersonResultItem } from '../types';
+import { ReduxProvider } from '../store/ReduxProvider';
+import { resetStoreState } from './renderWithRouter.tsx';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
+
+function renderCardList(
+  items: PersonResultItem[],
+  selectedItemId: string | null = null
+) {
+  return render(
+    <ReduxProvider>
+      <CardList
+        items={items}
+        selectedItemId={selectedItemId}
+        onItemSelect={vi.fn()}
+      />
+    </ReduxProvider>
+  );
+}
 
 describe('CardList', () => {
   beforeEach(() => {
     cleanup();
+    resetStoreState();
   });
 
   afterEach(() => {
@@ -20,14 +38,9 @@ describe('CardList', () => {
         { id: '2', name: 'B', description: 'Db' },
         { id: '3', name: 'C', description: 'Dc' },
       ];
-      const view = render(
-        <CardList
-          items={items}
-          selectedItemId={null}
-          onItemSelect={vi.fn()}
-        />
-      );
+      const view = renderCardList(items);
       const region = withinRenderedRoot(view);
+      expect(region.getAllByRole('checkbox')).toHaveLength(3);
       expect(region.getAllByRole('button')).toHaveLength(3);
     });
   });
@@ -37,13 +50,7 @@ describe('CardList', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: 'Leia Organa', description: 'Princess of Alderaan' },
       ];
-      const view = render(
-        <CardList
-          items={items}
-          selectedItemId={null}
-          onItemSelect={vi.fn()}
-        />
-      );
+      const view = renderCardList(items);
       const region = withinRenderedRoot(view);
       expect(
         region.getByRole('button', { name: 'View details for Leia Organa' })
@@ -58,17 +65,12 @@ describe('CardList', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: '', description: '' },
       ];
-      const view = render(
-        <CardList
-          items={items}
-          selectedItemId={null}
-          onItemSelect={vi.fn()}
-        />
-      );
+      const view = renderCardList(items);
       const region = withinRenderedRoot(view);
       expect(
         region.getByRole('list', { name: 'Search results' })
       ).toBeInTheDocument();
+      expect(region.getAllByRole('checkbox')).toHaveLength(1);
       expect(region.getAllByRole('button')).toHaveLength(1);
     });
   });
