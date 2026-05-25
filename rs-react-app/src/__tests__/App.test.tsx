@@ -597,6 +597,81 @@ describe('App', () => {
     });
   });
 
+  describe('selected items flyout', () => {
+    it('shows the flyout with count after selecting an item', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toHaveTextContent('1 item selected');
+      });
+    });
+
+    it('hides the flyout after Unselect all', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Unselect all' }));
+      await waitFor(() => {
+        expect(
+          root.queryByRole('region', { name: 'Selected items' })
+        ).not.toBeInTheDocument();
+      });
+      expect(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      ).not.toBeChecked();
+    });
+
+    it('keeps the flyout visible after navigating to About', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toHaveTextContent('1 item selected');
+      });
+      fireEvent.click(root.getByRole('link', { name: 'About' }));
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/about');
+      });
+      expect(
+        root.getByRole('region', { name: 'Selected items' })
+      ).toHaveTextContent('1 item selected');
+    });
+  });
+
   describe('error button', () => {
     it('throws when simulate error is clicked and triggers error boundary fallback UI', async () => {
       const err = vi.spyOn(console, 'error').mockImplementation(() => {});

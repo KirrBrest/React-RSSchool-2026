@@ -7,6 +7,7 @@ import {
 import type { ReactNode } from 'react';
 import App from '../App';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
+import { AppRoutes } from '../routes/AppRoutes';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { store } from '../store';
 import { clearSelected } from '../store/selectedItemsSlice';
@@ -22,7 +23,10 @@ export function resetStoreState(): void {
 }
 
 export function createAppMemoryRouter(initialEntries: string[]) {
-  return createMemoryRouter([appHomeRoute], { initialEntries });
+  return createMemoryRouter(
+    [{ path: '*', element: <AppRoutes /> }],
+    { initialEntries }
+  );
 }
 
 function renderWithProviders(

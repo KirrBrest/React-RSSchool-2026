@@ -16,3 +16,17 @@ export const AUTHOR_BIO =
   'I run a construction company and am the father of a large family, where patience and multitasking skills are cultivated—ideal qualities for development. In this project, I tried to prove that I can work equally confidently with both building architecture and application architecture.';
 export const AUTHOR_GITHUB = 'https://github.com/KirrBrest';
 export const AUTHOR_EMAIL = 'Lukashchuk.Kiryl@gmail.com';
+
+export const SELECTED_ITEMS_CSV = {
+  header: 'ID,Name,Description',
+  filename: 'selected-people.csv',
+  mimeType: 'text/csv;charset=utf-8;',
+};
+
+export const SELECTED_ITEMS_FLYOUT = {
+  regionLabel: 'Selected items',
+  unselectAllLabel: 'Unselect all',
+  downloadLabel: 'Download',
+  singleItemCountLabel: '1 item selected',
+  pluralCountSuffix: 'items selected',
+};
