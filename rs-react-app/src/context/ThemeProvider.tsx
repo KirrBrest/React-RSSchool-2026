@@ -26,7 +26,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const setTheme = useCallback((nextTheme: ThemeMode): void => {
     setThemeState(nextTheme);
     ThemeStorage.write(nextTheme);
-    applyThemeToDocument(nextTheme);
   }, []);
 
   useEffect(() => {

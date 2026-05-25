@@ -1,6 +1,6 @@
 import type { PersonResultItem } from './person';
 
-export type HomeListSnapshot = {
+export type HomeListSnapshotData = {
   term: string;
   page: number;
   results: PersonResultItem[];

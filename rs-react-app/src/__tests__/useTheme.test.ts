@@ -29,4 +29,10 @@ describe('useTheme', () => {
     expect(document.documentElement.dataset.theme).toBe(THEME_MODES.light);
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe(THEME_MODES.light);
   });
+
+  it('throws when used outside ThemeProvider', () => {
+    expect(() => renderHook(() => useTheme())).toThrow(
+      'useTheme must be used within ThemeProvider'
+    );
+  });
 });

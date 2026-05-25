@@ -99,5 +99,69 @@ describe('Card', () => {
       );
       expect(onToggleCheck).not.toHaveBeenCalled();
     });
+
+    it('opens details when Enter or Space is pressed on the card button', () => {
+      const onOpenDetails = vi.fn();
+      const view = render(
+        <Card
+          id="1"
+          name="Luke Skywalker"
+          isDetailsSelected={false}
+          isChecked={false}
+          onToggleCheck={vi.fn()}
+          onOpenDetails={onOpenDetails}
+        />
+      );
+      const region = withinRenderedRoot(view);
+      const button = region.getByRole('button', {
+        name: 'View details for Luke Skywalker',
+      });
+
+      fireEvent.keyDown(button, { key: 'Enter' });
+      fireEvent.keyDown(button, { key: ' ' });
+
+      expect(onOpenDetails).toHaveBeenCalledTimes(2);
+      expect(onOpenDetails).toHaveBeenCalledWith('1');
+    });
+
+    it('ignores unrelated keys on the card button', () => {
+      const onOpenDetails = vi.fn();
+      const view = render(
+        <Card
+          id="1"
+          name="Luke Skywalker"
+          isDetailsSelected={false}
+          isChecked={false}
+          onToggleCheck={vi.fn()}
+          onOpenDetails={onOpenDetails}
+        />
+      );
+      const region = withinRenderedRoot(view);
+      fireEvent.keyDown(
+        region.getByRole('button', { name: 'View details for Luke Skywalker' }),
+        { key: 'Tab' }
+      );
+      expect(onOpenDetails).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('state classes', () => {
+    it('applies selected and checked modifiers', () => {
+      const view = render(
+        <Card
+          id="1"
+          name="Luke Skywalker"
+          isDetailsSelected={true}
+          isChecked={true}
+          onToggleCheck={vi.fn()}
+          onOpenDetails={vi.fn()}
+        />
+      );
+      const region = withinRenderedRoot(view);
+      expect(region.getByRole('checkbox').closest('.result-card')).toHaveClass(
+        'result-card--selected',
+        'result-card--checked'
+      );
+    });
   });
 });

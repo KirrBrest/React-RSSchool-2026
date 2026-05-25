@@ -89,4 +89,17 @@ describe('SelectedItemsCsvDownload', () => {
     expect(createObjectURL).not.toHaveBeenCalled();
     createObjectURL.mockRestore();
   });
+
+  it('builds relative details URLs when window is unavailable', () => {
+    const originalWindow = globalThis.window;
+    Reflect.deleteProperty(globalThis, 'window');
+
+    try {
+      const csv = SelectedItemsCsvDownload.buildCsv([luke]);
+      expect(csv).toContain('/details?details=1&page=1');
+      expect(csv).not.toMatch(/^https?:\/\//m);
+    } finally {
+      globalThis.window = originalWindow;
+    }
+  });
 });

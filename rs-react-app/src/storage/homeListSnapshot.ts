@@ -1,4 +1,4 @@
-import type { HomeListSnapshot as HomeListSnapshotData } from '../types';
+import type { HomeListSnapshotData } from '../types';
 
 let snapshot: HomeListSnapshotData | null = null;
 
