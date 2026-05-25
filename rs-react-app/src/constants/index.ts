@@ -1,3 +1,5 @@
+import type { ThemeMode } from '../types/theme';
+
 export const QUERY_PARAMS = {
   page: 'page',
   details: 'details',
@@ -9,6 +11,21 @@ export const SWAPI_LOCAL_DEV_HOSTNAMES = ['localhost', '127.0.0.1'];
 export const SWAPI_PAGE_SIZE = 10;
 
 export const SEARCH_TERM_STORAGE_KEY = 'swapi-explorer-search-term';
+export const THEME_STORAGE_KEY = 'swapi-explorer-theme';
+
+export const THEME_MODE_LIGHT: ThemeMode = 'light';
+export const THEME_MODE_DARK: ThemeMode = 'dark';
+
+export const THEME_MODES: { light: ThemeMode; dark: ThemeMode } = {
+  light: THEME_MODE_LIGHT,
+  dark: THEME_MODE_DARK,
+};
+
+export const THEME_TOGGLE = {
+  groupLabel: 'Theme',
+  lightLabel: 'Light',
+  darkLabel: 'Dark',
+};
 
 export const RS_SCHOOL_REACT_COURSE_URL =
   'https://rs.school/courses/reactjs';

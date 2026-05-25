@@ -3,6 +3,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
+function renderNotFoundPage() {
+  return render(
+    <MemoryRouter>
+      <NotFoundPage />
+    </MemoryRouter>
+  );
+}
+
 describe('NotFoundPage', () => {
   beforeEach(() => {
     cleanup();
@@ -13,11 +21,7 @@ describe('NotFoundPage', () => {
   });
 
   it('renders a not-found message and link to home', () => {
-    render(
-      <MemoryRouter>
-        <NotFoundPage />
-      </MemoryRouter>
-    );
+    renderNotFoundPage();
     expect(
       screen.getByRole('heading', { name: 'Page not found' })
     ).toBeInTheDocument();
@@ -32,16 +36,13 @@ describe('NotFoundPage', () => {
     );
   });
 
-  it('includes main navigation', () => {
-    render(
-      <MemoryRouter>
-        <NotFoundPage />
-      </MemoryRouter>
-    );
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute(
-      'href',
-      '/about'
-    );
+  it('does not render app navigation or theme controls', () => {
+    renderNotFoundPage();
+    expect(
+      screen.queryByRole('navigation', { name: 'Main navigation' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: 'Light' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: 'Dark' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
   });
 });

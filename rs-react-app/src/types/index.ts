@@ -12,3 +12,4 @@ export type {
 } from './components';
 export type { HomeListSnapshot } from './storage';
 export type { DetailsState, PersonDetailsContentProps } from './personDetails';
+export type { ThemeContextValue, ThemeMode } from './theme';

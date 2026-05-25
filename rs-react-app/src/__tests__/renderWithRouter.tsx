@@ -9,6 +9,7 @@ import App from '../App';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { AppRoutes } from '../routes/AppRoutes';
 import { ReduxProvider } from '../store/ReduxProvider';
+import { ThemeProvider } from '../context/ThemeProvider';
 import { store } from '../store';
 import { clearSelected } from '../store/selectedItemsSlice';
 
@@ -33,7 +34,12 @@ function renderWithProviders(
   ui: ReactNode,
   options?: Omit<RenderOptions, 'wrapper'>
 ) {
-  return render(<ReduxProvider>{ui}</ReduxProvider>, options);
+  return render(
+    <ReduxProvider>
+      <ThemeProvider>{ui}</ThemeProvider>
+    </ReduxProvider>,
+    options
+  );
 }
 
 export function renderWithRouter(

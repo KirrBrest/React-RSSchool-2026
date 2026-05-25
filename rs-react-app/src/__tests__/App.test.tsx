@@ -19,6 +19,7 @@ import { SearchTermStorage } from '../storage/searchTermStorage';
 import { HomeListSnapshot } from '../storage/homeListSnapshot';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
+import { THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -54,6 +55,7 @@ describe('App', () => {
     localStorage.clear();
     HomeListSnapshot.clear();
     resetStoreState();
+    document.documentElement.dataset.theme = THEME_MODES.dark;
     vi.clearAllMocks();
     fetchPeople.mockResolvedValue(emptyPeopleList());
     fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
@@ -61,6 +63,7 @@ describe('App', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete document.documentElement.dataset.theme;
     cleanup();
   });
 
@@ -697,6 +700,28 @@ describe('App', () => {
       expect(download.mock.calls[0][0]).toHaveLength(1);
       expect(download.mock.calls[0][0][0].name).toBe('Luke Skywalker');
       download.mockRestore();
+    });
+  });
+
+  describe('theme', () => {
+    it('shows theme controls at the top of the app', async () => {
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      expect(root.getByRole('radio', { name: 'Light' })).toBeInTheDocument();
+      expect(root.getByRole('radio', { name: 'Dark' })).toBeInTheDocument();
+    });
+
+    it('updates the application theme when light is selected', async () => {
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      fireEvent.click(root.getByRole('radio', { name: 'Light' }));
+      expect(document.documentElement.dataset.theme).toBe(THEME_MODES.light);
     });
   });
 

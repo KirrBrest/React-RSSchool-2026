@@ -2,6 +2,17 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AboutPage } from '../pages/AboutPage';
+import { ThemeProvider } from '../context/ThemeProvider';
+
+function renderAboutPage() {
+  return render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <AboutPage />
+      </MemoryRouter>
+    </ThemeProvider>
+  );
+}
 
 describe('AboutPage', () => {
   beforeEach(() => {
@@ -13,11 +24,7 @@ describe('AboutPage', () => {
   });
 
   it('renders author section and external links', () => {
-    render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>
-    );
+    renderAboutPage();
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Author' })).toBeInTheDocument();
     expect(screen.getByText('Kiryl Lukashchuk')).toBeInTheDocument();
@@ -37,11 +44,7 @@ describe('AboutPage', () => {
   });
 
   it('includes navigation to home', () => {
-    render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>
-    );
+    renderAboutPage();
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
   });

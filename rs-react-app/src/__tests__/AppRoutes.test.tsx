@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AppRoutes } from '../routes/AppRoutes';
 import { ReduxProvider } from '../store/ReduxProvider';
+import { ThemeProvider } from '../context/ThemeProvider';
 import { resetStoreState } from './renderWithRouter.tsx';
 
 vi.mock('../App', () => ({
@@ -14,9 +15,11 @@ vi.mock('../App', () => ({
 function renderAppRoutes(initialPath: string) {
   return render(
     <ReduxProvider>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <AppRoutes />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <AppRoutes />
+        </MemoryRouter>
+      </ThemeProvider>
     </ReduxProvider>
   );
 }
@@ -53,6 +56,9 @@ describe('AppRoutes', () => {
       'href',
       '/'
     );
+    expect(
+      screen.queryByRole('navigation', { name: 'Main navigation' })
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('Mock app home route')).not.toBeInTheDocument();
   });
 });
