@@ -18,6 +18,7 @@ import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { HomeListSnapshot } from '../storage/homeListSnapshot';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -669,6 +670,33 @@ describe('App', () => {
       expect(
         root.getByRole('region', { name: 'Selected items' })
       ).toHaveTextContent('1 item selected');
+    });
+
+    it('downloads a CSV file when Download is clicked', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const download = vi
+        .spyOn(SelectedItemsCsvDownload, 'download')
+        .mockImplementation(() => {});
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Download' }));
+      expect(download).toHaveBeenCalledTimes(1);
+      expect(download.mock.calls[0][0]).toHaveLength(1);
+      expect(download.mock.calls[0][0][0].name).toBe('Luke Skywalker');
+      download.mockRestore();
     });
   });
 

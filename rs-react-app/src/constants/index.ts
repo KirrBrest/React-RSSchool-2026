@@ -1,5 +1,6 @@
 export const QUERY_PARAMS = {
   page: 'page',
+  details: 'details',
 };
 
 export const SWAPI_API_BASE = 'https://swapi.py4e.com/api';
@@ -18,8 +19,8 @@ export const AUTHOR_GITHUB = 'https://github.com/KirrBrest';
 export const AUTHOR_EMAIL = 'Lukashchuk.Kiryl@gmail.com';
 
 export const SELECTED_ITEMS_CSV = {
-  header: 'ID,Name,Description',
-  filename: 'selected-people.csv',
+  header: 'Name,Description,Details URL,SWAPI URL,Person ID',
+  filenameSuffix: '_items.csv',
   mimeType: 'text/csv;charset=utf-8;',
 };
 

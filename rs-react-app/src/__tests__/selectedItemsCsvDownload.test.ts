@@ -10,7 +10,7 @@ const luke: PersonResultItem = {
 };
 
 describe('SelectedItemsCsvDownload', () => {
-  it('builds a CSV with header and escaped fields', () => {
+  it('builds a CSV with required columns and escaped fields', () => {
     const csv = SelectedItemsCsvDownload.buildCsv([
       luke,
       {
@@ -19,16 +19,26 @@ describe('SelectedItemsCsvDownload', () => {
         description: 'Line\nbreak',
       },
     ]);
-    expect(csv).toBe(
-      [
-        SELECTED_ITEMS_CSV.header,
-        'https://swapi.py4e.com/api/people/1/,Luke Skywalker,Gender: male',
-        '2,"Leia ""Organa""","Line\nbreak"',
-      ].join('\n')
-    );
+    const lines = csv.split('\n');
+    expect(lines[0]).toBe(SELECTED_ITEMS_CSV.header);
+    expect(lines[1]).toContain('Luke Skywalker');
+    expect(lines[1]).toContain('Gender: male');
+    expect(lines[1]).toContain('/details?');
+    expect(lines[1]).toContain('details=1');
+    expect(lines[1]).toContain('page=1');
+    expect(lines[1]).toContain('https://swapi.py4e.com/api/people/1/');
+    expect(lines[1]).toContain(',1');
+    expect(csv).toContain('"Leia ""Organa"""');
+    expect(csv).toContain('"Line\nbreak"');
+    expect(csv).toContain('details=2');
   });
 
-  it('downloads selected items through a temporary link', () => {
+  it('builds a filename from the number of selected items', () => {
+    expect(SelectedItemsCsvDownload.buildFilename(1)).toBe('1_items.csv');
+    expect(SelectedItemsCsvDownload.buildFilename(15)).toBe('15_items.csv');
+  });
+
+  it('downloads selected items through native browser APIs', () => {
     const createObjectURL = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:selected');
@@ -47,13 +57,30 @@ describe('SelectedItemsCsvDownload', () => {
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     expect(createElement).toHaveBeenCalledWith('a');
     expect(link.href).toBe('blob:selected');
-    expect(link.download).toBe(SELECTED_ITEMS_CSV.filename);
+    expect(link.download).toBe('1_items.csv');
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:selected');
 
     createObjectURL.mockRestore();
     revokeObjectURL.mockRestore();
     createElement.mockRestore();
+  });
+
+  it('uses the selected count in the download filename', () => {
+    const createObjectURL = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:selected');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const link = document.createElement('a');
+    link.click = vi.fn();
+    vi.spyOn(document, 'createElement').mockReturnValue(link);
+
+    SelectedItemsCsvDownload.download([luke, luke]);
+
+    expect(link.download).toBe('2_items.csv');
+
+    createObjectURL.mockRestore();
+    vi.restoreAllMocks();
   });
 
   it('does nothing when the items list is empty', () => {
