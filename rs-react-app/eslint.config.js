@@ -44,22 +44,6 @@ export default defineConfig([
         {
           paths: [
             {
-              name: 'redux',
-              message: 'External state managers are not allowed by task requirements.',
-            },
-            {
-              name: 'react-redux',
-              message: 'External state managers are not allowed by task requirements.',
-            },
-            {
-              name: '@reduxjs/toolkit',
-              message: 'External state managers are not allowed by task requirements.',
-            },
-            {
-              name: 'zustand',
-              message: 'External state managers are not allowed by task requirements.',
-            },
-            {
               name: 'jotai',
               message: 'External state managers are not allowed by task requirements.',
             },

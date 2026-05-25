@@ -10,6 +10,7 @@ import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import {
   renderWithAppRoutes,
   renderWithRouter,
+  resetStoreState,
 } from './renderWithRouter.tsx';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
@@ -49,6 +50,7 @@ describe('App', () => {
     cleanup();
     localStorage.clear();
     HomeListSnapshot.clear();
+    resetStoreState();
     vi.clearAllMocks();
     fetchPeople.mockResolvedValue(emptyPeopleList());
     fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
