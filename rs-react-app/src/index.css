@@ -3,9 +3,25 @@
   --color-surface: #161b22;
   --color-surface-raised: #21262d;
   --color-border: #30363d;
+  --color-border-hover: #484f58;
   --color-text: #e6edf3;
   --color-text-muted: #8b949e;
   --color-accent: #58a6ff;
+  --color-accent-border: #4c9aed;
+  --color-accent-hover: #79b8ff;
+  --color-accent-subtle: #58a6ff14;
+  --color-accent-focus-ring: #58a6ff2e;
+  --color-accent-muted-bg: #58a6ff33;
+  --color-accent-muted-bg-hover: #58a6ff52;
+  --color-accent-muted-border: #58a6ff73;
+  --color-inset-highlight: #e6edf30a;
+  --color-shadow-ring: #010409d9;
+  --color-shadow-lg: #00000059;
+  --color-danger-text: #fecaca;
+  --color-danger-bg: #f851491f;
+  --color-danger-bg-hover: #f8514938;
+  --color-danger-border: #f8514973;
+  --color-danger-focus: #f85149;
   font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Segoe UI Mono',
     Consolas, monospace;
   line-height: 1.5;

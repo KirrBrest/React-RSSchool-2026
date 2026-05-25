@@ -13,12 +13,11 @@ describe('Card', () => {
   });
 
   describe('rendering', () => {
-    it('displays item name and description correctly', () => {
+    it('displays item name correctly', () => {
       const view = render(
         <Card
           id="1"
           name="Luke Skywalker"
-          description="Moisture farmer"
           isSelected={false}
           onSelect={vi.fn()}
         />
@@ -27,18 +26,12 @@ describe('Card', () => {
       expect(
         region.getByRole('button', { name: 'View details for Luke Skywalker' })
       ).toBeInTheDocument();
-      expect(region.getByText('Moisture farmer')).toBeInTheDocument();
+      expect(region.getByText('Luke Skywalker')).toBeInTheDocument();
     });
 
-    it('handles missing props gracefully', () => {
+    it('handles missing name gracefully', () => {
       const view = render(
-        <Card
-          id="1"
-          name=""
-          description=""
-          isSelected={false}
-          onSelect={vi.fn()}
-        />
+        <Card id="1" name="" isSelected={false} onSelect={vi.fn()} />
       );
       const region = withinRenderedRoot(view);
       expect(

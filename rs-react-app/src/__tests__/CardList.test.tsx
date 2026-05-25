@@ -33,7 +33,7 @@ describe('CardList', () => {
   });
 
   describe('data display', () => {
-    it('correctly displays item names and descriptions', () => {
+    it('correctly displays item names', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: 'Leia Organa', description: 'Princess of Alderaan' },
       ];
@@ -48,9 +48,10 @@ describe('CardList', () => {
       expect(
         region.getByRole('button', { name: 'View details for Leia Organa' })
       ).toBeInTheDocument();
+      expect(region.getByText('Leia Organa')).toBeInTheDocument();
       expect(
-        region.getByText('Princess of Alderaan')
-      ).toBeInTheDocument();
+        region.queryByText('Princess of Alderaan')
+      ).not.toBeInTheDocument();
     });
 
     it('handles missing textual fields without crashing', () => {

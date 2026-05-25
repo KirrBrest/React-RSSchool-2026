@@ -38,7 +38,6 @@ export type ResultsSectionProps = {
 export type CardProps = {
   id: string;
   name: string;
-  description: string;
   isSelected: boolean;
   onSelect: (id: string) => void;
 };

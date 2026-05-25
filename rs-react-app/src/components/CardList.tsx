@@ -15,7 +15,6 @@ export function CardList({
           <Card
             id={item.id}
             name={item.name}
-            description={item.description}
             isSelected={
               selectedItemId !== null &&
               extractPersonId(item.id) === selectedItemId

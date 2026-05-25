@@ -152,11 +152,7 @@ export function usePeopleList({
     if (isDetailsOpen) {
       closeDetails();
     }
-    if (parsePageParam(searchParams.get(QUERY_PARAMS.page)) === 1) {
-      return;
-    }
-    updatePageInUrl(1, { clearDetails: true });
-  }, [closeDetails, isDetailsOpen, searchParams, updatePageInUrl]);
+  }, [closeDetails, isDetailsOpen]);
 
   const handleSearch = useCallback(
     async (trimmedTerm: string): Promise<void> => {
@@ -179,7 +175,7 @@ export function usePeopleList({
     if (!listHasNext) {
       return;
     }
-    updatePageInUrl(listPage + 1, { clearDetails: true });
+    updatePageInUrl(listPage + 1);
   }, [updatePageInUrl]);
 
   const handlePagePrev = useCallback((): void => {
@@ -187,7 +183,7 @@ export function usePeopleList({
     if (!listHasPrev) {
       return;
     }
-    updatePageInUrl(listPage - 1, { clearDetails: true });
+    updatePageInUrl(listPage - 1);
   }, [updatePageInUrl]);
 
   const triggerSimulatedCrash = useCallback((): void => {

@@ -72,7 +72,7 @@ describe('ResultsSection', () => {
   });
 
   describe('data display', () => {
-    it('correctly displays item names and descriptions from results', () => {
+    it('correctly displays item names from results', () => {
       const items: PersonResultItem[] = [
         { id: '1', name: 'Han Solo', description: 'Smuggler' },
       ];
@@ -90,7 +90,8 @@ describe('ResultsSection', () => {
       expect(
         region.getByRole('button', { name: 'View details for Han Solo' })
       ).toBeInTheDocument();
-      expect(region.getByText('Smuggler')).toBeInTheDocument();
+      expect(region.getByText('Han Solo')).toBeInTheDocument();
+      expect(region.queryByText('Smuggler')).not.toBeInTheDocument();
     });
 
     it('handles empty item fields without crashing', () => {

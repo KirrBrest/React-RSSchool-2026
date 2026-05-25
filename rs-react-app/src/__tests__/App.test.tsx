@@ -154,9 +154,9 @@ describe('App', () => {
       const { view } = renderWithRouter();
       await waitFor(() => {
         expect(
-          withinRenderedRoot(view).getByText(
-            'Gender: male · Birth: 19BBY · 172 cm · 77 kg · Hair: blond · Eyes: blue · Skin: fair'
-          )
+          withinRenderedRoot(view).getByRole('button', {
+            name: 'View details for Luke Skywalker',
+          })
         ).toBeInTheDocument();
       });
     });
@@ -262,7 +262,7 @@ describe('App', () => {
       });
     });
 
-    it('resets the page query to 1 when the search input changes', async () => {
+    it('keeps the current page when the search input changes', async () => {
       const { view, router } = renderWithRouter('/?page=2');
       const root = withinRenderedRoot(view);
 
@@ -270,13 +270,14 @@ describe('App', () => {
         expect(fetchPeople).toHaveBeenCalledWith('', 2);
       });
 
+      fetchPeople.mockClear();
+
       fireEvent.change(root.getByLabelText('Search query'), {
         target: { value: 'a' },
       });
 
-      await waitFor(() => {
-        expect(router.state.location.search).toBe('?page=1');
-      });
+      expect(router.state.location.search).toBe('?page=2');
+      expect(fetchPeople).not.toHaveBeenCalled();
     });
 
     it('paginates search results when more than one page exists', async () => {
@@ -435,6 +436,33 @@ describe('App', () => {
         expect(router.state.location.pathname).toBe('/details');
         expect(router.state.location.search).toContain('details=1');
       });
+    });
+
+    it('keeps the details panel open when paginating', async () => {
+      fetchPeople
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: true, hasPrev: false })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        );
+      const { view, router } = renderWithRouter('/details?page=1&details=1');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+        expect(router.state.location.search).toContain('details=1');
+        expect(router.state.location.search).toContain('page=2');
+      });
+      expect(
+        root.getByRole('region', { name: 'Person details' })
+      ).toBeInTheDocument();
     });
 
     it('syncs details from a direct visit to /?page=1&details=1', async () => {

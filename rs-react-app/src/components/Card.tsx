@@ -2,13 +2,7 @@ import type { KeyboardEvent, MouseEvent } from 'react';
 import type { CardProps } from '../types';
 import './Card.css';
 
-export function Card({
-  id,
-  name,
-  description,
-  isSelected,
-  onSelect,
-}: CardProps) {
+export function Card({ id, name, isSelected, onSelect }: CardProps) {
   const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
     onSelect(id);
@@ -35,7 +29,6 @@ export function Card({
       onKeyDown={handleKeyDown}
     >
       <span className="result-card__name">{name}</span>
-      <span className="result-card__description">{description}</span>
     </button>
   );
 }
