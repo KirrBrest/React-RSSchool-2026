@@ -151,9 +151,9 @@ describe('ResultsSection', () => {
         isLoading: false,
         isFetching: false,
         errorMessage: null,
-        isRefreshDisabled: false,
         pagination: null,
         ...testDetailHandlers,
+        isRefreshDisabled: false,
         onRefresh,
       });
       const region = withinRenderedRoot(view);
@@ -170,8 +170,6 @@ describe('ResultsSection', () => {
         isLoading: false,
         isFetching: false,
         errorMessage: null,
-        onRefresh: null,
-        isRefreshDisabled: false,
         pagination: null,
         ...testDetailHandlers,
       });
