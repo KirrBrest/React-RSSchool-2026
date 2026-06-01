@@ -12,8 +12,3 @@ export type AppState = {
   listTotalCount: number;
   simulateCrash: boolean;
 };
-
-export type FetchOptions = {
-  skipIfUnchanged: boolean;
-  page?: number;
-};

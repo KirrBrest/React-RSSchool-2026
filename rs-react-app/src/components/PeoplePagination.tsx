@@ -1,4 +1,4 @@
-import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
+import { SWAPI_PAGE_SIZE } from '../constants';
 import type { PeoplePaginationProps } from '../types';
 import './PeoplePagination.css';
 
@@ -12,7 +12,7 @@ export function PeoplePagination({
 }: PeoplePaginationProps) {
   const totalPages = Math.max(
     1,
-    Math.ceil(totalCount / SwapiPeopleApi.pageSize)
+    Math.ceil(totalCount / SWAPI_PAGE_SIZE)
   );
   return (
     <nav className="people-pagination" aria-label="People list pages">

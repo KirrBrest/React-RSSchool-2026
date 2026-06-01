@@ -12,6 +12,7 @@ import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { store } from '../store';
 import { clearSelected } from '../store/selectedItemsSlice';
+import { resetSwapiApiState } from '../store';
 
 export const appHomeRoute: RouteObject = {
   path: '/',
@@ -21,6 +22,7 @@ export const appHomeRoute: RouteObject = {
 
 export function resetStoreState(): void {
   store.dispatch(clearSelected());
+  resetSwapiApiState();
 }
 
 export function createAppMemoryRouter(initialEntries: string[]) {

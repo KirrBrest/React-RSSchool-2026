@@ -16,7 +16,6 @@ import { store } from '../store';
 import { selectSelectedItems } from '../store/selectedItemsSlice';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
-import { HomeListSnapshot } from '../storage/homeListSnapshot';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
 import { THEME_MODES } from '../constants';
@@ -53,7 +52,6 @@ describe('App', () => {
   beforeEach(() => {
     cleanup();
     localStorage.clear();
-    HomeListSnapshot.clear();
     resetStoreState();
     document.documentElement.dataset.theme = THEME_MODES.dark;
     vi.clearAllMocks();
@@ -82,8 +80,8 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenCalledWith('', 1);
+        expect(root.getByText('No matching people.')).toBeInTheDocument();
       });
-      expect(root.getByText('No matching people.')).toBeInTheDocument();
     });
 
     it('handles search term from localStorage on initial load', async () => {
@@ -211,9 +209,6 @@ describe('App', () => {
         )
         .mockResolvedValueOnce(
           listResponse({ count: 20, hasNext: false, hasPrev: true })
-        )
-        .mockResolvedValueOnce(
-          listResponse({ count: 20, hasNext: true, hasPrev: false })
         );
 
       const { view } = renderWithRouter();
@@ -232,10 +227,12 @@ describe('App', () => {
         expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
       });
 
+      fetchPeople.mockClear();
       fireEvent.click(root.getByRole('button', { name: 'Previous' }));
       await waitFor(() => {
-        expect(fetchPeople).toHaveBeenLastCalledWith('', 1);
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
+      expect(fetchPeople).not.toHaveBeenCalled();
     });
 
     it('loads the page number from the URL on first visit', async () => {

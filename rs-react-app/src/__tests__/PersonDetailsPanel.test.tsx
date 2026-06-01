@@ -3,6 +3,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
+import { resetSwapiApiState } from '../store';
+import { ReduxProvider } from '../store/ReduxProvider';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
 
 vi.mock('../api/fetchSwapiPeople', () => ({
@@ -15,17 +17,20 @@ const fetchPerson = vi.mocked(SwapiPeopleApi.fetchPerson);
 
 function renderDetailsAt(path: string) {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/details" element={<PersonDetailsPanel />} />
-      </Routes>
-    </MemoryRouter>
+    <ReduxProvider>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/details" element={<PersonDetailsPanel />} />
+        </Routes>
+      </MemoryRouter>
+    </ReduxProvider>
   );
 }
 
 describe('PersonDetailsPanel', () => {
   beforeEach(() => {
     cleanup();
+    resetSwapiApiState();
     vi.clearAllMocks();
     fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
   });

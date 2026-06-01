@@ -1,58 +1,34 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
-import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
-import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
-import type { DetailsState, PersonDetailsContentProps } from '../types';
+import { rtkQueryErrorMessage } from '../utils/rtkQueryErrorMessage';
+import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
 function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
-  const [state, setState] = useState<DetailsState>({
-    person: null,
-    isLoading: true,
-    errorMessage: null,
-  });
+  const { data: person, isLoading, isFetching, isError, error } =
+    useGetPersonQuery(personId);
 
-  useEffect(() => {
-    let cancelled = false;
-    void SwapiPeopleApi.fetchPerson(personId)
-      .then((person) => {
-        if (!cancelled) {
-          setState({ person, isLoading: false, errorMessage: null });
-        }
-      })
-      .catch((reason: unknown) => {
-        if (!cancelled) {
-          setState({
-            person: null,
-            isLoading: false,
-            errorMessage: AppFetchErrorMessage.fromUnknown(reason),
-          });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [personId]);
-
-  const { person, isLoading, errorMessage } = state;
+  const showLoading = isLoading || isFetching;
+  const errorMessage = isError ? rtkQueryErrorMessage(error) : null;
 
   return (
     <>
-      {isLoading && (
+      {showLoading && (
         <div className="person-details__loading">
           <LoadingIndicator />
           <p className="person-details__loading-text">Loading details…</p>
         </div>
       )}
-      {!isLoading && errorMessage !== null && (
+      {!showLoading && errorMessage !== null && (
         <div className="person-details__error" role="alert">
           {errorMessage}
         </div>
       )}
-      {!isLoading && errorMessage === null && person !== null && (
+      {!showLoading && errorMessage === null && person !== undefined && (
         <dl className="person-details__list">
           <div className="person-details__row">
             <dt>Name</dt>
