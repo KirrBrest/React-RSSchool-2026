@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QUERY_PARAMS, SWAPI_PAGE_SIZE } from '../constants';
+import { invalidatePeopleListCache } from '../store';
 import { useGetPeopleQuery } from '../store/swapiApi';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import type { AppState, PeopleListQueryArg } from '../types';
@@ -116,6 +117,10 @@ export function usePeopleList({
     setSimulateCrash(true);
   }, []);
 
+  const handleRefreshList = useCallback((): void => {
+    invalidatePeopleListCache();
+  }, []);
+
   const state: AppState = {
     results: listData?.results ?? [],
     hasSearched,
@@ -136,6 +141,7 @@ export function usePeopleList({
     handleSearch,
     handlePageNext,
     handlePagePrev,
+    handleRefreshList,
     triggerSimulatedCrash,
   };
 }

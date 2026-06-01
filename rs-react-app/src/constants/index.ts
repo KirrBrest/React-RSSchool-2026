@@ -44,8 +44,10 @@ export const SELECTED_ITEMS_CSV = {
 export const QUERY_UI = {
   listLoading: 'Loading data…',
   listRefreshing: 'Updating results…',
+  listRefresh: 'Refresh results',
   detailsLoading: 'Loading details…',
   detailsRefreshing: 'Updating details…',
+  detailsRefresh: 'Refresh details',
 };
 
 export const SELECTED_ITEMS_FLYOUT = {

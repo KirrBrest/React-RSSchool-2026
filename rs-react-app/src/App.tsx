@@ -24,6 +24,7 @@ export default function App() {
     handleSearch,
     handlePageNext,
     handlePagePrev,
+    handleRefreshList,
     triggerSimulatedCrash,
   } = usePeopleList({
     searchParams,
@@ -83,6 +84,8 @@ export default function App() {
             isLoading={isLoading}
             isFetching={isFetching}
             errorMessage={errorMessage}
+            onRefresh={hasSearched ? handleRefreshList : null}
+            isRefreshDisabled={isLoading || isFetching}
             pagination={
               showPagination
                 ? {

@@ -1,7 +1,9 @@
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { QUERY_UI } from '../constants';
+import { invalidatePersonCache } from '../store';
 import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
@@ -97,6 +99,10 @@ export function PersonDetailsPanel() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const personId = parseDetailsParam(searchParams.get('details'));
+  const { isLoading, isFetching } = useGetPersonQuery(
+    personId ?? skipToken
+  );
+  const isRefreshDisabled = isLoading || isFetching;
 
   const closeDetails = useCallback((): void => {
     navigate(closeDetailsLocation(searchParams), { replace: true });
@@ -111,14 +117,27 @@ export function PersonDetailsPanel() {
     >
       <div className="person-details__header">
         <h2 className="person-details__title">Details</h2>
-        <button
-          type="button"
-          className="person-details__close"
-          aria-label="Close details"
-          onClick={closeDetails}
-        >
-          Close
-        </button>
+        <div className="person-details__actions">
+          {personId !== null && (
+            <button
+              type="button"
+              className="person-details__refresh"
+              aria-label={QUERY_UI.detailsRefresh}
+              disabled={isRefreshDisabled}
+              onClick={() => invalidatePersonCache(personId)}
+            >
+              {QUERY_UI.detailsRefresh}
+            </button>
+          )}
+          <button
+            type="button"
+            className="person-details__close"
+            aria-label="Close details"
+            onClick={closeDetails}
+          >
+            Close
+          </button>
+        </div>
       </div>
       {personId === null && (
         <p className="person-details__placeholder">No person selected.</p>

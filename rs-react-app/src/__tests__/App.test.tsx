@@ -291,6 +291,35 @@ describe('App', () => {
       expect(fetchPeople).not.toHaveBeenCalled();
     });
 
+    it('refetches the current page when refresh is clicked after cache is warm', async () => {
+      mockPaginatedPeopleList();
+      const { view } = renderWithRouter();
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
+      });
+
+      fetchPeople.mockClear();
+      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+      expect(fetchPeople).not.toHaveBeenCalled();
+
+      fireEvent.click(
+        root.getByRole('button', { name: 'Refresh results' })
+      );
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
+      });
+    });
+
     it('loads the page number from the URL on first visit', async () => {
       renderWithRouter('/?page=2');
       await waitFor(() => {

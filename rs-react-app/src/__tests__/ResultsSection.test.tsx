@@ -1,6 +1,6 @@
-import { render, cleanup } from '@testing-library/react';
+import { fireEvent, render, cleanup } from '@testing-library/react';
 import type { ComponentProps } from 'react';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QUERY_UI } from '../constants';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
@@ -139,6 +139,46 @@ describe('ResultsSection', () => {
       });
       const region = withinRenderedRoot(view);
       expect(region.getAllByRole('button')).toHaveLength(1);
+    });
+  });
+
+  describe('manual refresh', () => {
+    it('calls onRefresh when the refresh button is clicked', () => {
+      const onRefresh = vi.fn();
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: null,
+        isRefreshDisabled: false,
+        pagination: null,
+        ...testDetailHandlers,
+        onRefresh,
+      });
+      const region = withinRenderedRoot(view);
+      fireEvent.click(
+        region.getByRole('button', { name: 'Refresh results' })
+      );
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render a refresh button when onRefresh is null', () => {
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: false,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: null,
+        onRefresh: null,
+        isRefreshDisabled: false,
+        pagination: null,
+        ...testDetailHandlers,
+      });
+      const region = withinRenderedRoot(view);
+      expect(
+        region.queryByRole('button', { name: 'Refresh results' })
+      ).not.toBeInTheDocument();
     });
   });
 

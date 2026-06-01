@@ -1,4 +1,4 @@
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QUERY_UI } from '../constants';
@@ -67,5 +67,19 @@ describe('PersonDetailsPanel', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(expected);
     });
     expect(screen.queryByText('Luke Skywalker')).not.toBeInTheDocument();
+  });
+
+  it('refetches person details when refresh is clicked after cache is warm', async () => {
+    renderDetailsAt('/details?details=1');
+    await waitFor(() => {
+      expect(screen.getByText('Luke Skywalker')).toBeInTheDocument();
+    });
+    fetchPerson.mockClear();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Refresh details' })
+    );
+    await waitFor(() => {
+      expect(fetchPerson).toHaveBeenCalledWith('1');
+    });
   });
 });

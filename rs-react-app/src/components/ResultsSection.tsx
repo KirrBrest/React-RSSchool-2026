@@ -11,6 +11,8 @@ export function ResultsSection({
   isLoading,
   isFetching,
   errorMessage,
+  onRefresh,
+  isRefreshDisabled,
   pagination,
   selectedItemId,
   onItemSelect,
@@ -28,7 +30,23 @@ export function ResultsSection({
       aria-live="polite"
     >
       <div className="results-section__inner">
-        <h2 className="results-section__title">Results</h2>
+        <div className="results-section__header">
+          <h2 className="results-section__title">Results</h2>
+          {onRefresh !== null && (
+            <button
+              type="button"
+              className="results-section__refresh"
+              aria-label={QUERY_UI.listRefresh}
+              disabled={isRefreshDisabled}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRefresh();
+              }}
+            >
+              {QUERY_UI.listRefresh}
+            </button>
+          )}
+        </div>
         <div
           className="results-section__content"
           onClick={onMainPanelClick}
