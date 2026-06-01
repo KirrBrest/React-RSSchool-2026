@@ -222,7 +222,7 @@ describe('App', () => {
     it('loads next and previous pages when pagination is available', async () => {
       mockPaginatedPeopleList();
 
-      const { view } = renderWithRouter();
+      const { view, router } = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
@@ -232,6 +232,7 @@ describe('App', () => {
       fireEvent.click(root.getByRole('button', { name: 'Next' }));
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
+        expect(router.state.location.search).toBe('?page=2');
       });
 
       await waitFor(() => {
@@ -241,6 +242,7 @@ describe('App', () => {
       fetchPeople.mockClear();
       fireEvent.click(root.getByRole('button', { name: 'Previous' }));
       await waitFor(() => {
+        expect(router.state.location.search).toBe('?page=1');
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
       expect(root.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();

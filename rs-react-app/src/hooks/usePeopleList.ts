@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { QUERY_PARAMS } from '../constants';
+import { QUERY_PARAMS, SWAPI_PAGE_SIZE } from '../constants';
 import { useGetPeopleQuery } from '../store/swapiApi';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import type { AppState, PeopleListQueryArg } from '../types';
@@ -84,17 +84,24 @@ export function usePeopleList({
     [closeDetails, isDetailsOpen, pageInUrl, updatePageInUrl]
   );
 
+  const listTotalCount = listData?.listTotalCount ?? 0;
+  const totalPages =
+    listTotalCount > 0
+      ? Math.ceil(listTotalCount / SWAPI_PAGE_SIZE)
+      : 0;
+  const listPage = listQuery.page;
+  const listHasNext = totalPages > 0 && listPage < totalPages;
+  const listHasPrev = listPage > 1;
+
   const handlePageStep = useCallback(
     (step: 1 | -1): void => {
-      const listHasNext = listData?.listHasNext ?? false;
-      const listHasPrev = listData?.listHasPrev ?? false;
-      const canStep = step === 1 ? listHasNext : listHasPrev;
-      if (!canStep) {
+      const targetPage = pageInUrl + step;
+      if (targetPage < 1 || targetPage > totalPages) {
         return;
       }
-      updatePageInUrl(pageInUrl + step);
+      updatePageInUrl(targetPage);
     },
-    [listData?.listHasNext, listData?.listHasPrev, pageInUrl, updatePageInUrl]
+    [pageInUrl, totalPages, updatePageInUrl]
   );
 
   const handlePageNext = useCallback((): void => {
@@ -116,10 +123,10 @@ export function usePeopleList({
     isLoading: isListLoading,
     isFetching: isListFetching,
     errorMessage: isError ? rtkQueryErrorMessage(error) : null,
-    listPage: listQuery.page,
-    listHasNext: listData?.listHasNext ?? false,
-    listHasPrev: listData?.listHasPrev ?? false,
-    listTotalCount: listData?.listTotalCount ?? 0,
+    listPage,
+    listHasNext,
+    listHasPrev,
+    listTotalCount,
     simulateCrash,
   };
 
