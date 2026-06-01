@@ -29,6 +29,7 @@ describe('LoadingIndicator', () => {
           items={[]}
           hasSearched={false}
           isLoading
+          isFetching={false}
           errorMessage={null}
           pagination={null}
           {...testDetailHandlers}
@@ -43,6 +44,7 @@ describe('LoadingIndicator', () => {
           items={[]}
           hasSearched={false}
           isLoading={false}
+          isFetching={false}
           errorMessage={null}
           pagination={null}
           {...testDetailHandlers}

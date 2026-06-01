@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
+import { QUERY_UI } from '../constants';
 import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
@@ -9,60 +10,83 @@ import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
 function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
-  const { data: person, isLoading, isFetching, isError, error } =
-    useGetPersonQuery(personId);
+  const {
+    data: person,
+    currentData,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useGetPersonQuery(personId);
 
-  const showLoading = isLoading || isFetching;
+  const displayPerson = person ?? currentData;
+  const isInitialLoading = isLoading && displayPerson === undefined;
+  const isBackgroundFetching = isFetching && displayPerson !== undefined;
   const errorMessage = isError ? rtkQueryErrorMessage(error) : null;
 
   return (
     <>
-      {showLoading && (
+      {isInitialLoading && (
         <div className="person-details__loading">
           <LoadingIndicator />
-          <p className="person-details__loading-text">Loading details…</p>
+          <p className="person-details__loading-text">
+            {QUERY_UI.detailsLoading}
+          </p>
         </div>
       )}
-      {!showLoading && errorMessage !== null && (
+      {!isInitialLoading && errorMessage !== null && (
         <div className="person-details__error" role="alert">
           {errorMessage}
         </div>
       )}
-      {!showLoading && errorMessage === null && person !== undefined && (
-        <dl className="person-details__list">
-          <div className="person-details__row">
-            <dt>Name</dt>
-            <dd>{person.name}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Gender</dt>
-            <dd>{person.gender}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Birth year</dt>
-            <dd>{person.birth_year}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Height</dt>
-            <dd>{person.height} cm</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Mass</dt>
-            <dd>{person.mass} kg</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Hair color</dt>
-            <dd>{person.hair_color}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Eye color</dt>
-            <dd>{person.eye_color}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Skin color</dt>
-            <dd>{person.skin_color}</dd>
-          </div>
-        </dl>
+      {!isInitialLoading && errorMessage === null && displayPerson !== undefined && (
+        <>
+          {isBackgroundFetching && (
+            <div
+              className="person-details__refreshing"
+              aria-live="polite"
+            >
+              <LoadingIndicator />
+              <p className="person-details__refreshing-text">
+                {QUERY_UI.detailsRefreshing}
+              </p>
+            </div>
+          )}
+          <dl className="person-details__list">
+            <div className="person-details__row">
+              <dt>Name</dt>
+              <dd>{displayPerson.name}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Gender</dt>
+              <dd>{displayPerson.gender}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Birth year</dt>
+              <dd>{displayPerson.birth_year}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Height</dt>
+              <dd>{displayPerson.height} cm</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Mass</dt>
+              <dd>{displayPerson.mass} kg</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Hair color</dt>
+              <dd>{displayPerson.hair_color}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Eye color</dt>
+              <dd>{displayPerson.eye_color}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Skin color</dt>
+              <dd>{displayPerson.skin_color}</dd>
+            </div>
+          </dl>
+        </>
       )}
     </>
   );

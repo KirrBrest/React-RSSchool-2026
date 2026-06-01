@@ -63,6 +63,23 @@
   letter-spacing: 0.02em;
 }
 
+.results-section__refreshing {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+  padding: 0.5rem 0.65rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.results-section__refreshing-text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
 .results-section__error {
   margin: 0;
   flex: 1 1 auto;

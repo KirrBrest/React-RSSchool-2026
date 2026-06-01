@@ -28,6 +28,7 @@ export type ResultsSectionProps = {
   items: PersonResultItem[];
   hasSearched: boolean;
   isLoading: boolean;
+  isFetching: boolean;
   errorMessage: string | null;
   pagination: PeoplePaginationProps | null;
   selectedItemId: string | null;

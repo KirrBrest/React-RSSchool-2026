@@ -3,6 +3,7 @@ import {
   fireEvent,
   waitFor,
   cleanup,
+  within,
 } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
@@ -18,7 +19,7 @@ import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
-import { THEME_MODES } from '../constants';
+import { QUERY_UI, THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -46,6 +47,22 @@ function listResponse(options: {
     previous: options.hasPrev ? 'prev' : null,
     results: [],
   };
+}
+
+function mockPaginatedPeopleList(): void {
+  fetchPeople.mockImplementation((_term: string, page: number) => {
+    if (page === 1) {
+      return Promise.resolve(
+        listResponse({ count: 20, hasNext: true, hasPrev: false })
+      );
+    }
+    if (page === 2) {
+      return Promise.resolve(
+        listResponse({ count: 20, hasNext: false, hasPrev: true })
+      );
+    }
+    return Promise.resolve(emptyPeopleList());
+  });
 }
 
 describe('App', () => {
@@ -203,13 +220,7 @@ describe('App', () => {
     });
 
     it('loads next and previous pages when pagination is available', async () => {
-      fetchPeople
-        .mockResolvedValueOnce(
-          listResponse({ count: 20, hasNext: true, hasPrev: false })
-        )
-        .mockResolvedValueOnce(
-          listResponse({ count: 20, hasNext: false, hasPrev: true })
-        );
+      mockPaginatedPeopleList();
 
       const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
@@ -232,6 +243,7 @@ describe('App', () => {
       await waitFor(() => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
+      expect(root.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();
       expect(fetchPeople).not.toHaveBeenCalled();
     });
 
@@ -392,6 +404,63 @@ describe('App', () => {
       expect(
         root.getByRole('region', { name: 'Person details' })
       ).toBeInTheDocument();
+    });
+
+    it('reuses cached person details without the initial loading state', async () => {
+      const luke = onePersonSwapiList().results[0];
+      const leia = {
+        ...luke,
+        name: 'Leia Organa',
+        url: 'https://swapi.py4e.com/api/people/2/',
+      };
+      fetchPeople.mockResolvedValue({
+        count: 2,
+        next: null,
+        previous: null,
+        results: [luke, leia],
+      });
+      fetchPerson
+        .mockResolvedValueOnce(luke)
+        .mockResolvedValueOnce(leia);
+
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+      );
+      const detailsPanel = () =>
+        within(root.getByRole('region', { name: 'Person details' }));
+
+      await waitFor(() => {
+        expect(detailsPanel().getByText('Luke Skywalker')).toBeInTheDocument();
+      });
+
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Leia Organa' })
+      );
+      await waitFor(() => {
+        expect(detailsPanel().getByText('Leia Organa')).toBeInTheDocument();
+      });
+
+      fetchPerson.mockClear();
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+      );
+
+      await waitFor(() => {
+        expect(detailsPanel().getByText('Luke Skywalker')).toBeInTheDocument();
+      });
+      expect(fetchPerson).not.toHaveBeenCalled();
+      expect(
+        detailsPanel().queryByText(QUERY_UI.detailsLoading)
+      ).not.toBeInTheDocument();
     });
 
     it('closes the details panel when Close is clicked', async () => {

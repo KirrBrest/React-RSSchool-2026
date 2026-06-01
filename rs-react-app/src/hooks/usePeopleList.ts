@@ -41,6 +41,7 @@ export function usePeopleList({
 
   const {
     data,
+    currentData,
     isLoading,
     isFetching,
     isError,
@@ -49,6 +50,9 @@ export function usePeopleList({
   } = useGetPeopleQuery(listQuery);
 
   const hasSearched = isSuccess || isError;
+  const listData = data ?? currentData;
+  const isListLoading = isLoading && listData === undefined;
+  const isListFetching = isFetching && listData !== undefined;
 
   useEffect(() => {
     if (homeMountHandledRef.current) {
@@ -82,15 +86,15 @@ export function usePeopleList({
 
   const handlePageStep = useCallback(
     (step: 1 | -1): void => {
-      const listHasNext = data?.listHasNext ?? false;
-      const listHasPrev = data?.listHasPrev ?? false;
+      const listHasNext = listData?.listHasNext ?? false;
+      const listHasPrev = listData?.listHasPrev ?? false;
       const canStep = step === 1 ? listHasNext : listHasPrev;
       if (!canStep) {
         return;
       }
-      updatePageInUrl(listQuery.page + step);
+      updatePageInUrl(pageInUrl + step);
     },
-    [data?.listHasNext, data?.listHasPrev, listQuery.page, updatePageInUrl]
+    [listData?.listHasNext, listData?.listHasPrev, pageInUrl, updatePageInUrl]
   );
 
   const handlePageNext = useCallback((): void => {
@@ -106,15 +110,16 @@ export function usePeopleList({
   }, []);
 
   const state: AppState = {
-    results: data?.results ?? [],
+    results: listData?.results ?? [],
     hasSearched,
     lastFetchedTerm: listTerm,
-    isLoading: isLoading || isFetching,
+    isLoading: isListLoading,
+    isFetching: isListFetching,
     errorMessage: isError ? rtkQueryErrorMessage(error) : null,
     listPage: listQuery.page,
-    listHasNext: data?.listHasNext ?? false,
-    listHasPrev: data?.listHasPrev ?? false,
-    listTotalCount: data?.listTotalCount ?? 0,
+    listHasNext: listData?.listHasNext ?? false,
+    listHasPrev: listData?.listHasPrev ?? false,
+    listTotalCount: listData?.listTotalCount ?? 0,
     simulateCrash,
   };
 

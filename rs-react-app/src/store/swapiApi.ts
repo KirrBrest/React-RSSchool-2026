@@ -27,6 +27,8 @@ export const swapiApi = createApi({
   tagTypes: ['PeopleList', 'Person'],
   keepUnusedDataFor: cacheTtlSeconds,
   refetchOnMountOrArgChange: cacheTtlSeconds,
+  refetchOnFocus: false,
+  refetchOnReconnect: false,
   endpoints: (builder) => ({
     getPeople: builder.query<PeopleListQueryResult, PeopleListQueryArg>({
       queryFn: async (arg) => {

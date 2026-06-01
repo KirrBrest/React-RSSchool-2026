@@ -43,7 +43,9 @@ export default function App() {
     results,
     hasSearched,
     isLoading,
+    isFetching,
     errorMessage,
+    listPage,
     listHasNext,
     listHasPrev,
     listTotalCount,
@@ -79,11 +81,12 @@ export default function App() {
             items={results}
             hasSearched={hasSearched}
             isLoading={isLoading}
+            isFetching={isFetching}
             errorMessage={errorMessage}
             pagination={
               showPagination
                 ? {
-                    page: pageInUrl,
+                    page: listPage,
                     totalCount: listTotalCount,
                     hasNext: listHasNext,
                     hasPrev: listHasPrev,

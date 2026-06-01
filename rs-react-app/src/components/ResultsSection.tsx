@@ -1,6 +1,7 @@
 import { CardList } from './CardList';
 import { LoadingIndicator } from './LoadingIndicator';
 import { PeoplePagination } from './PeoplePagination';
+import { QUERY_UI } from '../constants';
 import type { ResultsSectionProps } from '../types';
 import './ResultsSection.css';
 
@@ -8,6 +9,7 @@ export function ResultsSection({
   items,
   hasSearched,
   isLoading,
+  isFetching,
   errorMessage,
   pagination,
   selectedItemId,
@@ -16,12 +18,13 @@ export function ResultsSection({
 }: ResultsSectionProps) {
   const hasItems = items.length > 0;
   const showError = Boolean(errorMessage);
+  const isBusy = isLoading || isFetching;
 
   return (
     <section
       className="results-section"
       aria-label="Results"
-      aria-busy={isLoading}
+      aria-busy={isBusy}
     >
       <div className="results-section__inner">
         <h2 className="results-section__title">Results</h2>
@@ -32,7 +35,9 @@ export function ResultsSection({
           {isLoading && (
             <div className="results-section__loading">
               <LoadingIndicator />
-              <p className="results-section__loading-text">Loading data…</p>
+              <p className="results-section__loading-text">
+                {QUERY_UI.listLoading}
+              </p>
             </div>
           )}
           {!isLoading && !hasSearched && (
@@ -49,11 +54,24 @@ export function ResultsSection({
             <p className="results-section__placeholder">No matching people.</p>
           )}
           {!isLoading && hasItems && (
-            <CardList
-              items={items}
-              selectedItemId={selectedItemId}
-              onItemSelect={onItemSelect}
-            />
+            <>
+              {isFetching && (
+                <div
+                  className="results-section__refreshing"
+                  aria-live="polite"
+                >
+                  <LoadingIndicator />
+                  <p className="results-section__refreshing-text">
+                    {QUERY_UI.listRefreshing}
+                  </p>
+                </div>
+              )}
+              <CardList
+                items={items}
+                selectedItemId={selectedItemId}
+                onItemSelect={onItemSelect}
+              />
+            </>
           )}
           {!isLoading && hasSearched && !showError && pagination && (
             <div onClick={(event) => event.stopPropagation()}>

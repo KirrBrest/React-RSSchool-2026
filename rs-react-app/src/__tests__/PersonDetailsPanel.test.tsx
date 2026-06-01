@@ -1,6 +1,7 @@
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { QUERY_UI } from '../constants';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { resetSwapiApiState } from '../store';
@@ -42,7 +43,7 @@ describe('PersonDetailsPanel', () => {
   it('shows loading state while person details are fetched', () => {
     fetchPerson.mockReturnValue(new Promise(() => {}));
     renderDetailsAt('/details?details=1');
-    expect(screen.getByText('Loading details…')).toBeInTheDocument();
+    expect(screen.getByText(QUERY_UI.detailsLoading)).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
   });
 
@@ -54,4 +55,5 @@ describe('PersonDetailsPanel', () => {
     expect(screen.getByText('male')).toBeInTheDocument();
     expect(fetchPerson).toHaveBeenCalledWith('1');
   });
+
 });
