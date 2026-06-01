@@ -169,6 +169,48 @@ describe('App', () => {
         expect(root.getByRole('alert')).toHaveTextContent(expected);
       });
     });
+
+    it('clears stale list results when a later search fails', async () => {
+      fetchPeople.mockResolvedValueOnce(onePersonSwapiList());
+      const { view } = renderWithRouter();
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fetchPeople.mockRejectedValueOnce(new Error('SWAPI_HTTP_500'));
+      fireEvent.change(root.getByLabelText('Search query'), {
+        target: { value: 'broken' },
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Search' }));
+      const expected = AppFetchErrorMessage.fromUnknown(
+        new Error('SWAPI_HTTP_500')
+      );
+      await waitFor(() => {
+        expect(root.getByRole('alert')).toHaveTextContent(expected);
+      });
+      expect(
+        root.queryByRole('button', { name: 'View details for Luke Skywalker' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows a readable error in the details panel when fetch fails', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      fetchPerson.mockRejectedValue(new Error('SWAPI_HTTP_404'));
+      const { view } = renderWithRouter('/details?page=1&details=1');
+      const root = withinRenderedRoot(view);
+      const detailsPanel = within(
+        root.getByRole('region', { name: 'Person details' })
+      );
+      const expected = AppFetchErrorMessage.fromUnknown(
+        new Error('SWAPI_HTTP_404')
+      );
+      await waitFor(() => {
+        expect(detailsPanel.getByRole('alert')).toHaveTextContent(expected);
+      });
+      expect(detailsPanel.queryByText('Luke Skywalker')).not.toBeInTheDocument();
+    });
   });
 
   describe('state management', () => {

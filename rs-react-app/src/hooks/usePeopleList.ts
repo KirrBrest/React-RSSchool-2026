@@ -50,9 +50,9 @@ export function usePeopleList({
   } = useGetPeopleQuery(listQuery);
 
   const hasSearched = isSuccess || isError;
-  const listData = data ?? currentData;
+  const listData = isError ? undefined : (data ?? currentData);
   const isListLoading = isLoading && listData === undefined;
-  const isListFetching = isFetching && listData !== undefined;
+  const isListFetching = !isError && isFetching && listData !== undefined;
 
   useEffect(() => {
     if (homeMountHandledRef.current) {

@@ -143,6 +143,23 @@ describe('ResultsSection', () => {
   });
 
   describe('error handling', () => {
+    it('hides result cards when an error message is shown', () => {
+      const items: PersonResultItem[] = [
+        { id: '1', name: 'Han Solo', description: 'Smuggler' },
+      ];
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: 'Request failed.',
+        pagination: null,
+        ...testDetailHandlers,
+      });
+      const region = withinRenderedRoot(view);
+      expect(region.getByRole('alert')).toHaveTextContent('Request failed.');
+      expect(region.queryByText('Han Solo')).not.toBeInTheDocument();
+    });
     it('displays error message when API call fails', () => {
       const message = AppFetchErrorMessage.fromUnknown(new Error('SWAPI_HTTP_404'));
       const view = renderResultsSection({

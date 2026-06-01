@@ -19,9 +19,10 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
     error,
   } = useGetPersonQuery(personId);
 
-  const displayPerson = person ?? currentData;
+  const displayPerson = isError ? undefined : (person ?? currentData);
   const isInitialLoading = isLoading && displayPerson === undefined;
-  const isBackgroundFetching = isFetching && displayPerson !== undefined;
+  const isBackgroundFetching =
+    !isError && isFetching && displayPerson !== undefined;
   const errorMessage = isError ? rtkQueryErrorMessage(error) : null;
 
   return (
@@ -106,6 +107,7 @@ export function PersonDetailsPanel() {
       className="person-details"
       aria-label="Person details"
       aria-busy={personId !== null}
+      aria-live="polite"
     >
       <div className="person-details__header">
         <h2 className="person-details__title">Details</h2>

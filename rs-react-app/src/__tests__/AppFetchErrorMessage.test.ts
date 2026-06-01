@@ -46,6 +46,18 @@ describe('AppFetchErrorMessage.fromUnknown', () => {
     );
   });
 
+  it('returns a message for invalid API payloads', () => {
+    expect(
+      AppFetchErrorMessage.fromUnknown(new Error('SWAPI_INVALID_RESPONSE'))
+    ).toContain('unexpected format');
+  });
+
+  it('returns a message for invalid person ids', () => {
+    expect(
+      AppFetchErrorMessage.fromUnknown(new Error('SWAPI_INVALID_PERSON_ID'))
+    ).toContain('invalid');
+  });
+
   it('returns generic loading error message for other errors', () => {
     const result = AppFetchErrorMessage.fromUnknown(
       new Error('Unexpected error')

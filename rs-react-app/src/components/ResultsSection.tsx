@@ -25,6 +25,7 @@ export function ResultsSection({
       className="results-section"
       aria-label="Results"
       aria-busy={isBusy}
+      aria-live="polite"
     >
       <div className="results-section__inner">
         <h2 className="results-section__title">Results</h2>
@@ -53,7 +54,7 @@ export function ResultsSection({
           {!isLoading && hasSearched && !showError && !hasItems && (
             <p className="results-section__placeholder">No matching people.</p>
           )}
-          {!isLoading && hasItems && (
+          {!isLoading && hasItems && !showError && (
             <>
               {isFetching && (
                 <div

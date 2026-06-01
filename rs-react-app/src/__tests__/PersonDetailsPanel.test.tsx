@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QUERY_UI } from '../constants';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
+import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { resetSwapiApiState } from '../store';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -56,4 +57,15 @@ describe('PersonDetailsPanel', () => {
     expect(fetchPerson).toHaveBeenCalledWith('1');
   });
 
+  it('shows a readable error when the person request fails', async () => {
+    fetchPerson.mockRejectedValue(new Error('SWAPI_HTTP_404'));
+    renderDetailsAt('/details?details=1');
+    const expected = AppFetchErrorMessage.fromUnknown(
+      new Error('SWAPI_HTTP_404')
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(expected);
+    });
+    expect(screen.queryByText('Luke Skywalker')).not.toBeInTheDocument();
+  });
 });
