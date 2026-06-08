@@ -5,16 +5,31 @@ import { FORM_LABELS, GENDER_OPTIONS } from '../../constants/formLabels';
 import { submissionInputSchema } from '../../validation/submissionSchema';
 import { isTermsAccepted } from '../../utils/isTermsAccepted';
 import { parseGenderValue } from '../../utils/parseGenderValue';
+import { readFileAsDataUrl } from '../../utils/readFileAsDataUrl';
+import { validateImageFile } from '../../utils/validateImageFile';
+import { CountryAutocomplete } from '../CountryAutocomplete/CountryAutocomplete';
+import { PasswordStrengthIndicator } from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import './FormFields.css';
+import '../CountryAutocomplete/CountryAutocomplete.css';
+import '../PasswordStrengthIndicator/PasswordStrengthIndicator.css';
 
 type UncontrolledFormProps = {
   onSuccess: () => void;
 };
 
+function getPictureFile(form: HTMLFormElement): File | null {
+  const pictureField = form.elements.namedItem('picture');
+  if (!(pictureField instanceof HTMLInputElement)) {
+    return null;
+  }
+  return pictureField.files?.item(0) ?? null;
+}
+
 export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
   const dispatch = useAppDispatch();
   const formRef = useRef<HTMLFormElement>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [passwordValue, setPasswordValue] = useState('');
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -37,12 +52,34 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
       return;
     }
 
+    const pictureValidation = validateImageFile(getPictureFile(form));
+    if (!pictureValidation.valid) {
+      setSubmitError(pictureValidation.message);
+      return;
+    }
+
+    const pictureFile = getPictureFile(form);
+    if (pictureFile === null) {
+      setSubmitError('Profile picture is required.');
+      return;
+    }
+
+    let pictureDataUrl = '';
+    try {
+      pictureDataUrl = await readFileAsDataUrl(pictureFile);
+    } catch {
+      setSubmitError('Profile picture could not be read.');
+      return;
+    }
+
     const parsed = submissionInputSchema.safeParse({
       source: 'uncontrolled',
       name: String(formData.get('name') ?? ''),
       age: String(formData.get('age') ?? ''),
       email: String(formData.get('email') ?? ''),
       gender,
+      country: String(formData.get('country') ?? ''),
+      pictureDataUrl,
     });
 
     if (!parsed.success) {
@@ -53,6 +90,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
 
     dispatch(addSubmission(parsed.data));
     form.reset();
+    setPasswordValue('');
     onSuccess();
   };
 
@@ -132,6 +170,66 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
         <label className="registration-form__checkbox" htmlFor="uncontrolled-terms">
           {FORM_LABELS.terms}
         </label>
+      </div>
+      <div className="registration-form__field">
+        <label
+          className="registration-form__label"
+          htmlFor="uncontrolled-password"
+        >
+          {FORM_LABELS.password}
+        </label>
+        <input
+          id="uncontrolled-password"
+          className="registration-form__input"
+          type="password"
+          name="password"
+          autoComplete="new-password"
+          value={passwordValue}
+          onChange={(event) => {
+            setPasswordValue(event.target.value);
+          }}
+        />
+        <PasswordStrengthIndicator password={passwordValue} />
+      </div>
+      <div className="registration-form__field">
+        <label
+          className="registration-form__label"
+          htmlFor="uncontrolled-confirm-password"
+        >
+          {FORM_LABELS.confirmPassword}
+        </label>
+        <input
+          id="uncontrolled-confirm-password"
+          className="registration-form__input"
+          type="password"
+          name="confirmPassword"
+          autoComplete="new-password"
+        />
+      </div>
+      <div className="registration-form__field">
+        <label
+          className="registration-form__label"
+          htmlFor="uncontrolled-country"
+        >
+          {FORM_LABELS.country}
+        </label>
+        <CountryAutocomplete
+          id="uncontrolled-country"
+          variant="uncontrolled"
+          name="country"
+        />
+      </div>
+      <div className="registration-form__field">
+        <label className="registration-form__label" htmlFor="uncontrolled-picture">
+          {FORM_LABELS.picture}
+        </label>
+        <input
+          id="uncontrolled-picture"
+          className="registration-form__input"
+          type="file"
+          name="picture"
+          accept="image/png,image/jpeg"
+        />
       </div>
       {submitError !== null && (
         <p className="registration-form__error" role="alert">

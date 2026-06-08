@@ -5,7 +5,7 @@ import { clearSubmissions, selectSubmissions } from '../store';
 import { store } from '../store/index';
 import { RhfForm } from '../components/forms/RhfForm';
 import { ReduxProvider } from '../store/ReduxProvider';
-import { fillBasicFormFields } from './formTestHelpers';
+import { fillAdvancedFormFields, fillBasicFormFields } from './formTestHelpers';
 
 function renderRhfForm(onSuccess = vi.fn()) {
   return {
@@ -34,6 +34,7 @@ describe('RhfForm', () => {
       email: 'alan@example.com',
       gender: 'male',
     });
+    await fillAdvancedFormFields(user);
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() => {

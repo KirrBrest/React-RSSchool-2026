@@ -27,6 +27,8 @@ describe('SubmissionsList', () => {
         age: 45,
         email: 'grace@example.com',
         gender: 'female',
+        country: 'United States',
+        pictureDataUrl: 'data:image/png;base64,abc',
       })
     );
 
@@ -38,5 +40,6 @@ describe('SubmissionsList', () => {
 
     expect(screen.getByText('Grace Hopper')).toBeInTheDocument();
     expect(screen.getByText(/Submitted via Uncontrolled/)).toBeInTheDocument();
+    expect(screen.getByAltText('Grace Hopper profile')).toBeInTheDocument();
   });
 });

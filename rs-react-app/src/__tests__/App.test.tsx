@@ -5,7 +5,7 @@ import App from '../App';
 import { clearSubmissions } from '../store';
 import { store } from '../store/index';
 import { ReduxProvider } from '../store/ReduxProvider';
-import { fillBasicFormFields } from './formTestHelpers';
+import { fillAdvancedFormFields, fillBasicFormFields } from './formTestHelpers';
 
 function renderApp() {
   return render(
@@ -17,6 +17,7 @@ function renderApp() {
 
 async function submitUncontrolledForm(user: ReturnType<typeof userEvent.setup>) {
   await fillBasicFormFields(user, { gender: 'female' });
+  await fillAdvancedFormFields(user);
   await user.click(screen.getByRole('button', { name: 'Submit' }));
 }
 
@@ -71,6 +72,7 @@ describe('App', () => {
       email: 'alan@example.com',
       gender: 'male',
     });
+    await fillAdvancedFormFields(user);
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() => {

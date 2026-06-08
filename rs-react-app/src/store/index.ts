@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { countriesSlice } from './countriesSlice';
 import { submissionsSlice } from './submissionsSlice';
 
 export const store = configureStore({
   reducer: {
     submissions: submissionsSlice.reducer,
+    countries: countriesSlice.reducer,
   },
 });
 
@@ -15,3 +17,4 @@ export {
   clearSubmissions,
   selectSubmissions,
 } from './submissionsSlice';
+export { selectCountryNames } from './countriesSlice';

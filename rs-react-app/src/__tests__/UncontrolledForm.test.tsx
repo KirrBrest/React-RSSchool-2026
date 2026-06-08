@@ -5,7 +5,7 @@ import { clearSubmissions, selectSubmissions } from '../store';
 import { store } from '../store/index';
 import { UncontrolledForm } from '../components/forms/UncontrolledForm';
 import { ReduxProvider } from '../store/ReduxProvider';
-import { fillBasicFormFields } from './formTestHelpers';
+import { fillAdvancedFormFields, fillBasicFormFields } from './formTestHelpers';
 
 function renderUncontrolledForm(onSuccess = vi.fn()) {
   return {
@@ -29,6 +29,7 @@ describe('UncontrolledForm', () => {
     renderUncontrolledForm(onSuccess);
 
     await fillBasicFormFields(user, { gender: 'female' });
+    await fillAdvancedFormFields(user);
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() => {

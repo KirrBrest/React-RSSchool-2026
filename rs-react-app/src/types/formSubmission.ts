@@ -9,6 +9,8 @@ export type FormSubmission = {
   age: number;
   email: string;
   gender: GenderValue;
+  country: string;
+  pictureDataUrl: string;
   submittedAt: string;
 };
 

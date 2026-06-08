@@ -5,8 +5,14 @@ import { useAppDispatch } from '../../store/hooks';
 import { addSubmission } from '../../store';
 import { submissionInputSchema } from '../../validation/submissionSchema';
 import { isGenderValue } from '../../utils/parseGenderValue';
+import { readFileAsDataUrl } from '../../utils/readFileAsDataUrl';
+import { validateImageFile } from '../../utils/validateImageFile';
 import { FORM_LABELS, GENDER_OPTIONS } from '../../constants/formLabels';
+import { CountryAutocomplete } from '../CountryAutocomplete/CountryAutocomplete';
+import { PasswordStrengthIndicator } from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import './FormFields.css';
+import '../CountryAutocomplete/CountryAutocomplete.css';
+import '../PasswordStrengthIndicator/PasswordStrengthIndicator.css';
 
 const rhfFormSchema = z.object({
   name: z.string(),
@@ -16,6 +22,10 @@ const rhfFormSchema = z.object({
   acceptTerms: z.boolean().refine((value) => value === true, {
     message: 'You must accept the Terms and Conditions.',
   }),
+  password: z.string(),
+  confirmPassword: z.string(),
+  country: z.string(),
+  picture: z.custom<FileList | undefined>(),
 });
 
 type RhfFormValues = {
@@ -24,6 +34,10 @@ type RhfFormValues = {
   email: string;
   gender: string;
   acceptTerms: boolean;
+  password: string;
+  confirmPassword: string;
+  country: string;
+  picture: FileList | undefined;
 };
 
 type RhfFormProps = {
@@ -36,10 +50,21 @@ const RHF_FIELD_NAMES: readonly (keyof RhfFormValues)[] = [
   'email',
   'gender',
   'acceptTerms',
+  'password',
+  'confirmPassword',
+  'country',
+  'picture',
 ];
 
 function isRhfFieldName(value: string): value is keyof RhfFormValues {
   return RHF_FIELD_NAMES.some((fieldName) => fieldName === value);
+}
+
+function getPictureFile(files: FileList | undefined): File | null {
+  if (files === undefined) {
+    return null;
+  }
+  return files.item(0);
 }
 
 export function RhfForm({ onSuccess }: RhfFormProps) {
@@ -49,6 +74,8 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
     handleSubmit,
     reset,
     setError,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RhfFormValues>({
     resolver: zodResolver(rhfFormSchema),
@@ -58,16 +85,43 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
       email: '',
       gender: '',
       acceptTerms: false,
+      password: '',
+      confirmPassword: '',
+      country: '',
     },
   });
 
+  const passwordValue = watch('password');
+
   const onSubmit = async (values: RhfFormValues): Promise<void> => {
+    const pictureValidation = validateImageFile(getPictureFile(values.picture));
+    if (!pictureValidation.valid) {
+      setError('picture', { message: pictureValidation.message });
+      return;
+    }
+
+    const pictureFile = getPictureFile(values.picture);
+    if (pictureFile === null) {
+      setError('picture', { message: 'Profile picture is required.' });
+      return;
+    }
+
+    let pictureDataUrl = '';
+    try {
+      pictureDataUrl = await readFileAsDataUrl(pictureFile);
+    } catch {
+      setError('picture', { message: 'Profile picture could not be read.' });
+      return;
+    }
+
     const parsed = submissionInputSchema.safeParse({
       source: 'rhf',
       name: values.name,
       age: values.age,
       email: values.email,
       gender: values.gender,
+      country: values.country,
+      pictureDataUrl,
     });
 
     if (!parsed.success) {
@@ -177,6 +231,71 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
       {errors.acceptTerms && (
         <p className="registration-form__error">{errors.acceptTerms.message}</p>
       )}
+      <div className="registration-form__field">
+        <label className="registration-form__label" htmlFor="rhf-password">
+          {FORM_LABELS.password}
+        </label>
+        <input
+          id="rhf-password"
+          className="registration-form__input"
+          type="password"
+          autoComplete="new-password"
+          {...register('password')}
+        />
+        <PasswordStrengthIndicator password={passwordValue} />
+        {errors.password && (
+          <p className="registration-form__error">{errors.password.message}</p>
+        )}
+      </div>
+      <div className="registration-form__field">
+        <label
+          className="registration-form__label"
+          htmlFor="rhf-confirm-password"
+        >
+          {FORM_LABELS.confirmPassword}
+        </label>
+        <input
+          id="rhf-confirm-password"
+          className="registration-form__input"
+          type="password"
+          autoComplete="new-password"
+          {...register('confirmPassword')}
+        />
+        {errors.confirmPassword && (
+          <p className="registration-form__error">
+            {errors.confirmPassword.message}
+          </p>
+        )}
+      </div>
+      <div className="registration-form__field">
+        <label className="registration-form__label" htmlFor="rhf-country">
+          {FORM_LABELS.country}
+        </label>
+        <CountryAutocomplete
+          id="rhf-country"
+          variant="rhf"
+          registration={register('country')}
+          setCountryValue={(value) => {
+            setValue('country', value, { shouldDirty: true, shouldTouch: true });
+          }}
+          error={errors.country?.message}
+        />
+      </div>
+      <div className="registration-form__field">
+        <label className="registration-form__label" htmlFor="rhf-picture">
+          {FORM_LABELS.picture}
+        </label>
+        <input
+          id="rhf-picture"
+          className="registration-form__input"
+          type="file"
+          accept="image/png,image/jpeg"
+          {...register('picture')}
+        />
+        {errors.picture && (
+          <p className="registration-form__error">{errors.picture.message}</p>
+        )}
+      </div>
       {errors.root && (
         <p className="registration-form__error" role="alert">
           {errors.root.message}
