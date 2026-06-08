@@ -47,7 +47,7 @@ describe('Modal', () => {
     if (backdrop === null) {
       throw new Error('Backdrop element not found');
     }
-    fireEvent.click(backdrop);
+    fireEvent.mouseDown(backdrop);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -58,7 +58,7 @@ describe('Modal', () => {
         <p>Inner content</p>
       </Modal>
     );
-    fireEvent.click(screen.getByText('Inner content'));
+    fireEvent.mouseDown(screen.getByText('Inner content'));
     expect(onClose).not.toHaveBeenCalled();
   });
 

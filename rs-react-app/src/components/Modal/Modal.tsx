@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import type { ModalProps } from '../../types/modal';
 import {
@@ -72,15 +72,22 @@ export function Modal({
     return null;
   }
 
+  const handleBackdropMouseDown = (event: MouseEvent<HTMLDivElement>): void => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    onClose();
+  };
+
   return createPortal(
-    <div className="modal" onClick={onClose}>
+    <div className="modal" onMouseDown={handleBackdropMouseDown}>
       <div
         ref={panelRef}
         className="modal__panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onClick={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="modal__header">
           <h2 id={titleId} className="modal__title">

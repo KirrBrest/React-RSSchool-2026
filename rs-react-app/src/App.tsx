@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
 import { Modal } from './components/Modal/Modal';
+import { RhfForm } from './components/forms/RhfForm';
+import { UncontrolledForm } from './components/forms/UncontrolledForm';
+import { SubmissionsList } from './components/SubmissionsList/SubmissionsList';
 import './App.css';
 
 type ActiveFormModal = 'uncontrolled' | 'rhf' | null;
@@ -38,7 +41,7 @@ export default function App() {
       </header>
       <section className="app__submissions" aria-label="Form submissions">
         <h2 className="app__section-title">Submissions</h2>
-        <p className="app__placeholder">No submissions yet.</p>
+        <SubmissionsList />
       </section>
       <section className="app__actions" aria-label="Open forms">
         <button
@@ -65,15 +68,9 @@ export default function App() {
         returnFocusRef={returnFocusRef}
       >
         {activeModal === 'uncontrolled' && (
-          <p className="app__modal-placeholder">
-            Uncontrolled form will be implemented here.
-          </p>
+          <UncontrolledForm onSuccess={closeModal} />
         )}
-        {activeModal === 'rhf' && (
-          <p className="app__modal-placeholder">
-            React Hook Form will be implemented here.
-          </p>
-        )}
+        {activeModal === 'rhf' && <RhfForm onSuccess={closeModal} />}
       </Modal>
     </div>
   );

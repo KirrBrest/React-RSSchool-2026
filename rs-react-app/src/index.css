@@ -5,6 +5,7 @@
   --color-surface-raised: #ffffff;
   --color-border: #d8dce8;
   --color-accent: #3b82f6;
+  --color-danger-text: #b42318;
   --color-overlay: rgb(15 23 42 / 0.45);
   --color-shadow: rgb(15 23 42 / 0.18);
 }
