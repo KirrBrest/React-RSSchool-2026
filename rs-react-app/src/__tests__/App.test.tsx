@@ -61,6 +61,7 @@ describe('App', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
     expect(screen.getByText('Grace Hopper')).toBeInTheDocument();
+    expect(document.querySelector('.submission-card--highlighted')).not.toBeNull();
     expect(screen.getByText(/Submitted via Uncontrolled/)).toBeInTheDocument();
 
     await user.click(

@@ -3,6 +3,7 @@ import './SubmissionCard.css';
 
 type SubmissionCardProps = {
   submission: FormSubmission;
+  isHighlighted?: boolean;
 };
 
 const SOURCE_LABELS: Record<FormSubmission['source'], string> = {
@@ -10,9 +11,19 @@ const SOURCE_LABELS: Record<FormSubmission['source'], string> = {
   rhf: 'React Hook Form',
 };
 
-export function SubmissionCard({ submission }: SubmissionCardProps) {
+export function SubmissionCard({
+  submission,
+  isHighlighted = false,
+}: SubmissionCardProps) {
+  const cardClassName = isHighlighted
+    ? 'submission-card submission-card--highlighted'
+    : 'submission-card';
+
   return (
-    <article className="submission-card" aria-label={`Submission by ${submission.name}`}>
+    <article
+      className={cardClassName}
+      aria-label={`Submission by ${submission.name}`}
+    >
       <img
         className="submission-card__image"
         src={submission.pictureDataUrl}

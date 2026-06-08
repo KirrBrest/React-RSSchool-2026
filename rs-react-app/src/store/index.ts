@@ -14,7 +14,9 @@ export type AppDispatch = typeof store.dispatch;
 
 export {
   addSubmission,
+  clearSubmissionHighlight,
   clearSubmissions,
+  selectLastSubmittedId,
   selectSubmissions,
 } from './submissionsSlice';
 export { selectCountryNames } from './countriesSlice';
