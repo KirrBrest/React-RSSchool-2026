@@ -76,6 +76,33 @@ describe('Modal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('traps focus inside the dialog', () => {
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Focus trap modal">
+        <button type="button">First</button>
+        <button type="button">Second</button>
+      </Modal>
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Focus trap modal' });
+    const buttons = dialog.querySelectorAll('button');
+    expect(buttons.length).toBeGreaterThan(1);
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('does not render when the portal root is missing', () => {
+    const portalRoot = document.getElementById('modal-root');
+    portalRoot?.remove();
+
+    render(
+      <Modal isOpen onClose={vi.fn()} title="Missing portal">
+        <p>Body</p>
+      </Modal>
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('returns focus to the trigger after close', () => {
     const onClose = vi.fn();
     const trigger = document.createElement('button');
