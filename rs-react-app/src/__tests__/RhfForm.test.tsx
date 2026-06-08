@@ -60,10 +60,37 @@ describe('RhfForm', () => {
       gender: 'female',
       acceptTerms: false,
     });
-    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    const termsCheckbox = screen.getByLabelText('I accept the Terms and Conditions');
+    await user.click(termsCheckbox);
+    await user.click(termsCheckbox);
 
     expect(
       await screen.findByText('You must accept the Terms and Conditions.')
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+  });
+
+  it('disables submit while the form is invalid', () => {
+    renderRhfForm();
+
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+  });
+
+  it('requires matching passwords', async () => {
+    const user = userEvent.setup();
+    renderRhfForm();
+
+    await fillBasicFormFields(user, { gender: 'male' });
+    await user.type(screen.getByLabelText('Password'), 'Secret1!');
+    await user.type(screen.getByLabelText('Confirm password'), 'Different1!');
+    await user.type(screen.getByLabelText('Country'), 'United States');
+    await user.upload(
+      screen.getByLabelText('Profile picture'),
+      new File(['image-bytes'], 'profile.png', { type: 'image/png' })
+    );
+
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    expect(await screen.findByText('Passwords must match.')).toBeInTheDocument();
   });
 });

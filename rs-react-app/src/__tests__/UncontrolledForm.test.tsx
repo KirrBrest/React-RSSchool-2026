@@ -58,7 +58,36 @@ describe('UncontrolledForm', () => {
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     expect(
-      await screen.findByRole('alert')
-    ).toHaveTextContent('You must accept the Terms and Conditions.');
+      await screen.findByText('You must accept the Terms and Conditions.')
+    ).toBeInTheDocument();
+  });
+
+  it('shows field validation errors on submit', async () => {
+    const user = userEvent.setup();
+    renderUncontrolledForm();
+
+    await user.type(screen.getByLabelText('Name'), 'john');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(
+      await screen.findByText('Name must start with an uppercase letter.')
+    ).toBeInTheDocument();
+  });
+
+  it('requires matching passwords on submit', async () => {
+    const user = userEvent.setup();
+    renderUncontrolledForm();
+
+    await fillBasicFormFields(user, { gender: 'female' });
+    await user.type(screen.getByLabelText('Password'), 'Secret1!');
+    await user.type(screen.getByLabelText('Confirm password'), 'Different1!');
+    await user.type(screen.getByLabelText('Country'), 'United States');
+    await user.upload(
+      screen.getByLabelText('Profile picture'),
+      new File(['image-bytes'], 'profile.png', { type: 'image/png' })
+    );
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(await screen.findByText('Passwords must match.')).toBeInTheDocument();
   });
 });

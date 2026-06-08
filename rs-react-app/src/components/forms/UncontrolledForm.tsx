@@ -2,13 +2,16 @@ import { useRef, useState, type FormEvent } from 'react';
 import { useAppDispatch } from '../../store/hooks';
 import { addSubmission } from '../../store';
 import { FORM_LABELS, GENDER_OPTIONS } from '../../constants/formLabels';
+import {
+  mapZodErrorsToFields,
+  uncontrolledFormSchema,
+  type UncontrolledFieldName,
+} from '../../validation/formSchemas';
 import { submissionInputSchema } from '../../validation/submissionSchema';
-import { isTermsAccepted } from '../../utils/isTermsAccepted';
-import { parseGenderValue } from '../../utils/parseGenderValue';
 import { readFileAsDataUrl } from '../../utils/readFileAsDataUrl';
-import { validateImageFile } from '../../utils/validateImageFile';
 import { CountryAutocomplete } from '../CountryAutocomplete/CountryAutocomplete';
 import { PasswordStrengthIndicator } from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
+import { FieldError } from './FieldError';
 import './FormFields.css';
 import '../CountryAutocomplete/CountryAutocomplete.css';
 import '../PasswordStrengthIndicator/PasswordStrengthIndicator.css';
@@ -28,39 +31,40 @@ function getPictureFile(form: HTMLFormElement): File | null {
 export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
   const dispatch = useAppDispatch();
   const formRef = useRef<HTMLFormElement>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<UncontrolledFieldName, string>>
+  >({});
   const [passwordValue, setPasswordValue] = useState('');
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    setSubmitError(null);
+    setFieldErrors({});
     const form = formRef.current;
     if (form === null) {
       return;
     }
 
     const formData = new FormData(form);
+    const validated = uncontrolledFormSchema.safeParse({
+      name: String(formData.get('name') ?? ''),
+      age: String(formData.get('age') ?? ''),
+      email: String(formData.get('email') ?? ''),
+      gender: String(formData.get('gender') ?? ''),
+      acceptTerms: formData.get('acceptTerms') === 'on',
+      password: String(formData.get('password') ?? ''),
+      confirmPassword: String(formData.get('confirmPassword') ?? ''),
+      country: String(formData.get('country') ?? ''),
+      picture: getPictureFile(form),
+    });
 
-    if (!isTermsAccepted(formData)) {
-      setSubmitError('You must accept the Terms and Conditions.');
+    if (!validated.success) {
+      setFieldErrors(mapZodErrorsToFields(validated.error));
       return;
     }
 
-    const gender = parseGenderValue(formData.get('gender'));
-    if (gender === null) {
-      setSubmitError('Choose a gender.');
-      return;
-    }
-
-    const pictureValidation = validateImageFile(getPictureFile(form));
-    if (!pictureValidation.valid) {
-      setSubmitError(pictureValidation.message);
-      return;
-    }
-
-    const pictureFile = getPictureFile(form);
+    const pictureFile = validated.data.picture;
     if (pictureFile === null) {
-      setSubmitError('Profile picture is required.');
+      setFieldErrors({ picture: 'Profile picture is required.' });
       return;
     }
 
@@ -68,29 +72,29 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
     try {
       pictureDataUrl = await readFileAsDataUrl(pictureFile);
     } catch {
-      setSubmitError('Profile picture could not be read.');
+      setFieldErrors({ picture: 'Profile picture could not be read.' });
       return;
     }
 
     const parsed = submissionInputSchema.safeParse({
       source: 'uncontrolled',
-      name: String(formData.get('name') ?? ''),
-      age: String(formData.get('age') ?? ''),
-      email: String(formData.get('email') ?? ''),
-      gender,
-      country: String(formData.get('country') ?? ''),
+      name: validated.data.name,
+      age: validated.data.age,
+      email: validated.data.email,
+      gender: validated.data.gender,
+      country: validated.data.country,
       pictureDataUrl,
     });
 
     if (!parsed.success) {
-      const firstIssue = parsed.error.issues[0];
-      setSubmitError(firstIssue?.message ?? 'Please check the form fields.');
+      setFieldErrors(mapZodErrorsToFields(parsed.error));
       return;
     }
 
     dispatch(addSubmission(parsed.data));
     form.reset();
     setPasswordValue('');
+    setFieldErrors({});
     onSuccess();
   };
 
@@ -114,6 +118,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           name="name"
           autoComplete="name"
         />
+        <FieldError message={fieldErrors.name} />
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-age">
@@ -124,9 +129,9 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           className="registration-form__input"
           type="number"
           name="age"
-          min={1}
-          max={120}
+          min={0}
         />
+        <FieldError message={fieldErrors.age} />
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-email">
@@ -139,6 +144,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           name="email"
           autoComplete="email"
         />
+        <FieldError message={fieldErrors.email} />
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-gender">
@@ -159,6 +165,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
             </option>
           ))}
         </select>
+        <FieldError message={fieldErrors.gender} />
       </div>
       <div className="registration-form__field registration-form__field--inline">
         <input
@@ -171,6 +178,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           {FORM_LABELS.terms}
         </label>
       </div>
+      <FieldError message={fieldErrors.acceptTerms} />
       <div className="registration-form__field">
         <label
           className="registration-form__label"
@@ -190,6 +198,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           }}
         />
         <PasswordStrengthIndicator password={passwordValue} />
+        <FieldError message={fieldErrors.password} />
       </div>
       <div className="registration-form__field">
         <label
@@ -205,6 +214,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           name="confirmPassword"
           autoComplete="new-password"
         />
+        <FieldError message={fieldErrors.confirmPassword} />
       </div>
       <div className="registration-form__field">
         <label
@@ -217,6 +227,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           id="uncontrolled-country"
           variant="uncontrolled"
           name="country"
+          error={fieldErrors.country}
         />
       </div>
       <div className="registration-form__field">
@@ -230,12 +241,8 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
           name="picture"
           accept="image/png,image/jpeg"
         />
+        <FieldError message={fieldErrors.picture} />
       </div>
-      {submitError !== null && (
-        <p className="registration-form__error" role="alert">
-          {submitError}
-        </p>
-      )}
       <button type="submit" className="registration-form__submit">
         Submit
       </button>

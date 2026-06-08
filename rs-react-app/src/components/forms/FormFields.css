@@ -65,6 +65,10 @@
   flex-shrink: 0;
 }
 
+.registration-form__error-slot {
+  min-height: 1.15rem;
+}
+
 .registration-form__error {
   margin: 0;
   font-size: 0.8rem;
