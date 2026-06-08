@@ -1,13 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { z } from 'zod';
 import { clearSubmissions, selectSubmissions } from '../store';
 import { store } from '../store/index';
 import { RhfForm } from '../components/forms/RhfForm';
 import { ReduxProvider } from '../store/ReduxProvider';
 import * as readFileModule from '../utils/readFileAsDataUrl';
-import * as submissionSchemaModule from '../validation/submissionSchema';
+import {
+  submissionInputSchema,
+} from '../validation/submissionSchema';
 import { fillAdvancedFormFields, fillBasicFormFields } from './formTestHelpers';
 
 function renderRhfForm(onSuccess = vi.fn()) {
@@ -173,16 +174,21 @@ describe('RhfForm', () => {
 
   it('maps submission schema errors back to form fields', async () => {
     const user = userEvent.setup();
-    vi.spyOn(submissionSchemaModule.submissionInputSchema, 'safeParse').mockReturnValueOnce({
-      success: false,
-      error: new z.ZodError([
-        {
-          code: 'custom',
-          message: 'Choose a country from the list.',
-          path: ['country'],
-        },
-      ]),
+    const invalidSubmission = submissionInputSchema.safeParse({
+      source: 'rhf',
+      name: 'Grace',
+      age: '30',
+      email: 'grace@example.com',
+      gender: 'female',
+      country: 'Atlantis',
+      pictureDataUrl: 'data:image/png;base64,abc',
     });
+    if (invalidSubmission.success) {
+      throw new Error('Expected submission validation to fail.');
+    }
+    vi.spyOn(submissionInputSchema, 'safeParse').mockReturnValueOnce(
+      invalidSubmission
+    );
     renderRhfForm();
 
     await fillValidRhfForm(user);
