@@ -10,6 +10,11 @@
   gap: 0.3rem;
 }
 
+.registration-form__field--inline {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
 .registration-form__label {
   font-size: 0.82rem;
   font-weight: 600;
@@ -43,6 +48,21 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
+}
+
+.registration-form__checkbox {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.registration-form__checkbox-input {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
 }
 
 .registration-form__error {

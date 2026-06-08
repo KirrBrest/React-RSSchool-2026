@@ -1,6 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { describe, expect, it } from 'vitest';
-import { countriesSlice } from '../store/countriesSlice';
 import {
   addSubmission,
   selectSubmissions,
@@ -13,8 +12,6 @@ const sampleSubmission = {
   age: 36,
   email: 'ada@example.com',
   gender: 'female',
-  country: 'United Kingdom',
-  pictureDataUrl: 'data:image/png;base64,abc',
 } satisfies Parameters<typeof addSubmission>[0];
 
 describe('submissionsSlice', () => {
@@ -22,7 +19,6 @@ describe('submissionsSlice', () => {
     const store = configureStore({
       reducer: {
         submissions: submissionsSlice.reducer,
-        countries: countriesSlice.reducer,
       },
     });
 

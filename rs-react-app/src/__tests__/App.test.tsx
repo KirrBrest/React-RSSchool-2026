@@ -5,7 +5,7 @@ import App from '../App';
 import { clearSubmissions } from '../store';
 import { store } from '../store/index';
 import { ReduxProvider } from '../store/ReduxProvider';
-import { createTestImageFile } from './testImageFile';
+import { fillBasicFormFields } from './formTestHelpers';
 
 function renderApp() {
   return render(
@@ -16,17 +16,7 @@ function renderApp() {
 }
 
 async function submitUncontrolledForm(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText('Name'), 'Grace Hopper');
-  await user.type(screen.getByLabelText('Age'), '45');
-  await user.type(screen.getByLabelText('Email'), 'grace@example.com');
-  await user.type(screen.getByLabelText('Password'), 'secret123');
-  await user.type(screen.getByLabelText('Confirm password'), 'secret123');
-  await user.click(screen.getByLabelText('Female'));
-  await user.type(screen.getByLabelText('Country'), 'United States');
-  await user.upload(
-    screen.getByLabelText('Profile picture'),
-    createTestImageFile()
-  );
+  await fillBasicFormFields(user, { gender: 'female' });
   await user.click(screen.getByRole('button', { name: 'Submit' }));
 }
 
@@ -75,17 +65,12 @@ describe('App', () => {
     await user.click(
       screen.getByRole('button', { name: 'Open React Hook Form' })
     );
-    await user.type(screen.getByLabelText('Name'), 'Alan Turing');
-    await user.type(screen.getByLabelText('Age'), '41');
-    await user.type(screen.getByLabelText('Email'), 'alan@example.com');
-    await user.type(screen.getByLabelText('Password'), 'secret123');
-    await user.type(screen.getByLabelText('Confirm password'), 'secret123');
-    await user.click(screen.getByLabelText('Male'));
-    await user.type(screen.getByLabelText('Country'), 'United Kingdom');
-    await user.upload(
-      screen.getByLabelText('Profile picture'),
-      createTestImageFile('alan.png')
-    );
+    await fillBasicFormFields(user, {
+      name: 'Alan Turing',
+      age: '41',
+      email: 'alan@example.com',
+      gender: 'male',
+    });
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() => {

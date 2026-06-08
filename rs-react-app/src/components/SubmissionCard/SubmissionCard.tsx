@@ -13,11 +13,6 @@ const SOURCE_LABELS: Record<FormSubmission['source'], string> = {
 export function SubmissionCard({ submission }: SubmissionCardProps) {
   return (
     <article className="submission-card" aria-label={`Submission by ${submission.name}`}>
-      <img
-        className="submission-card__image"
-        src={submission.pictureDataUrl}
-        alt={`${submission.name} profile`}
-      />
       <div className="submission-card__body">
         <h3 className="submission-card__name">{submission.name}</h3>
         <p className="submission-card__meta">
@@ -25,7 +20,6 @@ export function SubmissionCard({ submission }: SubmissionCardProps) {
           <span>
             Age {submission.age} · {submission.gender}
           </span>
-          <span>{submission.country}</span>
         </p>
         <p className="submission-card__source">
           Submitted via {SOURCE_LABELS[submission.source]}

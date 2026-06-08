@@ -27,8 +27,6 @@ describe('SubmissionsList', () => {
         age: 45,
         email: 'grace@example.com',
         gender: 'female',
-        country: 'United States',
-        pictureDataUrl: 'data:image/png;base64,abc',
       })
     );
 

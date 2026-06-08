@@ -1,28 +1,15 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useAppDispatch } from '../../store/hooks';
 import { addSubmission } from '../../store';
+import { FORM_LABELS, GENDER_OPTIONS } from '../../constants/formLabels';
 import { submissionInputSchema } from '../../validation/submissionSchema';
+import { isTermsAccepted } from '../../utils/isTermsAccepted';
 import { parseGenderValue } from '../../utils/parseGenderValue';
-import { readFileAsDataUrl } from '../../utils/readFileAsDataUrl';
-import { CountryAutocomplete } from '../CountryAutocomplete/CountryAutocomplete';
 import './FormFields.css';
-import '../CountryAutocomplete/CountryAutocomplete.css';
 
 type UncontrolledFormProps = {
   onSuccess: () => void;
 };
-
-function getPictureFile(form: HTMLFormElement): File | null {
-  const pictureField = form.elements.namedItem('picture');
-  if (!(pictureField instanceof HTMLInputElement)) {
-    return null;
-  }
-  const file = pictureField.files?.item(0);
-  if (file === undefined || file === null) {
-    return null;
-  }
-  return file;
-}
 
 export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
   const dispatch = useAppDispatch();
@@ -38,24 +25,9 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
     }
 
     const formData = new FormData(form);
-    const password = String(formData.get('password') ?? '');
-    const confirmPassword = String(formData.get('confirmPassword') ?? '');
-    if (password !== confirmPassword) {
-      setSubmitError('Passwords must match.');
-      return;
-    }
 
-    const pictureFile = getPictureFile(form);
-    if (pictureFile === null) {
-      setSubmitError('Profile picture is required.');
-      return;
-    }
-
-    let pictureDataUrl = '';
-    try {
-      pictureDataUrl = await readFileAsDataUrl(pictureFile);
-    } catch {
-      setSubmitError('Profile picture could not be read.');
+    if (!isTermsAccepted(formData)) {
+      setSubmitError('You must accept the Terms and Conditions.');
       return;
     }
 
@@ -71,8 +43,6 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
       age: String(formData.get('age') ?? ''),
       email: String(formData.get('email') ?? ''),
       gender,
-      country: String(formData.get('country') ?? ''),
-      pictureDataUrl,
     });
 
     if (!parsed.success) {
@@ -97,7 +67,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
     >
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-name">
-          Name
+          {FORM_LABELS.name}
         </label>
         <input
           id="uncontrolled-name"
@@ -109,7 +79,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-age">
-          Age
+          {FORM_LABELS.age}
         </label>
         <input
           id="uncontrolled-age"
@@ -122,7 +92,7 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="uncontrolled-email">
-          Email
+          {FORM_LABELS.email}
         </label>
         <input
           id="uncontrolled-email"
@@ -133,76 +103,35 @@ export function UncontrolledForm({ onSuccess }: UncontrolledFormProps) {
         />
       </div>
       <div className="registration-form__field">
-        <label
-          className="registration-form__label"
-          htmlFor="uncontrolled-password"
+        <label className="registration-form__label" htmlFor="uncontrolled-gender">
+          {FORM_LABELS.gender}
+        </label>
+        <select
+          id="uncontrolled-gender"
+          className="registration-form__select"
+          name="gender"
+          defaultValue=""
         >
-          Password
-        </label>
-        <input
-          id="uncontrolled-password"
-          className="registration-form__input"
-          type="password"
-          name="password"
-          autoComplete="new-password"
-        />
+          <option value="" disabled>
+            Select gender
+          </option>
+          {GENDER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
-      <div className="registration-form__field">
-        <label
-          className="registration-form__label"
-          htmlFor="uncontrolled-confirm-password"
-        >
-          Confirm password
-        </label>
+      <div className="registration-form__field registration-form__field--inline">
         <input
-          id="uncontrolled-confirm-password"
-          className="registration-form__input"
-          type="password"
-          name="confirmPassword"
-          autoComplete="new-password"
+          id="uncontrolled-terms"
+          className="registration-form__checkbox-input"
+          type="checkbox"
+          name="acceptTerms"
         />
-      </div>
-      <fieldset className="registration-form__field">
-        <legend className="registration-form__label">Gender</legend>
-        <div className="registration-form__radios">
-          <label className="registration-form__radio">
-            <input type="radio" name="gender" value="male" />
-            Male
-          </label>
-          <label className="registration-form__radio">
-            <input type="radio" name="gender" value="female" />
-            Female
-          </label>
-          <label className="registration-form__radio">
-            <input type="radio" name="gender" value="other" />
-            Other
-          </label>
-        </div>
-      </fieldset>
-      <div className="registration-form__field">
-        <label
-          className="registration-form__label"
-          htmlFor="uncontrolled-country"
-        >
-          Country
+        <label className="registration-form__checkbox" htmlFor="uncontrolled-terms">
+          {FORM_LABELS.terms}
         </label>
-        <CountryAutocomplete
-          id="uncontrolled-country"
-          variant="uncontrolled"
-          name="country"
-        />
-      </div>
-      <div className="registration-form__field">
-        <label className="registration-form__label" htmlFor="uncontrolled-picture">
-          Profile picture
-        </label>
-        <input
-          id="uncontrolled-picture"
-          className="registration-form__input"
-          type="file"
-          name="picture"
-          accept="image/png,image/jpeg,image/webp"
-        />
       </div>
       {submitError !== null && (
         <p className="registration-form__error" role="alert">

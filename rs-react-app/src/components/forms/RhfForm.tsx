@@ -4,33 +4,27 @@ import { z } from 'zod';
 import { useAppDispatch } from '../../store/hooks';
 import { addSubmission } from '../../store';
 import { submissionInputSchema } from '../../validation/submissionSchema';
-import { readFileAsDataUrl } from '../../utils/readFileAsDataUrl';
-import { CountryAutocomplete } from '../CountryAutocomplete/CountryAutocomplete';
+import { isGenderValue } from '../../utils/parseGenderValue';
+import { FORM_LABELS, GENDER_OPTIONS } from '../../constants/formLabels';
 import './FormFields.css';
-import '../CountryAutocomplete/CountryAutocomplete.css';
 
-const rhfFormSchema = z
-  .object({
-    name: z.string(),
-    age: z.string(),
-    email: z.string(),
-    password: z.string(),
-    confirmPassword: z.string(),
-    gender: z.enum(['male', 'female', 'other']),
-    country: z.string(),
-    picture: z.custom<FileList | undefined>(),
-  })
-  .superRefine((values, context) => {
-    if (values.password !== values.confirmPassword) {
-      context.addIssue({
-        code: 'custom',
-        message: 'Passwords must match.',
-        path: ['confirmPassword'],
-      });
-    }
-  });
+const rhfFormSchema = z.object({
+  name: z.string(),
+  age: z.string(),
+  email: z.string(),
+  gender: z.string().refine(isGenderValue, 'Choose a gender.'),
+  acceptTerms: z.boolean().refine((value) => value === true, {
+    message: 'You must accept the Terms and Conditions.',
+  }),
+});
 
-type RhfFormValues = z.infer<typeof rhfFormSchema>;
+type RhfFormValues = {
+  name: string;
+  age: string;
+  email: string;
+  gender: string;
+  acceptTerms: boolean;
+};
 
 type RhfFormProps = {
   onSuccess: () => void;
@@ -40,26 +34,12 @@ const RHF_FIELD_NAMES: readonly (keyof RhfFormValues)[] = [
   'name',
   'age',
   'email',
-  'password',
-  'confirmPassword',
   'gender',
-  'country',
-  'picture',
+  'acceptTerms',
 ];
 
 function isRhfFieldName(value: string): value is keyof RhfFormValues {
   return RHF_FIELD_NAMES.some((fieldName) => fieldName === value);
-}
-
-function getPictureFile(files: FileList | undefined): File | null {
-  if (files === undefined) {
-    return null;
-  }
-  const file = files.item(0);
-  if (file === null) {
-    return null;
-  }
-  return file;
 }
 
 export function RhfForm({ onSuccess }: RhfFormProps) {
@@ -69,7 +49,6 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
     handleSubmit,
     reset,
     setError,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RhfFormValues>({
     resolver: zodResolver(rhfFormSchema),
@@ -77,36 +56,18 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
       name: '',
       age: '',
       email: '',
-      password: '',
-      confirmPassword: '',
-      gender: 'male',
-      country: '',
+      gender: '',
+      acceptTerms: false,
     },
   });
 
   const onSubmit = async (values: RhfFormValues): Promise<void> => {
-    const pictureFile = getPictureFile(values.picture);
-    if (pictureFile === null) {
-      setError('picture', { message: 'Profile picture is required.' });
-      return;
-    }
-
-    let pictureDataUrl = '';
-    try {
-      pictureDataUrl = await readFileAsDataUrl(pictureFile);
-    } catch {
-      setError('picture', { message: 'Profile picture could not be read.' });
-      return;
-    }
-
     const parsed = submissionInputSchema.safeParse({
       source: 'rhf',
       name: values.name,
       age: values.age,
       email: values.email,
       gender: values.gender,
-      country: values.country,
-      pictureDataUrl,
     });
 
     if (!parsed.success) {
@@ -136,7 +97,7 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
     >
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="rhf-name">
-          Name
+          {FORM_LABELS.name}
         </label>
         <input
           id="rhf-name"
@@ -151,7 +112,7 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="rhf-age">
-          Age
+          {FORM_LABELS.age}
         </label>
         <input
           id="rhf-age"
@@ -167,7 +128,7 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
       </div>
       <div className="registration-form__field">
         <label className="registration-form__label" htmlFor="rhf-email">
-          Email
+          {FORM_LABELS.email}
         </label>
         <input
           id="rhf-email"
@@ -181,89 +142,41 @@ export function RhfForm({ onSuccess }: RhfFormProps) {
         )}
       </div>
       <div className="registration-form__field">
-        <label className="registration-form__label" htmlFor="rhf-password">
-          Password
+        <label className="registration-form__label" htmlFor="rhf-gender">
+          {FORM_LABELS.gender}
         </label>
-        <input
-          id="rhf-password"
-          className="registration-form__input"
-          type="password"
-          autoComplete="new-password"
-          {...register('password')}
-        />
-        {errors.password && (
-          <p className="registration-form__error">{errors.password.message}</p>
-        )}
-      </div>
-      <div className="registration-form__field">
-        <label
-          className="registration-form__label"
-          htmlFor="rhf-confirm-password"
+        <select
+          id="rhf-gender"
+          className="registration-form__select"
+          {...register('gender')}
         >
-          Confirm password
-        </label>
-        <input
-          id="rhf-confirm-password"
-          className="registration-form__input"
-          type="password"
-          autoComplete="new-password"
-          {...register('confirmPassword')}
-        />
-        {errors.confirmPassword && (
-          <p className="registration-form__error">
-            {errors.confirmPassword.message}
-          </p>
-        )}
-      </div>
-      <fieldset className="registration-form__field">
-        <legend className="registration-form__label">Gender</legend>
-        <div className="registration-form__radios">
-          <label className="registration-form__radio">
-            <input type="radio" value="male" {...register('gender')} />
-            Male
-          </label>
-          <label className="registration-form__radio">
-            <input type="radio" value="female" {...register('gender')} />
-            Female
-          </label>
-          <label className="registration-form__radio">
-            <input type="radio" value="other" {...register('gender')} />
-            Other
-          </label>
-        </div>
+          <option value="" disabled>
+            Select gender
+          </option>
+          {GENDER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         {errors.gender && (
           <p className="registration-form__error">{errors.gender.message}</p>
         )}
-      </fieldset>
-      <div className="registration-form__field">
-        <label className="registration-form__label" htmlFor="rhf-country">
-          Country
-        </label>
-        <CountryAutocomplete
-          id="rhf-country"
-          variant="rhf"
-          registration={register('country')}
-          setCountryValue={(value) => {
-            setValue('country', value, { shouldDirty: true, shouldTouch: true });
-          }}
-          error={errors.country?.message}
-        />
       </div>
-      <div className="registration-form__field">
-        <label className="registration-form__label" htmlFor="rhf-picture">
-          Profile picture
-        </label>
+      <div className="registration-form__field registration-form__field--inline">
         <input
-          id="rhf-picture"
-          className="registration-form__input"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          {...register('picture')}
+          id="rhf-terms"
+          className="registration-form__checkbox-input"
+          type="checkbox"
+          {...register('acceptTerms')}
         />
-        {errors.picture && (
-          <p className="registration-form__error">{errors.picture.message}</p>
-        )}
+        <label className="registration-form__checkbox" htmlFor="rhf-terms">
+          {FORM_LABELS.terms}
+        </label>
       </div>
+      {errors.acceptTerms && (
+        <p className="registration-form__error">{errors.acceptTerms.message}</p>
+      )}
       {errors.root && (
         <p className="registration-form__error" role="alert">
           {errors.root.message}
