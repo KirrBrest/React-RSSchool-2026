@@ -26,6 +26,8 @@ export const RS_SCHOOL_REACT_COURSE_URL =
 export const AUTHOR_NAME = 'Kiryl Lukashchuk';
 export const AUTHOR_GITHUB = 'https://github.com/KirrBrest';
 export const AUTHOR_EMAIL = 'Lukashchuk.Kiryl@gmail.com';
+export const AUTHOR_AVATAR_URL = 'https://avatars.githubusercontent.com/KirrBrest';
+export const RS_SCHOOL_LOGO_PATH = '/images/rs-school-logo.svg';
 
 export const SELECTED_ITEMS_CSV = {
   header: 'Name,Description,Details URL,SWAPI URL,Person ID',

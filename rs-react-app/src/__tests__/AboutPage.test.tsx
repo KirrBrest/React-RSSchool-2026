@@ -25,6 +25,12 @@ describe('AboutPage', () => {
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Author' })).toBeInTheDocument();
     expect(screen.getByText('Kiryl Lukashchuk')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Photo of Kiryl Lukashchuk' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Rolling Scopes School logo' })
+    ).toBeInTheDocument();
     const githubLink = screen.getByRole('link', { name: 'GitHub profile' });
     expect(githubLink).toHaveAttribute('href', 'https://github.com/KirrBrest');
     expect(githubLink).toHaveAttribute('target', '_blank');

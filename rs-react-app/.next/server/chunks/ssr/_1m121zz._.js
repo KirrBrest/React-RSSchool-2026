@@ -1,3 +1,0 @@
-module.exports=[88788,a=>{"use strict";var b=a.i(32886),c=a.i(87924);a.s(["default",0,function({locale:a,...d}){if(!a)throw Error(void 0);return(0,c.jsx)(b.IntlProvider,{locale:a,...d})}])},98063,a=>{"use strict";var b=a.i(87924),c=a.i(15925),d=a.i(55027);a.s(["NotFoundPage",0,function(){let a=(0,c.useTranslations)("NotFound");return(0,b.jsx)("div",{className:"not-found-page",children:(0,b.jsxs)("main",{className:"not-found-page__main",children:[(0,b.jsx)("h1",{className:"not-found-page__title",children:a("title")}),(0,b.jsx)("p",{className:"not-found-page__message",children:a("message")}),(0,b.jsx)("p",{children:(0,b.jsx)(d.Link,{className:"not-found-page__home-link",href:"/",children:a("backToHome")})})]})})}])}];
-
-//# sourceMappingURL=_1m121zz._.js.map

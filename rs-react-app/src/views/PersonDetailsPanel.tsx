@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
@@ -11,6 +12,7 @@ import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
 import { rtkQueryErrorMessage } from '../utils/rtkQueryErrorMessage';
+import { getPersonAvatarUrl } from '../utils/personAvatarUrl';
 import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
@@ -59,6 +61,15 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
               </p>
             </div>
           )}
+          <Image
+            className="person-details__photo"
+            src={getPersonAvatarUrl(displayPerson.name, 256)}
+            alt={t('photoAlt', { name: displayPerson.name })}
+            width={160}
+            height={160}
+            sizes="160px"
+            priority
+          />
           <dl className="person-details__list">
             <div className="person-details__row">
               <dt>{t('name')}</dt>

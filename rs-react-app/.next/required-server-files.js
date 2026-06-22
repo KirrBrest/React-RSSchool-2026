@@ -63,7 +63,18 @@ self.__SERVER_FILES_MANIFEST={
           "search": ""
         }
       ],
-      "remotePatterns": [],
+      "remotePatterns": [
+        {
+          "protocol": "https",
+          "hostname": "avatars.githubusercontent.com",
+          "pathname": "/**"
+        },
+        {
+          "protocol": "https",
+          "hostname": "api.dicebear.com",
+          "pathname": "/9.x/initials/png"
+        }
+      ],
       "qualities": [
         75
       ],

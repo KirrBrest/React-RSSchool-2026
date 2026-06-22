@@ -41,7 +41,18 @@
         "search": ""
       }
     ],
-    "remotePatterns": [],
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "^(?:^(?:avatars\\.githubusercontent\\.com)$)$",
+        "pathname": "^(?:\\/(?!\\.{1,2}(?:\\/|$))(?:(?:(?!(?:^|\\/)\\.{1,2}(?:\\/|$)).)*?))$"
+      },
+      {
+        "protocol": "https",
+        "hostname": "^(?:^(?:api\\.dicebear\\.com)$)$",
+        "pathname": "^(?:\\/9\\.x\\/initials\\/png)$"
+      }
+    ],
     "qualities": [
       75
     ],

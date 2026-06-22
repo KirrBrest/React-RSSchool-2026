@@ -42,7 +42,8 @@
   },
   "Card": {
     "selectPerson": "Select {name}",
-    "viewDetails": "View details for {name}"
+    "viewDetails": "View details for {name}",
+    "personPhotoAlt": "Portrait of {name}"
   },
   "PersonDetails": {
     "sectionLabel": "Person details",
@@ -52,6 +53,7 @@
     "detailsRefresh": "Refresh details",
     "closeDetails": "Close details",
     "close": "Close",
+    "photoAlt": "Portrait of {name}",
     "noPersonSelected": "No person selected.",
     "name": "Name",
     "gender": "Gender",
@@ -74,7 +76,9 @@
   "About": {
     "title": "About",
     "authorHeading": "Author",
+    "authorPhotoAlt": "Photo of {name}",
     "linksHeading": "Links",
+    "rsSchoolLogoAlt": "Rolling Scopes School logo",
     "githubProfile": "GitHub profile",
     "rsSchoolCourse": "RS School React course",
     "bio": "I run a construction company and am the father of a large family, where patience and multitasking skills are cultivated—ideal qualities for development. In this project, I tried to prove that I can work equally confidently with both building architecture and application architecture."

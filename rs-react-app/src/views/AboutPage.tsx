@@ -1,8 +1,11 @@
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import {
+  AUTHOR_AVATAR_URL,
   AUTHOR_EMAIL,
   AUTHOR_GITHUB,
   AUTHOR_NAME,
+  RS_SCHOOL_LOGO_PATH,
   RS_SCHOOL_REACT_COURSE_URL,
 } from '../constants';
 import './AboutPage.css';
@@ -18,13 +21,32 @@ export async function AboutPage() {
           <h2 id="about-author-heading" className="about-page__heading">
             {t('authorHeading')}
           </h2>
-          <p className="about-page__author-name">{AUTHOR_NAME}</p>
-          <p className="about-page__bio">{t('bio')}</p>
+          <div className="about-page__author-profile">
+            <Image
+              className="about-page__author-photo"
+              src={AUTHOR_AVATAR_URL}
+              alt={t('authorPhotoAlt', { name: AUTHOR_NAME })}
+              width={120}
+              height={120}
+              priority
+            />
+            <div className="about-page__author-info">
+              <p className="about-page__author-name">{AUTHOR_NAME}</p>
+              <p className="about-page__bio">{t('bio')}</p>
+            </div>
+          </div>
         </section>
         <section className="about-page__links" aria-labelledby="about-links-heading">
           <h2 id="about-links-heading" className="about-page__heading">
             {t('linksHeading')}
           </h2>
+          <Image
+            className="about-page__school-logo"
+            src={RS_SCHOOL_LOGO_PATH}
+            alt={t('rsSchoolLogoAlt')}
+            width={160}
+            height={48}
+          />
           <p className="about-page__link-item">
             <a
               className="about-page__external-link"

@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type { CardProps } from '../types';
+import { getPersonAvatarUrl } from '../utils/personAvatarUrl';
 import './Card.css';
 
 export function Card({
@@ -54,6 +56,13 @@ export function Card({
         checked={isChecked}
         onChange={handleCheckboxChange}
         aria-label={t('selectPerson', { name: personLabel })}
+      />
+      <Image
+        className="result-card__photo"
+        src={getPersonAvatarUrl(personLabel, 96)}
+        alt={t('personPhotoAlt', { name: personLabel })}
+        width={48}
+        height={48}
       />
       <button
         type="button"

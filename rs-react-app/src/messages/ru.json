@@ -42,7 +42,8 @@
   },
   "Card": {
     "selectPerson": "Выбрать {name}",
-    "viewDetails": "Открыть детали для {name}"
+    "viewDetails": "Открыть детали для {name}",
+    "personPhotoAlt": "Портрет {name}"
   },
   "PersonDetails": {
     "sectionLabel": "Детали персонажа",
@@ -52,6 +53,7 @@
     "detailsRefresh": "Обновить детали",
     "closeDetails": "Закрыть детали",
     "close": "Закрыть",
+    "photoAlt": "Портрет {name}",
     "noPersonSelected": "Персонаж не выбран.",
     "name": "Имя",
     "gender": "Пол",
@@ -74,7 +76,9 @@
   "About": {
     "title": "О проекте",
     "authorHeading": "Автор",
+    "authorPhotoAlt": "Фото {name}",
     "linksHeading": "Ссылки",
+    "rsSchoolLogoAlt": "Логотип Rolling Scopes School",
     "githubProfile": "Профиль GitHub",
     "rsSchoolCourse": "Курс RS School React",
     "bio": "Я управляю строительной компанией и воспитываю большую семью, где терпение и умение совмещать задачи — привычная практика, полезная и в разработке. В этом проекте я хотел показать, что одинаково уверенно работаю и с архитектурой зданий, и с архитектурой приложений."
