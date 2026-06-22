@@ -1,4 +1,7 @@
+'use client';
+
 import { type ChangeEvent, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { useSearchTermStorage } from '../hooks/useSearchTermStorage';
 import type { SearchSectionProps } from '../types';
 import './SearchSection.css';
@@ -7,6 +10,7 @@ export function SearchSection({
   onSearch,
   onSearchInputChange,
 }: SearchSectionProps) {
+  const t = useTranslations('SearchSection');
   const { searchTerm, setSearchTerm, persistSearchTerm } = useSearchTermStorage();
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -21,9 +25,9 @@ export function SearchSection({
   };
 
   return (
-    <section className="search-section" aria-label="Search">
+    <section className="search-section" aria-label={t('sectionLabel')}>
       <div className="search-section__inner">
-        <h2 className="search-section__title">Search</h2>
+        <h2 className="search-section__title">{t('title')}</h2>
         <form className="search-section__form" onSubmit={handleFormSubmit}>
           <div className="search-section__field">
             <input
@@ -33,14 +37,14 @@ export function SearchSection({
               name="search-query"
               value={searchTerm}
               onChange={handleSearchChange}
-              placeholder="e.g. skywalker, falcon, coruscant…"
+              placeholder={t('placeholder')}
               autoComplete="off"
               spellCheck={false}
-              aria-label="Search query"
+              aria-label={t('queryLabel')}
             />
           </div>
           <button type="submit" className="search-section__submit">
-            Search
+            {t('submit')}
           </button>
         </form>
       </div>

@@ -113,6 +113,39 @@ vi.mock('next/navigation', () => ({
   useSearchParams: navigation.useMockSearchParams,
 }));
 
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    className,
+    onClick,
+  }: {
+    href: string;
+    children: ReactNode;
+    className?: string;
+    onClick?: (event: { preventDefault: () => void }) => void;
+  }) =>
+    createElement(
+      'a',
+      {
+        href,
+        className,
+        onClick: (event: { preventDefault: () => void }) => {
+          if (typeof href === 'string' && href.startsWith('/')) {
+            event.preventDefault();
+            navigation.applyNavigationUrl(href);
+          }
+          onClick?.(event);
+        },
+      },
+      children
+    ),
+  useRouter: navigation.useMockRouter,
+  usePathname: navigation.useMockPathname,
+  redirect: vi.fn(),
+  getPathname: vi.fn(),
+}));
+
 vi.mock('next/link', () => ({
   default: ({
     href,

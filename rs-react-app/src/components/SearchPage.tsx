@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { AppNav } from './AppNav';
 import { SearchSection } from './SearchSection';
 import { ResultsSection } from './ResultsSection';
@@ -10,6 +11,7 @@ import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
 import '../App.css';
 
 export function SearchPage() {
+  const t = useTranslations('SearchPage');
   const {
     pageInUrl,
     selectedDetailsId,
@@ -117,7 +119,7 @@ export function SearchPage() {
           className="app__error-test-button"
           onClick={triggerSimulatedCrash}
         >
-          Simulate error
+          {t('simulateError')}
         </button>
       </div>
     </div>

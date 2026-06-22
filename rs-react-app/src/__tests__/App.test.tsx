@@ -19,7 +19,7 @@ import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
-import { QUERY_UI, THEME_MODES } from '../constants';
+import { THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -287,7 +287,7 @@ describe('App', () => {
         expect(router.state.location.search).toBe('?page=1');
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
-      expect(root.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();
+      expect(root.queryByText('Loading data…')).not.toBeInTheDocument();
       expect(fetchPeople).not.toHaveBeenCalled();
     });
 
@@ -532,7 +532,7 @@ describe('App', () => {
       });
       expect(fetchPerson).not.toHaveBeenCalled();
       expect(
-        detailsPanel().queryByText(QUERY_UI.detailsLoading)
+        detailsPanel().queryByText('Loading details…')
       ).not.toBeInTheDocument();
     });
 

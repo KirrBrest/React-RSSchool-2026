@@ -304,6 +304,9 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
+      "resolveAlias": {
+        "next-intl/config": "./src/i18n/request.ts"
+      },
       "root": "D:\\IT\\311RSS_React\\React-RSSchool-2026\\rs-react-app"
     },
     "distDirRoot": ".next",

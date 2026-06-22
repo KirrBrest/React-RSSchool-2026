@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { SWAPI_PAGE_SIZE } from '../constants';
 import type { PeoplePaginationProps } from '../types';
 import './PeoplePagination.css';
@@ -10,22 +13,21 @@ export function PeoplePagination({
   onNext,
   onPrev,
 }: PeoplePaginationProps) {
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalCount / SWAPI_PAGE_SIZE)
-  );
+  const t = useTranslations('PeoplePagination');
+  const totalPages = Math.max(1, Math.ceil(totalCount / SWAPI_PAGE_SIZE));
+
   return (
-    <nav className="people-pagination" aria-label="People list pages">
+    <nav className="people-pagination" aria-label={t('navLabel')}>
       <button
         type="button"
         className="people-pagination__btn"
         disabled={!hasPrev}
         onClick={onPrev}
       >
-        Previous
+        {t('previous')}
       </button>
       <span className="people-pagination__status">
-        Page {page} of {totalPages}
+        {t('pageStatus', { page, totalPages })}
       </span>
       <button
         type="button"
@@ -33,7 +35,7 @@ export function PeoplePagination({
         disabled={!hasNext}
         onClick={onNext}
       >
-        Next
+        {t('next')}
       </button>
     </nav>
   );

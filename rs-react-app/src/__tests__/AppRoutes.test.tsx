@@ -5,6 +5,7 @@ import { AboutPage } from '../views/AboutPage';
 import { NotFoundPage } from '../views/NotFoundPage';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
+import { IntlTestProvider } from './IntlTestProvider';
 import { SearchPage } from '../components/SearchPage';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { resetStoreState } from './renderWithRouter';
@@ -21,14 +22,16 @@ function renderShellRoute(initialPath: string, children: React.ReactNode) {
   setNavigationState(pathname === '' ? '/' : pathname, search === '' ? '' : `?${search}`);
 
   return render(
-    <ReduxProvider>
-      <ThemeProvider>
-        <div className="app-shell">
-          <div className="app-shell__content">{children}</div>
-          <SelectedItemsFlyout />
-        </div>
-      </ThemeProvider>
-    </ReduxProvider>
+    <IntlTestProvider>
+      <ReduxProvider>
+        <ThemeProvider>
+          <div className="app-shell">
+            <div className="app-shell__content">{children}</div>
+            <SelectedItemsFlyout />
+          </div>
+        </ThemeProvider>
+      </ReduxProvider>
+    </IntlTestProvider>
   );
 }
 
@@ -51,9 +54,10 @@ describe('App routing pages', () => {
     expect(screen.getByText('Mock app home route')).toBeInTheDocument();
   });
 
-  it('renders the about route at /about', () => {
+  it('renders the about route at /about', async () => {
     setNavigationState('/about');
-    renderShellRoute('/about', <AboutPage />);
+    const aboutPage = await AboutPage();
+    renderShellRoute('/about', aboutPage);
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'RS School React course' })
@@ -61,7 +65,11 @@ describe('App routing pages', () => {
   });
 
   it('renders the not-found page for unknown paths', () => {
-    render(<NotFoundPage />);
+    render(
+      <IntlTestProvider>
+        <NotFoundPage />
+      </IntlTestProvider>
+    );
     expect(
       screen.getByRole('heading', { name: 'Page not found' })
     ).toBeInTheDocument();

@@ -1,10 +1,11 @@
 'use client';
 
 import { skipToken } from '@reduxjs/toolkit/query';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { LoadingIndicator } from '../components/LoadingIndicator';
-import { QUERY_UI } from '../constants';
+import { useRouter } from '@/i18n/navigation';
 import { invalidatePersonCache } from '../store';
 import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
@@ -14,6 +15,7 @@ import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
 function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
+  const t = useTranslations('PersonDetails');
   const {
     data: person,
     currentData,
@@ -35,7 +37,7 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
         <div className="person-details__loading">
           <LoadingIndicator />
           <p className="person-details__loading-text">
-            {QUERY_UI.detailsLoading}
+            {t('detailsLoading')}
           </p>
         </div>
       )}
@@ -53,41 +55,41 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
             >
               <LoadingIndicator />
               <p className="person-details__refreshing-text">
-                {QUERY_UI.detailsRefreshing}
+                {t('detailsRefreshing')}
               </p>
             </div>
           )}
           <dl className="person-details__list">
             <div className="person-details__row">
-              <dt>Name</dt>
+              <dt>{t('name')}</dt>
               <dd>{displayPerson.name}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Gender</dt>
+              <dt>{t('gender')}</dt>
               <dd>{displayPerson.gender}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Birth year</dt>
+              <dt>{t('birthYear')}</dt>
               <dd>{displayPerson.birth_year}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Height</dt>
-              <dd>{displayPerson.height} cm</dd>
+              <dt>{t('height')}</dt>
+              <dd>{t('heightUnit', { value: displayPerson.height })}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Mass</dt>
-              <dd>{displayPerson.mass} kg</dd>
+              <dt>{t('mass')}</dt>
+              <dd>{t('massUnit', { value: displayPerson.mass })}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Hair color</dt>
+              <dt>{t('hairColor')}</dt>
               <dd>{displayPerson.hair_color}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Eye color</dt>
+              <dt>{t('eyeColor')}</dt>
               <dd>{displayPerson.eye_color}</dd>
             </div>
             <div className="person-details__row">
-              <dt>Skin color</dt>
+              <dt>{t('skinColor')}</dt>
               <dd>{displayPerson.skin_color}</dd>
             </div>
           </dl>
@@ -98,6 +100,7 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
 }
 
 export function PersonDetailsPanel() {
+  const t = useTranslations('PersonDetails');
   const readonlySearchParams = useSearchParams();
   const router = useRouter();
   const personId = parseDetailsParam(readonlySearchParams.get('details'));
@@ -115,36 +118,36 @@ export function PersonDetailsPanel() {
   return (
     <section
       className="person-details"
-      aria-label="Person details"
+      aria-label={t('sectionLabel')}
       aria-busy={personId !== null}
       aria-live="polite"
     >
       <div className="person-details__header">
-        <h2 className="person-details__title">Details</h2>
+        <h2 className="person-details__title">{t('title')}</h2>
         <div className="person-details__actions">
           {personId !== null && (
             <button
               type="button"
               className="person-details__refresh"
-              aria-label={QUERY_UI.detailsRefresh}
+              aria-label={t('detailsRefresh')}
               disabled={isRefreshDisabled}
               onClick={() => invalidatePersonCache(personId)}
             >
-              {QUERY_UI.detailsRefresh}
+              {t('detailsRefresh')}
             </button>
           )}
           <button
             type="button"
             className="person-details__close"
-            aria-label="Close details"
+            aria-label={t('closeDetails')}
             onClick={closeDetails}
           >
-            Close
+            {t('close')}
           </button>
         </div>
       </div>
       {personId === null && (
-        <p className="person-details__placeholder">No person selected.</p>
+        <p className="person-details__placeholder">{t('noPersonSelected')}</p>
       )}
       {personId !== null && (
         <PersonDetailsContent key={personId} personId={personId} />

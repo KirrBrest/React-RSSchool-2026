@@ -27,14 +27,33 @@
     ],
     "fallback": []
   },
-  "dynamicRoutes": [],
-  "staticRoutes": [
+  "dynamicRoutes": [
     {
-      "page": "/",
-      "regex": "^/(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/(?:/)?$"
+      "page": "/[locale]",
+      "regex": "^/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)(?:/)?$"
     },
+    {
+      "page": "/[locale]/about",
+      "regex": "^/([^/]+?)/about(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/about(?:/)?$"
+    },
+    {
+      "page": "/[locale]/details",
+      "regex": "^/([^/]+?)/details(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/details(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
     {
       "page": "/_global-error",
       "regex": "^/_global\\-error(?:/)?$",
@@ -46,18 +65,6 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
-    },
-    {
-      "page": "/about",
-      "regex": "^/about(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/about(?:/)?$"
-    },
-    {
-      "page": "/details",
-      "regex": "^/details(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/details(?:/)?$"
     }
   ],
   "dataRoutes": [],

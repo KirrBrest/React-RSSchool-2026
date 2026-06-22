@@ -1,7 +1,7 @@
 {
-  "/(shell)/about/page": "/about",
-  "/(shell)/details/page": "/details",
-  "/(shell)/page": "/",
+  "/[locale]/(shell)/about/page": "/[locale]/about",
+  "/[locale]/(shell)/details/page": "/[locale]/details",
+  "/[locale]/(shell)/page": "/[locale]",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found"
 }

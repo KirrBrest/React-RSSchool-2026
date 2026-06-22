@@ -1,4 +1,7 @@
+'use client';
+
 import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CardProps } from '../types';
 import './Card.css';
 
@@ -10,6 +13,7 @@ export function Card({
   onToggleCheck,
   onOpenDetails,
 }: CardProps) {
+  const t = useTranslations('Card');
   const personLabel = name || 'person';
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -49,13 +53,13 @@ export function Card({
         className="result-card__checkbox"
         checked={isChecked}
         onChange={handleCheckboxChange}
-        aria-label={`Select ${personLabel}`}
+        aria-label={t('selectPerson', { name: personLabel })}
       />
       <button
         type="button"
         className="result-card__open"
         aria-pressed={isDetailsSelected}
-        aria-label={`View details for ${personLabel}`}
+        aria-label={t('viewDetails', { name: personLabel })}
         onClick={handleOpenDetails}
         onKeyDown={handleOpenDetailsKeyDown}
       >

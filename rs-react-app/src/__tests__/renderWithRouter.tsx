@@ -14,14 +14,18 @@ export function resetStoreState(): void {
   resetSwapiApiState();
 }
 
+import { IntlTestProvider } from './IntlTestProvider';
+
 function renderWithProviders(
   ui: ReactNode,
   options?: Omit<RenderOptions, 'wrapper'>
 ) {
   return render(
-    <ReduxProvider>
-      <ThemeProvider>{ui}</ThemeProvider>
-    </ReduxProvider>,
+    <IntlTestProvider>
+      <ReduxProvider>
+        <ThemeProvider>{ui}</ThemeProvider>
+      </ReduxProvider>
+    </IntlTestProvider>,
     options
   );
 }

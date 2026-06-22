@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { QUERY_PARAMS } from '../constants';
 import {
   closeDetailsLocation,

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, cleanup, waitFor } from '@testing-library/react';
 import { Suspense } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QUERY_UI } from '../constants';
+import { IntlTestProvider } from './IntlTestProvider';
 import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
@@ -23,11 +23,13 @@ function renderDetailsAt(path: string) {
   setNavigationState(pathname, search === '' ? '' : `?${search}`);
 
   return render(
-    <ReduxProvider>
-      <Suspense fallback={null}>
-        <PersonDetailsPanel />
-      </Suspense>
-    </ReduxProvider>
+    <IntlTestProvider>
+      <ReduxProvider>
+        <Suspense fallback={null}>
+          <PersonDetailsPanel />
+        </Suspense>
+      </ReduxProvider>
+    </IntlTestProvider>
   );
 }
 
@@ -46,7 +48,7 @@ describe('PersonDetailsPanel', () => {
   it('shows loading state while person details are fetched', () => {
     fetchPerson.mockReturnValue(new Promise(() => {}));
     renderDetailsAt('/details?details=1');
-    expect(screen.getByText(QUERY_UI.detailsLoading)).toBeInTheDocument();
+    expect(screen.getByText('Loading details…')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
   });
 

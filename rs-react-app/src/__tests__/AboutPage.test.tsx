@@ -6,10 +6,8 @@ import { setNavigationState } from './nextNavigationMock';
 
 function renderAboutPage() {
   setNavigationState('/about');
-  return render(
-    <ThemeProvider>
-      <AboutPage />
-    </ThemeProvider>
+  return AboutPage().then((page) =>
+    render(<ThemeProvider>{page}</ThemeProvider>)
   );
 }
 
@@ -22,8 +20,8 @@ describe('AboutPage', () => {
     cleanup();
   });
 
-  it('renders author section and external links', () => {
-    renderAboutPage();
+  it('renders author section and external links', async () => {
+    await renderAboutPage();
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Author' })).toBeInTheDocument();
     expect(screen.getByText('Kiryl Lukashchuk')).toBeInTheDocument();
@@ -42,8 +40,8 @@ describe('AboutPage', () => {
     expect(courseLink).toHaveAttribute('target', '_blank');
   });
 
-  it('includes navigation to home', () => {
-    renderAboutPage();
+  it('includes navigation to home', async () => {
+    await renderAboutPage();
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
   });
