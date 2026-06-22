@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SELECTED_ITEMS_CSV } from '../constants';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
+import {
+  buildSelectedItemsCsv,
+  buildSelectedItemsCsvFilename,
+} from '../utils/selectedItemsCsv';
 import type { PersonResultItem } from '../types';
 
 const luke: PersonResultItem = {
@@ -9,16 +12,19 @@ const luke: PersonResultItem = {
   description: 'Gender: male',
 };
 
-describe('SelectedItemsCsvDownload', () => {
+describe('selectedItemsCsv', () => {
   it('builds a CSV with required columns and escaped fields', () => {
-    const csv = SelectedItemsCsvDownload.buildCsv([
-      luke,
-      {
-        id: '2',
-        name: 'Leia "Organa"',
-        description: 'Line\nbreak',
-      },
-    ]);
+    const csv = buildSelectedItemsCsv(
+      [
+        luke,
+        {
+          id: '2',
+          name: 'Leia "Organa"',
+          description: 'Line\nbreak',
+        },
+      ],
+      'https://example.com'
+    );
     const lines = csv.split('\n');
     expect(lines[0]).toBe(SELECTED_ITEMS_CSV.header);
     expect(lines[1]).toContain('Luke Skywalker');
@@ -31,14 +37,24 @@ describe('SelectedItemsCsvDownload', () => {
     expect(csv).toContain('"Leia ""Organa"""');
     expect(csv).toContain('"Line\nbreak"');
     expect(csv).toContain('details=2');
+    expect(csv).toContain('https://example.com/details?details=1&page=1');
   });
 
   it('builds a filename from the number of selected items', () => {
-    expect(SelectedItemsCsvDownload.buildFilename(1)).toBe('1_items.csv');
-    expect(SelectedItemsCsvDownload.buildFilename(15)).toBe('15_items.csv');
+    expect(buildSelectedItemsCsvFilename(1)).toBe('1_items.csv');
+    expect(buildSelectedItemsCsvFilename(15)).toBe('15_items.csv');
   });
 
-  it('downloads selected items through native browser APIs', () => {
+  it('builds relative details URLs when origin is empty', () => {
+    const csv = buildSelectedItemsCsv([luke]);
+    expect(csv).toContain('/details?details=1&page=1');
+    expect(csv).not.toMatch(/^https?:\/\//m);
+  });
+});
+
+describe('downloadCsvFile', () => {
+  it('downloads CSV content through native browser APIs', async () => {
+    const { downloadCsvFile } = await import('../utils/downloadCsvFile');
     const createObjectURL = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:selected');
@@ -52,7 +68,7 @@ describe('SelectedItemsCsvDownload', () => {
       .spyOn(document, 'createElement')
       .mockReturnValue(link);
 
-    SelectedItemsCsvDownload.download([luke]);
+    downloadCsvFile(buildSelectedItemsCsv([luke]), '1_items.csv');
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     expect(createElement).toHaveBeenCalledWith('a');
@@ -64,42 +80,5 @@ describe('SelectedItemsCsvDownload', () => {
     createObjectURL.mockRestore();
     revokeObjectURL.mockRestore();
     createElement.mockRestore();
-  });
-
-  it('uses the selected count in the download filename', () => {
-    const createObjectURL = vi
-      .spyOn(URL, 'createObjectURL')
-      .mockReturnValue('blob:selected');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    const link = document.createElement('a');
-    link.click = vi.fn();
-    vi.spyOn(document, 'createElement').mockReturnValue(link);
-
-    SelectedItemsCsvDownload.download([luke, luke]);
-
-    expect(link.download).toBe('2_items.csv');
-
-    createObjectURL.mockRestore();
-    vi.restoreAllMocks();
-  });
-
-  it('does nothing when the items list is empty', () => {
-    const createObjectURL = vi.spyOn(URL, 'createObjectURL');
-    SelectedItemsCsvDownload.download([]);
-    expect(createObjectURL).not.toHaveBeenCalled();
-    createObjectURL.mockRestore();
-  });
-
-  it('builds relative details URLs when window is unavailable', () => {
-    const originalWindow = globalThis.window;
-    Reflect.deleteProperty(globalThis, 'window');
-
-    try {
-      const csv = SelectedItemsCsvDownload.buildCsv([luke]);
-      expect(csv).toContain('/details?details=1&page=1');
-      expect(csv).not.toMatch(/^https?:\/\//m);
-    } finally {
-      globalThis.window = originalWindow;
-    }
   });
 });

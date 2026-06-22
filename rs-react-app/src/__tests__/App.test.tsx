@@ -18,7 +18,6 @@ import { selectSelectedItems } from '../store/selectedItemsSlice';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
 import { THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
@@ -31,6 +30,17 @@ vi.mock('../api/fetchSwapiPeople', () => ({
     fetchPeople: vi.fn(),
     fetchPerson: vi.fn(),
   },
+}));
+
+vi.mock('../actions/generateSelectedItemsCsv', () => ({
+  generateSelectedItemsCsvAction: vi.fn(async () => ({
+    csv: 'Name,Description,Details URL,SWAPI URL,Person ID',
+    filename: '1_items.csv',
+  })),
+}));
+
+vi.mock('../utils/downloadCsvFile', () => ({
+  downloadCsvFile: vi.fn(),
 }));
 
 const fetchPeople = vi.mocked(SwapiPeopleApi.fetchPeople);
@@ -816,9 +826,10 @@ describe('App', () => {
 
     it('downloads a CSV file when Download is clicked', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const download = vi
-        .spyOn(SelectedItemsCsvDownload, 'download')
-        .mockImplementation(() => {});
+      const { generateSelectedItemsCsvAction } = await import(
+        '../actions/generateSelectedItemsCsv'
+      );
+      const { downloadCsvFile } = await import('../utils/downloadCsvFile');
       const { view } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
       await waitFor(() => {
@@ -835,10 +846,15 @@ describe('App', () => {
         ).toBeInTheDocument();
       });
       fireEvent.click(root.getByRole('button', { name: 'Download' }));
-      expect(download).toHaveBeenCalledTimes(1);
-      expect(download.mock.calls[0][0]).toHaveLength(1);
-      expect(download.mock.calls[0][0][0].name).toBe('Luke Skywalker');
-      download.mockRestore();
+      await waitFor(() => {
+        expect(generateSelectedItemsCsvAction).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(downloadCsvFile).toHaveBeenCalledWith(
+          'Name,Description,Details URL,SWAPI URL,Person ID',
+          '1_items.csv'
+        );
+      });
     });
   });
 

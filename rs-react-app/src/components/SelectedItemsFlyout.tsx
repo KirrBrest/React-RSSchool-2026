@@ -1,22 +1,35 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useActionState, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { generateSelectedItemsCsvAction } from '@/actions/generateSelectedItemsCsv';
 import { useSelectedItemsStore } from '../hooks/useSelectedItemsStore';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
+import { downloadCsvFile } from '../utils/downloadCsvFile';
 import './SelectedItemsFlyout.css';
 
 export function SelectedItemsFlyout() {
   const t = useTranslations('SelectedItemsFlyout');
   const { count, items, clearItems } = useSelectedItemsStore();
+  const [csvResult, requestCsvDownload, isPending] = useActionState(
+    generateSelectedItemsCsvAction,
+    null
+  );
+
+  useEffect(() => {
+    if (csvResult === null) {
+      return;
+    }
+
+    downloadCsvFile(csvResult.csv, csvResult.filename);
+  }, [csvResult]);
 
   const handleUnselectAll = useCallback((): void => {
     clearItems();
   }, [clearItems]);
 
   const handleDownload = useCallback((): void => {
-    SelectedItemsCsvDownload.download(items);
-  }, [items]);
+    requestCsvDownload({ items, origin: window.location.origin });
+  }, [items, requestCsvDownload]);
 
   if (count === 0) {
     return null;
@@ -46,6 +59,7 @@ export function SelectedItemsFlyout() {
           type="button"
           className="selected-items-flyout__button selected-items-flyout__button--primary"
           onClick={handleDownload}
+          disabled={isPending}
         >
           {t('downloadLabel')}
         </button>
