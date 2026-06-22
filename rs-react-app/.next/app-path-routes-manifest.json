@@ -2,6 +2,7 @@
   "/[locale]/(shell)/about/page": "/[locale]/about",
   "/[locale]/(shell)/details/page": "/[locale]/details",
   "/[locale]/(shell)/page": "/[locale]",
+  "/[locale]/[...rest]/page": "/[locale]/[...rest]",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found"
 }
