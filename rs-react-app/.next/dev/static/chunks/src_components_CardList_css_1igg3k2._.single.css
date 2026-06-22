@@ -1,0 +1,15 @@
+/* [project]/src/components/CardList.css [app-client] (css) */
+.card-list {
+  flex-direction: column;
+  gap: .65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+}
+
+.card-list__item {
+  margin: 0;
+}
+
+/*# sourceMappingURL=src_components_CardList_css_1igg3k2._.single.css.map*/

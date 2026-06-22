@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///D:/IT/311RSS_React/React-RSSchool-2026/rs-react-app/src/views/NotFoundPage.tsx"],"sourcesContent":["'use client';\n\nimport Link from 'next/link';\nimport './NotFoundPage.css';\n\nexport function NotFoundPage() {\n  return (\n    <div className=\"not-found-page\">\n      <main className=\"not-found-page__main\">\n        <h1 className=\"not-found-page__title\">Page not found</h1>\n        <p className=\"not-found-page__message\">\n          Ooops! The page you are looking for does not exist or has been moved.\n        </p>\n        <p>\n          <Link className=\"not-found-page__home-link\" href=\"/\">\n            Back to home\n          </Link>\n        </p>\n      </main>\n    </div>\n  );\n}\n"],"names":["NotFoundPage","className","href"],"mappings":";;;;;AAEA;AAFA;;;;AAKO,SAASA;IACd,qBACE,8OAAC;QAAIC,WAAU;kBACb,cAAA,8OAAC;YAAKA,WAAU;;8BACd,8OAAC;oBAAGA,WAAU;8BAAwB;;;;;;8BACtC,8OAAC;oBAAEA,WAAU;8BAA0B;;;;;;8BAGvC,8OAAC;8BACC,cAAA,8OAAC,uKAAI;wBAACA,WAAU;wBAA4BC,MAAK;kCAAI;;;;;;;;;;;;;;;;;;;;;;AAO/D"}}]
+}

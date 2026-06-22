@@ -1,0 +1,18 @@
+/* [project]/src/components/LoadingIndicator.css [app-client] (css) */
+.loading-indicator {
+  box-sizing: border-box;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  animation: .75s linear infinite loading-indicator-spin;
+}
+
+@keyframes loading-indicator-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*# sourceMappingURL=src_components_LoadingIndicator_css_1igg3k2._.single.css.map*/

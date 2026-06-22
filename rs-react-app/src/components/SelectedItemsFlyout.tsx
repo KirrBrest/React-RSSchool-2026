@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 import { SELECTED_ITEMS_FLYOUT } from '../constants';
 import { useSelectedItemsStore } from '../hooks/useSelectedItemsStore';

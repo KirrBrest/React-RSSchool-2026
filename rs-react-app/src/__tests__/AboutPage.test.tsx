@@ -1,15 +1,14 @@
 import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AboutPage } from '../pages/AboutPage';
+import { AboutPage } from '../views/AboutPage';
 import { ThemeProvider } from '../context/ThemeProvider';
+import { setNavigationState } from './nextNavigationMock';
 
 function renderAboutPage() {
+  setNavigationState('/about');
   return render(
     <ThemeProvider>
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>
+      <AboutPage />
     </ThemeProvider>
   );
 }

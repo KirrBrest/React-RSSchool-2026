@@ -6,7 +6,7 @@ import {
   within,
 } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import App from '../App';
+import { SearchPage } from '../components/SearchPage';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import {
   renderWithAppRoutes,
@@ -870,7 +870,7 @@ describe('App', () => {
       renderWithAppRoutes(
         '/?page=1',
         <AppErrorBoundary>
-          <App />
+          <SearchPage />
         </AppErrorBoundary>
       );
       await waitFor(() => {

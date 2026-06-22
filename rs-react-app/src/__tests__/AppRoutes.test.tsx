@@ -1,30 +1,38 @@
 import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { Suspense } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AppRoutes } from '../routes/AppRoutes';
+import { AboutPage } from '../views/AboutPage';
+import { NotFoundPage } from '../views/NotFoundPage';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
-import { resetStoreState } from './renderWithRouter.tsx';
+import { SearchPage } from '../components/SearchPage';
+import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
+import { resetStoreState } from './renderWithRouter';
+import { setNavigationState } from './nextNavigationMock';
 
-vi.mock('../App', () => ({
-  default: function MockApp() {
+vi.mock('../components/SearchPage', () => ({
+  SearchPage: function MockSearchPage() {
     return <div>Mock app home route</div>;
   },
 }));
 
-function renderAppRoutes(initialPath: string) {
+function renderShellRoute(initialPath: string, children: React.ReactNode) {
+  const [pathname, search = ''] = initialPath.split('?');
+  setNavigationState(pathname === '' ? '/' : pathname, search === '' ? '' : `?${search}`);
+
   return render(
     <ReduxProvider>
       <ThemeProvider>
-        <MemoryRouter initialEntries={[initialPath]}>
-          <AppRoutes />
-        </MemoryRouter>
+        <div className="app-shell">
+          <div className="app-shell__content">{children}</div>
+          <SelectedItemsFlyout />
+        </div>
       </ThemeProvider>
     </ReduxProvider>
   );
 }
 
-describe('AppRoutes', () => {
+describe('App routing pages', () => {
   beforeEach(() => {
     cleanup();
     resetStoreState();
@@ -35,12 +43,17 @@ describe('AppRoutes', () => {
   });
 
   it('renders the home route at /', () => {
-    renderAppRoutes('/?page=1');
+    renderShellRoute('/?page=1', (
+      <Suspense fallback={null}>
+        <SearchPage />
+      </Suspense>
+    ));
     expect(screen.getByText('Mock app home route')).toBeInTheDocument();
   });
 
   it('renders the about route at /about', () => {
-    renderAppRoutes('/about');
+    setNavigationState('/about');
+    renderShellRoute('/about', <AboutPage />);
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'RS School React course' })
@@ -48,7 +61,7 @@ describe('AppRoutes', () => {
   });
 
   it('renders the not-found page for unknown paths', () => {
-    renderAppRoutes('/no-such-page');
+    render(<NotFoundPage />);
     expect(
       screen.getByRole('heading', { name: 'Page not found' })
     ).toBeInTheDocument();

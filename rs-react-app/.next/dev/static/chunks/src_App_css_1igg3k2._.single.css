@@ -1,0 +1,89 @@
+/* [project]/src/App.css [app-client] (css) */
+.app {
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 0;
+  max-width: 960px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+}
+
+.app__split {
+  --app-workspace-min-height: clamp(22rem, 42vh, calc(100vh - 13rem));
+  min-height: var(--app-workspace-min-height);
+  flex-direction: column;
+  flex: auto;
+  gap: 1rem;
+  display: flex;
+}
+
+.app__split--open {
+  max-width: none;
+}
+
+@media (min-width: 768px) {
+  .app:has(.app__split--open) {
+    max-width: 1100px;
+  }
+
+  .app__split--open {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.app__master {
+  min-width: 0;
+  min-height: var(--app-workspace-min-height);
+  flex-direction: column;
+  flex: auto;
+  display: flex;
+}
+
+.app__split--open .app__master {
+  flex: 50%;
+}
+
+.app__detail {
+  min-width: 0;
+  min-height: var(--app-workspace-min-height);
+  flex-direction: column;
+  flex: auto;
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .app__split--open .app__detail {
+    flex: 50%;
+  }
+}
+
+.app__error-test {
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  display: flex;
+}
+
+.app__error-test-button {
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  cursor: pointer;
+  border-radius: 6px;
+  padding: .4rem .75rem;
+  font-size: .8rem;
+}
+
+.app__error-test-button:hover {
+  background: var(--color-danger-bg-hover);
+}
+
+.app__error-test-button:focus-visible {
+  outline: 2px solid var(--color-danger-focus);
+  outline-offset: 2px;
+}
+
+/*# sourceMappingURL=src_App_css_1igg3k2._.single.css.map*/

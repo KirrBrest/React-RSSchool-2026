@@ -1,4 +1,7 @@
 [build]
   base = "rs-react-app"
   command = "npm ci && npm run build"
-  publish = "dist"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

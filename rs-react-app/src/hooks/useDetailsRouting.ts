@@ -1,9 +1,7 @@
-import { useCallback, useEffect } from 'react';
-import {
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+'use client';
+
+import { useCallback, useEffect, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { QUERY_PARAMS } from '../constants';
 import {
   closeDetailsLocation,
@@ -11,64 +9,77 @@ import {
   homeLocationWithSearch,
   openDetailsLocation,
 } from '../utils/detailsNavigation';
+import { buildSearchParamsString } from '../utils/buildSearchParamsString';
 import { extractPersonId, parseDetailsParam } from '../utils/extractPersonId';
 import { parsePageParam } from '../utils/parsePageParam';
 
+function toUrlSearchParams(params: { toString(): string }): URLSearchParams {
+  return new URLSearchParams(params.toString());
+}
+
+function toAppUrl(location: { pathname: string; search: string }): string {
+  return `${location.pathname}${location.search}`;
+}
+
 export function useDetailsRouting() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const pageInUrl = parsePageParam(searchParams.get(QUERY_PARAMS.page));
-  const selectedDetailsId = parseDetailsParam(searchParams.get('details'));
-  const isDetailsOpen = location.pathname === '/details';
+  const router = useRouter();
+  const pathname = usePathname();
+  const readonlySearchParams = useSearchParams();
+  const searchParams = useMemo(
+    () => toUrlSearchParams(readonlySearchParams),
+    [readonlySearchParams]
+  );
+
+  const pageInUrl = parsePageParam(readonlySearchParams.get(QUERY_PARAMS.page));
+  const selectedDetailsId = parseDetailsParam(readonlySearchParams.get('details'));
+  const isDetailsOpen = pathname === '/details';
 
   const updatePageInUrl = useCallback(
     (page: number, options?: { clearDetails?: boolean }) => {
       const clearDetails = options?.clearDetails === true;
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          next.set(QUERY_PARAMS.page, String(page));
-          if (clearDetails) {
-            next.delete('details');
-          }
-          return next;
-        },
-        { replace: true }
-      );
-      if (clearDetails && location.pathname === '/details') {
-        const next = new URLSearchParams(searchParams);
-        next.set(QUERY_PARAMS.page, String(page));
-        navigate(closeDetailsLocation(next), { replace: true });
+      const next = toUrlSearchParams(readonlySearchParams);
+      next.set(QUERY_PARAMS.page, String(page));
+      if (clearDetails) {
+        next.delete('details');
       }
+
+      if (clearDetails && pathname === '/details') {
+        router.replace(toAppUrl(closeDetailsLocation(next)));
+        return;
+      }
+
+      router.replace(`${pathname}${buildSearchParamsString(next)}`);
     },
-    [setSearchParams, location.pathname, navigate, searchParams]
+    [pathname, readonlySearchParams, router]
   );
 
   const openDetails = useCallback(
     (personRef: string): void => {
       const id = extractPersonId(personRef);
-      navigate(openDetailsLocation(searchParams, id), { replace: false });
+      router.push(toAppUrl(openDetailsLocation(toUrlSearchParams(readonlySearchParams), id)));
     },
-    [navigate, searchParams]
+    [readonlySearchParams, router]
   );
 
   const closeDetails = useCallback((): void => {
     if (!isDetailsOpen) {
       return;
     }
-    navigate(closeDetailsLocation(searchParams), { replace: true });
-  }, [isDetailsOpen, navigate, searchParams]);
+    router.replace(toAppUrl(closeDetailsLocation(toUrlSearchParams(readonlySearchParams))));
+  }, [isDetailsOpen, readonlySearchParams, router]);
 
   useEffect(() => {
-    const details = parseDetailsParam(searchParams.get('details'));
-    if (details !== null && location.pathname === '/') {
-      navigate(detailsPanelLocation(searchParams), { replace: true });
+    const details = parseDetailsParam(readonlySearchParams.get('details'));
+    const currentSearchParams = toUrlSearchParams(readonlySearchParams);
+
+    if (details !== null && pathname === '/') {
+      router.replace(toAppUrl(detailsPanelLocation(currentSearchParams)));
     }
-    if (details === null && location.pathname === '/details') {
-      navigate(homeLocationWithSearch(searchParams), { replace: true });
+
+    if (details === null && pathname === '/details') {
+      router.replace(toAppUrl(homeLocationWithSearch(currentSearchParams)));
     }
-  }, [location.pathname, navigate, searchParams]);
+  }, [pathname, readonlySearchParams, router]);
 
   return {
     pageInUrl,

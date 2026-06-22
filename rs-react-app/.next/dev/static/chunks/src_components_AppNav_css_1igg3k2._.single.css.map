@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/src/components/AppNav.css"],"sourcesContent":[".app-nav {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  justify-content: space-between;\n  gap: 0.75rem 1.25rem;\n  padding-bottom: 1rem;\n  margin-bottom: 1rem;\n  border-bottom: 1px solid var(--color-border);\n}\n\n.app-nav__links {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 0.75rem 1.25rem;\n}\n\n.app-nav__link {\n  color: var(--color-text-muted);\n  font-size: 0.9rem;\n  text-decoration: none;\n}\n\n.app-nav__link:hover {\n  color: var(--color-text);\n}\n\n.app-nav__link--active {\n  color: var(--color-accent);\n}\n\n.app-nav__link:focus-visible {\n  outline: 2px solid var(--color-accent);\n  outline-offset: 2px;\n  border-radius: 4px;\n}\n"],"names":[],"mappings":"AAAA;;;;;;;;;;;AAWA;;;;;;AAMA;;;;;;AAMA;;;;AAIA;;;;AAIA"}}]
+}

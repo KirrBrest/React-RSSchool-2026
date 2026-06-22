@@ -1,13 +1,14 @@
 import { fireEvent, render, screen, cleanup, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Suspense } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QUERY_UI } from '../constants';
-import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
+import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
 import { resetSwapiApiState } from '../store';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
+import { setNavigationState } from './nextNavigationMock';
 
 vi.mock('../api/fetchSwapiPeople', () => ({
   SwapiPeopleApi: {
@@ -18,13 +19,14 @@ vi.mock('../api/fetchSwapiPeople', () => ({
 const fetchPerson = vi.mocked(SwapiPeopleApi.fetchPerson);
 
 function renderDetailsAt(path: string) {
+  const [pathname, search = ''] = path.split('?');
+  setNavigationState(pathname, search === '' ? '' : `?${search}`);
+
   return render(
     <ReduxProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/details" element={<PersonDetailsPanel />} />
-        </Routes>
-      </MemoryRouter>
+      <Suspense fallback={null}>
+        <PersonDetailsPanel />
+      </Suspense>
     </ReduxProvider>
   );
 }

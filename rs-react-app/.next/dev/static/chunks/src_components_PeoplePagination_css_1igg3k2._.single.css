@@ -1,0 +1,48 @@
+/* [project]/src/components/PeoplePagination.css [app-client] (css) */
+.people-pagination {
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  display: flex;
+}
+
+.people-pagination__status {
+  color: var(--color-text-muted);
+  text-align: center;
+  min-width: 7.5rem;
+  font-size: .82rem;
+}
+
+.people-pagination__btn {
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: .4rem .85rem;
+  font-size: .8rem;
+  font-weight: 600;
+  transition: border-color .15s, background-color .15s;
+}
+
+.people-pagination__btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background-color: var(--color-surface-raised);
+}
+
+.people-pagination__btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.people-pagination__btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/*# sourceMappingURL=src_components_PeoplePagination_css_1igg3k2._.single.css.map*/

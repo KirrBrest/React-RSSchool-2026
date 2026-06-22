@@ -1,0 +1,64 @@
+/* [project]/src/components/Card.css [app-client] (css) */
+.result-card {
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  border-radius: 6px;
+  align-items: center;
+  gap: .75rem;
+  margin: 0;
+  padding: .85rem 1rem;
+  display: flex;
+}
+
+.result-card:hover {
+  border-color: var(--color-accent);
+}
+
+.result-card--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.result-card__checkbox {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-accent);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.result-card__open {
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  flex: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.result-card__open:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.result-card__name {
+  color: var(--color-text);
+  letter-spacing: -.01em;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: block;
+}
+
+/*# sourceMappingURL=src_components_Card_css_1igg3k2._.single.css.map*/

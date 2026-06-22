@@ -1,0 +1,14 @@
+/* [project]/src/routes/AppShell.css [app-client] (css) */
+.app-shell {
+  box-sizing: border-box;
+  flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+}
+
+.app-shell__content {
+  flex: auto;
+  min-height: 0;
+}
+
+/*# sourceMappingURL=src_routes_AppShell_css_1igg3k2._.single.css.map*/

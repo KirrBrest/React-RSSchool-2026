@@ -1,0 +1,92 @@
+/* [project]/src/components/SearchSection.css [app-client] (css) */
+.search-section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 0 0 1px var(--color-shadow-ring);
+  border-radius: 6px;
+  flex: none;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.search-section__inner {
+  max-width: 100%;
+}
+
+.search-section__title {
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 .65rem;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.search-section__form {
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: .5rem;
+  margin: 0;
+  display: flex;
+}
+
+.search-section__field {
+  flex: 12rem;
+  min-width: 0;
+}
+
+.search-section__input {
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  outline: none;
+  padding: .55rem .65rem;
+  font-size: .9rem;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.search-section__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: .85;
+}
+
+.search-section__input:hover {
+  border-color: var(--color-border-hover);
+}
+
+.search-section__input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-focus-ring);
+}
+
+.search-section__submit {
+  font: inherit;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--color-bg);
+  background-color: var(--color-accent);
+  border: 1px solid var(--color-accent-border);
+  cursor: pointer;
+  border-radius: 4px;
+  flex: none;
+  padding: .55rem 1rem;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background-color .15s, border-color .15s;
+}
+
+.search-section__submit:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.search-section__submit:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/*# sourceMappingURL=src_components_SearchSection_css_1igg3k2._.single.css.map*/
