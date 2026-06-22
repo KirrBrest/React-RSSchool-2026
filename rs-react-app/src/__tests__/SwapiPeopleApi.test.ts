@@ -4,6 +4,9 @@ import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 describe('SwapiPeopleApi.fetchPeople', () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
+    vi.stubGlobal('window', {
+      location: { hostname: 'localhost' },
+    });
   });
 
   afterEach(() => {
@@ -28,7 +31,10 @@ describe('SwapiPeopleApi.fetchPeople', () => {
 
     const result = await SwapiPeopleApi.fetchPeople('  skywalker  ', 2);
 
-    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/?search=skywalker&page=2');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/swapi/people/?search=skywalker&page=2',
+      undefined
+    );
     expect(result).toEqual(payload);
   });
 
@@ -50,7 +56,7 @@ describe('SwapiPeopleApi.fetchPeople', () => {
 
     const result = await SwapiPeopleApi.fetchPeople('   ', 0);
 
-    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/');
+    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/', undefined);
     expect(result).toEqual(payload);
   });
 
@@ -92,7 +98,7 @@ describe('SwapiPeopleApi.fetchPeople', () => {
 
     const result = await SwapiPeopleApi.fetchPerson('1');
 
-    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/1/');
+    expect(fetchMock).toHaveBeenCalledWith('/swapi/people/1/', undefined);
     expect(result).toEqual(person);
   });
 

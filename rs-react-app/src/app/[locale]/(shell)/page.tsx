@@ -27,6 +27,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
       initialQuery={initialState.initialQuery}
       initialResult={initialState.initialFetch.data}
       initialError={initialState.initialFetch.errorMessage}
+      selectedDetailsId={initialState.routeParams.detailsId}
     >
       {serverBody}
     </SearchPageShell>

@@ -1,25 +1,27 @@
 'use client';
 
 import {
+  useActionState,
   useCallback,
-  useEffect,
   useMemo,
   useState,
-  type MouseEvent,
+  useTransition,
   type ReactNode,
 } from 'react';
 import { useTranslations } from 'next-intl';
+import {
+  refreshPeopleListAction,
+  type SearchPeopleActionState,
+} from '@/actions/searchPeople';
 import { SearchSection } from '@/components/SearchSection';
 import { ResultsSection } from '@/components/ResultsSection';
+import { QUERY_PARAMS, SWAPI_PAGE_SIZE } from '@/constants';
 import { useDetailsRouting } from '@/hooks/useDetailsRouting';
-import { usePeopleList } from '@/hooks/usePeopleList';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { SearchTermStorage } from '@/storage/searchTermStorage';
-import { swapiApi } from '@/store/swapiApi';
+import { useRouter } from '@/i18n/navigation';
+import { buildAppPath } from '@/utils/appNavigation';
 import type { PeopleListQueryArg } from '@/types/swapiApi';
 import type { PeopleListQueryResult } from '@/types/swapiApi';
 import { SearchResultsLayout } from '@/views/SearchResultsLayout';
-import { PersonDetailsPanel } from '@/views/PersonDetailsPanel';
 import '@/App.css';
 
 type SearchPageShellProps = {
@@ -27,6 +29,7 @@ type SearchPageShellProps = {
   initialQuery: PeopleListQueryArg;
   initialResult: PeopleListQueryResult | null;
   initialError: string | null;
+  selectedDetailsId: string | null;
 };
 
 function queriesMatch(
@@ -36,85 +39,106 @@ function queriesMatch(
   return left.term.trim() === right.term.trim() && left.page === right.page;
 }
 
+function resolveActionResults(
+  actionResults: SearchPeopleActionState | null,
+  initialQuery: PeopleListQueryArg,
+  pendingSearchQuery: PeopleListQueryArg | null
+): SearchPeopleActionState | null {
+  if (actionResults === null) {
+    return null;
+  }
+
+  if (pendingSearchQuery !== null) {
+    return actionResults;
+  }
+
+  if (!queriesMatch(actionResults.query, initialQuery)) {
+    return null;
+  }
+
+  return actionResults;
+}
+
 export function SearchPageShell({
   children,
   initialQuery,
   initialResult,
   initialError,
+  selectedDetailsId,
 }: SearchPageShellProps) {
   const t = useTranslations('SearchPage');
-  const dispatch = useAppDispatch();
-  const [forceInteractive, setForceInteractive] = useState(false);
+  const router = useRouter();
+  const [simulateCrash, setSimulateCrash] = useState(false);
+  const [isSearchPending, setIsSearchPending] = useState(false);
+  const [actionResults, setActionResults] =
+    useState<SearchPeopleActionState | null>(null);
+  const [pendingSearchQuery, setPendingSearchQuery] =
+    useState<PeopleListQueryArg | null>(null);
+  const [refreshState, refreshAction, isRefreshPending] = useActionState<
+    SearchPeopleActionState | null,
+    FormData
+  >(refreshPeopleListAction, null);
+  const [, startRefreshTransition] = useTransition();
   const {
-    pageInUrl,
-    selectedDetailsId,
+    selectedDetailsId: routedDetailsId,
     isDetailsOpen: isDetailsRouteOpen,
-    searchParams,
-    updatePageInUrl,
     closeDetails,
   } = useDetailsRouting();
 
-  const {
-    state,
-    handleSearchInputChange,
-    handleSearch,
-    handleRefreshList,
-    triggerSimulatedCrash,
-  } = usePeopleList({
-    searchParams,
-    pageInUrl,
-    isDetailsOpen: isDetailsRouteOpen,
-    updatePageInUrl,
-    closeDetails,
-  });
+  const syncedPendingSearchQuery =
+    pendingSearchQuery !== null &&
+    queriesMatch(pendingSearchQuery, initialQuery)
+      ? null
+      : pendingSearchQuery;
 
-  useEffect(() => {
-    if (initialResult !== null) {
-      dispatch(
-        swapiApi.util.upsertQueryData('getPeople', initialQuery, initialResult)
-      );
-    }
-  }, [dispatch, initialQuery, initialResult]);
-
-  const enableInteractiveResults = useCallback((): void => {
-    setForceInteractive(true);
-  }, []);
-
-  const useInteractiveResults = useMemo(() => {
-    if (forceInteractive) {
-      return true;
-    }
-
-    const storedTerm = SearchTermStorage.read();
-    if (storedTerm !== initialQuery.term.trim()) {
-      return true;
-    }
-
-    const currentQuery: PeopleListQueryArg = {
-      term: state.lastFetchedTerm ?? '',
-      page: state.listPage,
-    };
-
-    return !queriesMatch(currentQuery, initialQuery);
-  }, [
-    forceInteractive,
-    initialQuery,
-    state.lastFetchedTerm,
-    state.listPage,
-  ]);
-
-  const handleSearchSubmit = useCallback(
-    async (trimmedTerm: string): Promise<void> => {
-      enableInteractiveResults();
-      await handleSearch(trimmedTerm);
-    },
-    [enableInteractiveResults, handleSearch]
+  const resolvedActionResults = useMemo(
+    () =>
+      resolveActionResults(
+        actionResults,
+        initialQuery,
+        syncedPendingSearchQuery
+      ),
+    [actionResults, initialQuery, syncedPendingSearchQuery]
   );
 
+  const activeQuery =
+    resolvedActionResults?.query ?? refreshState?.query ?? initialQuery;
+  const activeResult =
+    resolvedActionResults?.data ?? refreshState?.data ?? initialResult;
+  const activeError =
+    resolvedActionResults?.errorMessage ??
+    refreshState?.errorMessage ??
+    initialError;
+
+  const handleSearchComplete = useCallback(
+    (state: SearchPeopleActionState): void => {
+      setPendingSearchQuery(state.query);
+      setActionResults(state);
+
+      const params = new URLSearchParams();
+      if (state.query.term.trim() !== '') {
+        params.set(QUERY_PARAMS.search, state.query.term.trim());
+      }
+      params.set(QUERY_PARAMS.page, String(state.query.page));
+      router.replace(buildAppPath('/', params));
+    },
+    [router]
+  );
+
+  const handleSearchInputChange = useCallback((): void => {
+    if (isDetailsRouteOpen) {
+      closeDetails();
+    }
+  }, [closeDetails, isDetailsRouteOpen]);
+
   const handleRefresh = useCallback((): void => {
-    enableInteractiveResults();
-    handleRefreshList();
-  }, [enableInteractiveResults, handleRefreshList]);
+    const formData = new FormData();
+    formData.set(QUERY_PARAMS.search, activeQuery.term.trim());
+    formData.set(QUERY_PARAMS.page, String(activeQuery.page));
+    startRefreshTransition(() => {
+      refreshAction(formData);
+    });
+  }, [activeQuery.page, activeQuery.term, refreshAction, startRefreshTransition]);
 
   const handleMainPanelClick = useCallback((): void => {
     if (isDetailsRouteOpen) {
@@ -122,75 +146,72 @@ export function SearchPageShell({
     }
   }, [closeDetails, isDetailsRouteOpen]);
 
-  const handleDetailsPanelClick = useCallback(
-    (event: MouseEvent<HTMLDivElement>): void => {
-      event.stopPropagation();
-    },
-    []
-  );
-
-  if (state.simulateCrash) {
+  if (simulateCrash) {
     throw new Error('Simulated application error (error boundary test)');
   }
 
+  const listTotalCount = activeResult?.listTotalCount ?? 0;
+  const totalPages =
+    listTotalCount > 0 ? Math.ceil(listTotalCount / SWAPI_PAGE_SIZE) : 0;
+  const listPage = activeQuery.page;
+  const listHasNext = totalPages > 0 && listPage < totalPages;
+  const listHasPrev = listPage > 1;
   const showPagination =
-    state.hasSearched &&
-    !state.isLoading &&
-    state.errorMessage === null &&
-    (state.listHasNext || state.listHasPrev);
+    activeError === null &&
+    activeResult !== null &&
+    (listHasNext || listHasPrev);
 
-  const interactiveBody = (
+  const useActionDrivenBody =
+    !isDetailsRouteOpen &&
+    (resolvedActionResults !== null ||
+      refreshState !== null ||
+      isSearchPending ||
+      isRefreshPending);
+
+  const actionDrivenBody = (
     <SearchResultsLayout
       isDetailsOpen={isDetailsRouteOpen}
       master={
         <ResultsSection
-          items={state.results}
-          hasSearched={state.hasSearched}
-          isLoading={state.isLoading}
-          isFetching={state.isFetching}
-          errorMessage={state.errorMessage}
-          onRefresh={state.hasSearched ? handleRefresh : null}
-          isRefreshDisabled={state.isLoading || state.isFetching}
+          items={activeResult?.results ?? []}
+          hasSearched
+          isLoading={isSearchPending || isRefreshPending}
+          isFetching={false}
+          errorMessage={activeError}
+          onRefresh={handleRefresh}
+          isRefreshDisabled={isRefreshPending}
           pagination={
             showPagination
               ? {
-                  page: state.listPage,
-                  totalCount: state.listTotalCount,
-                  hasNext: state.listHasNext,
-                  hasPrev: state.listHasPrev,
+                  page: listPage,
+                  totalCount: listTotalCount,
+                  hasNext: listHasNext,
+                  hasPrev: listHasPrev,
                 }
               : null
           }
-          selectedItemId={selectedDetailsId}
+          selectedItemId={routedDetailsId ?? selectedDetailsId}
           onMainPanelClick={handleMainPanelClick}
         />
       }
-      details={
-        isDetailsRouteOpen ? (
-          <div onClick={handleDetailsPanelClick}>
-            <PersonDetailsPanel />
-          </div>
-        ) : null
-      }
+      details={null}
     />
   );
-
-  const shouldUseServerResults =
-    !useInteractiveResults &&
-    (initialResult !== null || initialError !== null);
 
   return (
     <div className="app">
       <SearchSection
-        onSearch={handleSearchSubmit}
+        initialSearchTerm={initialQuery.term}
+        onSearchComplete={handleSearchComplete}
         onSearchInputChange={handleSearchInputChange}
+        onSearchPendingChange={setIsSearchPending}
       />
-      {shouldUseServerResults ? children : interactiveBody}
+      {useActionDrivenBody ? actionDrivenBody : children}
       <div className="app__error-test">
         <button
           type="button"
           className="app__error-test-button"
-          onClick={triggerSimulatedCrash}
+          onClick={() => setSimulateCrash(true)}
         >
           {t('simulateError')}
         </button>

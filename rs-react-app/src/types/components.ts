@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { SearchPeopleActionState } from '../actions/searchPeople';
 import type { PersonResultItem } from './person';
 
 export type AppErrorBoundaryProps = {
@@ -11,8 +12,10 @@ export type AppErrorBoundaryState = {
 };
 
 export type SearchSectionProps = {
-  onSearch: (trimmedTerm: string) => void;
+  initialSearchTerm: string;
+  onSearchComplete: (state: SearchPeopleActionState) => void;
   onSearchInputChange: () => void;
+  onSearchPendingChange?: (isPending: boolean) => void;
 };
 
 export type PeoplePaginationProps = {

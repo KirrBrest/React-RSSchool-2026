@@ -8,15 +8,42 @@ import {
 import type { SwapiPeopleListResponse, SwapiPerson } from '../types';
 import { isSwapiPeopleListResponse, isSwapiPerson } from '../types/guards';
 
-function apiBase(): string {
-  if (typeof window === 'undefined') {
+async function apiBase(): Promise<string> {
+  if (typeof window !== 'undefined') {
+    const { hostname } = window.location;
+    if (SWAPI_LOCAL_DEV_HOSTNAMES.includes(hostname)) {
+      return SWAPI_DEV_PROXY_BASE;
+    }
     return SWAPI_API_BASE;
   }
-  const { hostname } = window.location;
-  if (SWAPI_LOCAL_DEV_HOSTNAMES.includes(hostname)) {
-    return SWAPI_DEV_PROXY_BASE;
+
+  try {
+    const { headers } = await import('next/headers');
+    const headerStore = await headers();
+    const host =
+      headerStore.get('x-forwarded-host') ?? headerStore.get('host');
+    if (host !== null) {
+      const protocol = headerStore.get('x-forwarded-proto') ?? 'https';
+      return `${protocol}://${host}${SWAPI_DEV_PROXY_BASE}`;
+    }
+  } catch {
+    return SWAPI_API_BASE;
   }
+
   return SWAPI_API_BASE;
+}
+
+function serverFetchInit(): RequestInit | undefined {
+  if (typeof window !== 'undefined') {
+    return undefined;
+  }
+
+  return {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; RSSchoolReact/1.0)',
+    },
+  };
 }
 
 async function fetchPeople(
@@ -25,7 +52,7 @@ async function fetchPeople(
 ): Promise<SwapiPeopleListResponse> {
   const term = rawTerm.trim();
   const safePage = page < 1 ? 1 : page;
-  const peoplePath = `${apiBase()}/people/`;
+  const peoplePath = `${await apiBase()}/people/`;
   const params = new URLSearchParams();
   if (term !== '') {
     params.set('search', term);
@@ -35,7 +62,7 @@ async function fetchPeople(
   }
   const qs = params.toString();
   const url = qs === '' ? peoplePath : `${peoplePath}?${qs}`;
-  const res = await fetch(url);
+  const res = await fetch(url, serverFetchInit());
   if (!res.ok) {
     throw new Error(`SWAPI_HTTP_${res.status}`);
   }
@@ -51,8 +78,8 @@ async function fetchPerson(personId: string): Promise<SwapiPerson> {
   if (safeId === '') {
     throw new Error('SWAPI_INVALID_PERSON_ID');
   }
-  const url = `${apiBase()}/people/${safeId}/`;
-  const res = await fetch(url);
+  const url = `${await apiBase()}/people/${safeId}/`;
+  const res = await fetch(url, serverFetchInit());
   if (!res.ok) {
     throw new Error(`SWAPI_HTTP_${res.status}`);
   }

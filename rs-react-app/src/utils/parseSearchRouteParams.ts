@@ -16,13 +16,17 @@ function readParam(
 export type SearchRouteParams = {
   page: number;
   detailsId: string | null;
+  searchTerm: string;
 };
 
 export function parseSearchRouteParams(
   searchParams: Record<string, string | string[] | undefined>
 ): SearchRouteParams {
+  const searchRaw = readParam(searchParams, QUERY_PARAMS.search);
+
   return {
     page: parsePageParam(readParam(searchParams, QUERY_PARAMS.page)),
     detailsId: parseDetailsParam(readParam(searchParams, 'details')),
+    searchTerm: searchRaw?.trim() ?? '',
   };
 }

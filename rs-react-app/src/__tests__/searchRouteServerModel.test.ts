@@ -15,12 +15,13 @@ vi.mock('../api/fetchSwapiPeople', () => ({
 const fetchPeople = vi.mocked(SwapiPeopleApi.fetchPeople);
 
 describe('parseSearchRouteParams', () => {
-  it('reads page and details from search params', () => {
+  it('reads page, search term, and details from search params', () => {
     expect(
-      parseSearchRouteParams({ page: '2', details: '1' })
+      parseSearchRouteParams({ page: '2', details: '1', search: 'luke' })
     ).toEqual({
       page: 2,
       detailsId: '1',
+      searchTerm: 'luke',
     });
   });
 
@@ -28,6 +29,7 @@ describe('parseSearchRouteParams', () => {
     expect(parseSearchRouteParams({})).toEqual({
       page: 1,
       detailsId: null,
+      searchTerm: '',
     });
   });
 });

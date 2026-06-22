@@ -3,6 +3,7 @@ import type { ThemeMode } from '../types/theme';
 export const QUERY_PARAMS = {
   page: 'page',
   details: 'details',
+  search: 'search',
 };
 
 export const SWAPI_API_BASE = 'https://swapi.py4e.com/api';

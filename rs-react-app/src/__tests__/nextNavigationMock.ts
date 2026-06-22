@@ -79,21 +79,25 @@ const navigation = vi.hoisted(() => {
     return useSyncExternalStore(subscribe, getSearchParamsSnapshot, getSearchParamsSnapshot);
   }
 
+  const routerRefresh = vi.fn();
+  const mockRouter = {
+    push: routerPush,
+    replace: routerReplace,
+    refresh: routerRefresh,
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  };
+
   function useMockRouter() {
-    return {
-      push: routerPush,
-      replace: routerReplace,
-      refresh: vi.fn(),
-      back: vi.fn(),
-      forward: vi.fn(),
-      prefetch: vi.fn(),
-    };
+    return mockRouter;
   }
 
   return {
     applyNavigationUrl,
     routerPush,
     routerReplace,
+    routerRefresh,
     setNavigationState,
     getNavigationState,
     useMockPathname,
@@ -104,6 +108,7 @@ const navigation = vi.hoisted(() => {
 
 export const routerPush = navigation.routerPush;
 export const routerReplace = navigation.routerReplace;
+export const routerRefresh = navigation.routerRefresh;
 export const setNavigationState = navigation.setNavigationState;
 export const getNavigationState = navigation.getNavigationState;
 

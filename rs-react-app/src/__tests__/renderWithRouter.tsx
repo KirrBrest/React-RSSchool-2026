@@ -4,11 +4,11 @@ import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { AppNav } from '../components/AppNav';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { SearchPageShell } from '../components/SearchPageShell';
-import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { clearSelected } from '../store/selectedItemsSlice';
 import { resetSwapiApiState, store } from '../store';
 import { getNavigationState, setNavigationState } from './nextNavigationMock';
+import { SearchPageTestHarness } from './SearchPageTestHarness';
 
 export function resetStoreState(): void {
   store.dispatch(clearSelected());
@@ -65,13 +65,7 @@ export function renderSearchPage(
 
   const view = renderAppShell(
     <Suspense fallback={null}>
-      <SearchPageShell
-        initialQuery={{ term: '', page: 1 }}
-        initialResult={null}
-        initialError={null}
-      >
-        <div />
-      </SearchPageShell>
+      <SearchPageTestHarness />
     </Suspense>,
     options
   );
@@ -94,12 +88,36 @@ export function renderWithAppRoutes(
   const [pathname, search = ''] = initialPath.split('?');
   setNavigationState(pathname === '' ? '/' : pathname, search === '' ? '' : `?${search}`);
 
-  const isDetailsRoute = pathname === '/details';
-
   const view = renderAppShell(
     <Suspense fallback={null}>
       {appElement}
-      {isDetailsRoute ? <PersonDetailsPanel /> : null}
+    </Suspense>,
+    options
+  );
+
+  return { view, router: createMockRouter() };
+}
+
+export function renderSearchPageShell(
+  props: {
+    initialQuery: { term: string; page: number };
+    initialResult: import('../types/swapiApi').PeopleListQueryResult | null;
+    initialError: string | null;
+    selectedDetailsId?: string | null;
+    children?: ReactNode;
+  },
+  options?: Omit<RenderOptions, 'wrapper'>
+) {
+  const view = renderAppShell(
+    <Suspense fallback={null}>
+      <SearchPageShell
+        initialQuery={props.initialQuery}
+        initialResult={props.initialResult}
+        initialError={props.initialError}
+        selectedDetailsId={props.selectedDetailsId ?? null}
+      >
+        {props.children ?? <div />}
+      </SearchPageShell>
     </Suspense>,
     options
   );

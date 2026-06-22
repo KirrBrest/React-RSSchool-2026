@@ -4,9 +4,10 @@ import { buildPeopleListPagination } from '@/utils/buildPeopleListPagination';
 import { fetchInitialPeopleList } from '@/utils/fetchInitialPeopleList';
 import type { InitialPeopleListFetchResult } from '@/utils/fetchInitialPeopleList';
 import { parseSearchRouteParams, type SearchRouteParams } from '@/utils/parseSearchRouteParams';
+import { PersonDetailsPanelShell } from '@/components/PersonDetailsPanelShell';
 import { SearchResultsLayout } from '@/views/SearchResultsLayout';
 import { SearchResultsList } from '@/views/SearchResultsList';
-import { PersonDetailsPanel } from '@/views/PersonDetailsPanel';
+import { PersonDetailsPanelView } from '@/views/PersonDetailsPanelView';
 
 export type SearchRouteInitialState = {
   initialQuery: PeopleListQueryArg;
@@ -19,7 +20,7 @@ export async function getSearchRouteInitialState(
 ): Promise<SearchRouteInitialState> {
   const routeParams = parseSearchRouteParams(searchParams);
   const initialQuery: PeopleListQueryArg = {
-    term: '',
+    term: routeParams.searchTerm,
     page: routeParams.page,
   };
   const initialFetch = await fetchInitialPeopleList(initialQuery);
@@ -45,6 +46,12 @@ export function buildSearchResultsServerBody({
     initialFetch.data,
     initialQuery.page
   );
+  const detailsPanel =
+    isDetailsOpen && routeParams.detailsId !== null ? (
+      <PersonDetailsPanelShell personId={routeParams.detailsId}>
+        <PersonDetailsPanelView personId={routeParams.detailsId} />
+      </PersonDetailsPanelShell>
+    ) : null;
 
   return (
     <SearchResultsLayout
@@ -58,7 +65,7 @@ export function buildSearchResultsServerBody({
           selectedItemId={routeParams.detailsId}
         />
       }
-      details={isDetailsOpen ? <PersonDetailsPanel /> : null}
+      details={detailsPanel}
     />
   );
 }
