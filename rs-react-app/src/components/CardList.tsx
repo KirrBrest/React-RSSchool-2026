@@ -1,3 +1,5 @@
+'use client';
+
 import { Card } from './Card';
 import { useSelectedItemsStore } from '../hooks/useSelectedItemsStore';
 import { extractPersonId } from '../utils/extractPersonId';

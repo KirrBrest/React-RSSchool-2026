@@ -6,14 +6,14 @@ import { NotFoundPage } from '../views/NotFoundPage';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { IntlTestProvider } from './IntlTestProvider';
-import { SearchPage } from '../components/SearchPage';
+import { SearchPageShell } from '../components/SearchPageShell';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { AppNav } from '../components/AppNav';
 import { resetStoreState } from './renderWithRouter';
 import { setNavigationState } from './nextNavigationMock';
 
-vi.mock('../components/SearchPage', () => ({
-  SearchPage: function MockSearchPage() {
+vi.mock('../components/SearchPageShell', () => ({
+  SearchPageShell: function MockSearchPageShell() {
     return <div>Mock app home route</div>;
   },
 }));
@@ -50,7 +50,13 @@ describe('App routing pages', () => {
   it('renders the home route at /', () => {
     renderShellRoute('/?page=1', (
       <Suspense fallback={null}>
-        <SearchPage />
+        <SearchPageShell
+          initialQuery={{ term: '', page: 1 }}
+          initialResult={null}
+          initialError={null}
+        >
+          <div />
+        </SearchPageShell>
       </Suspense>
     ));
     expect(screen.getByText('Mock app home route')).toBeInTheDocument();

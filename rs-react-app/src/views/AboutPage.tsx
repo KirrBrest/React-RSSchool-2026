@@ -29,6 +29,7 @@ export async function AboutPage() {
               width={120}
               height={120}
               priority
+              unoptimized
             />
             <div className="about-page__author-info">
               <p className="about-page__author-name">{AUTHOR_NAME}</p>

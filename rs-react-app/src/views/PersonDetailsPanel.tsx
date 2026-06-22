@@ -1,18 +1,17 @@
 'use client';
 
-import Image from 'next/image';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { LoadingIndicator } from '../components/LoadingIndicator';
+import { PersonAvatar } from '../components/PersonAvatar';
 import { useRouter } from '@/i18n/navigation';
 import { invalidatePersonCache } from '../store';
 import { useGetPersonQuery } from '../store/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
 import { rtkQueryErrorMessage } from '../utils/rtkQueryErrorMessage';
-import { getPersonAvatarUrl } from '../utils/personAvatarUrl';
 import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
@@ -61,9 +60,10 @@ function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
               </p>
             </div>
           )}
-          <Image
+          <PersonAvatar
             className="person-details__photo"
-            src={getPersonAvatarUrl(displayPerson.name, 256)}
+            name={displayPerson.name}
+            dicebearSize={256}
             alt={t('photoAlt', { name: displayPerson.name })}
             width={160}
             height={160}

@@ -1,13 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, type ChangeEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import type { CardProps } from '../types';
 import { buildDetailsPath } from '../utils/appNavigation';
-import { getPersonAvatarUrl } from '../utils/personAvatarUrl';
+import { PersonAvatar } from './PersonAvatar';
 import './Card.css';
 
 export function Card({
@@ -54,9 +53,10 @@ export function Card({
         onChange={handleCheckboxChange}
         aria-label={t('selectPerson', { name: personLabel })}
       />
-      <Image
+      <PersonAvatar
         className="result-card__photo"
-        src={getPersonAvatarUrl(personLabel, 96)}
+        name={personLabel}
+        dicebearSize={96}
         alt={t('personPhotoAlt', { name: personLabel })}
         width={48}
         height={48}

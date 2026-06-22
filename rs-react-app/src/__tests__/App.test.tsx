@@ -6,8 +6,8 @@ import {
   within,
 } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SearchPage } from '../components/SearchPage';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
+import { SearchPageShell } from '../components/SearchPageShell';
 import {
   renderWithAppRoutes,
   renderWithRouter,
@@ -886,7 +886,13 @@ describe('App', () => {
       renderWithAppRoutes(
         '/?page=1',
         <AppErrorBoundary>
-          <SearchPage />
+          <SearchPageShell
+            initialQuery={{ term: '', page: 1 }}
+            initialResult={null}
+            initialError={null}
+          >
+            <div />
+          </SearchPageShell>
         </AppErrorBoundary>
       );
       await waitFor(() => {

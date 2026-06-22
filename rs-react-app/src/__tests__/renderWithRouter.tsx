@@ -3,7 +3,7 @@ import { Suspense, type ReactNode } from 'react';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { AppNav } from '../components/AppNav';
 import { ThemeProvider } from '../context/ThemeProvider';
-import { SearchPage } from '../components/SearchPage';
+import { SearchPageShell } from '../components/SearchPageShell';
 import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { clearSelected } from '../store/selectedItemsSlice';
@@ -65,7 +65,13 @@ export function renderSearchPage(
 
   const view = renderAppShell(
     <Suspense fallback={null}>
-      <SearchPage />
+      <SearchPageShell
+        initialQuery={{ term: '', page: 1 }}
+        initialResult={null}
+        initialError={null}
+      >
+        <div />
+      </SearchPageShell>
     </Suspense>,
     options
   );
