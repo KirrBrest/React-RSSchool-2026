@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///D:/IT/311RSS_React/React-RSSchool-2026/rs-react-app/src/app/layout.tsx"],"sourcesContent":["type RootLayoutProps = {\n  children: React.ReactNode;\n};\n\nexport default function RootLayout({ children }: RootLayoutProps) {\n  return children;\n}\n"],"names":["RootLayout","children"],"mappings":";;;;AAIe,SAASA,WAAW,EAAEC,QAAQ,EAAmB;IAC9D,OAAOA;AACT"}}]
-}

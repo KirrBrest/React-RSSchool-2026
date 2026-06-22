@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///D:/IT/311RSS_React/React-RSSchool-2026/rs-react-app/src/views/AboutPage.css"],"sourcesContent":[".about-page {\n  box-sizing: border-box;\n  flex: 1 1 auto;\n  min-height: 0;\n}\n\n.about-page__main {\n  display: flex;\n  flex-direction: column;\n  gap: 1.25rem;\n}\n\n.about-page__title {\n  margin: 0;\n  font-size: 1.5rem;\n  font-weight: 600;\n}\n\n.about-page__heading {\n  margin: 0 0 0.5rem;\n  font-size: 1rem;\n  font-weight: 600;\n  color: var(--color-text-muted);\n}\n\n.about-page__author-name {\n  margin: 0 0 0.75rem;\n  font-size: 1.1rem;\n}\n\n.about-page__bio {\n  margin: 0;\n  color: var(--color-text-muted);\n  max-width: 42rem;\n}\n\n.about-page__links {\n  display: flex;\n  flex-direction: column;\n  gap: 0.5rem;\n}\n\n.about-page__link-item {\n  margin: 0;\n}\n\n.about-page__external-link {\n  color: var(--color-accent);\n  text-decoration: none;\n}\n\n.about-page__external-link:hover {\n  text-decoration: underline;\n}\n\n.about-page__external-link:focus-visible {\n  outline: 2px solid var(--color-accent);\n  outline-offset: 2px;\n  border-radius: 4px;\n}\n"],"names":[],"mappings":"AAAA;;;;;;AAMA;;;;;;AAMA;;;;;;AAMA;;;;;;;AAOA;;;;;AAKA;;;;;;AAMA;;;;;;AAMA;;;;AAIA;;;;;AAKA;;;;AAIA"}}]
-}

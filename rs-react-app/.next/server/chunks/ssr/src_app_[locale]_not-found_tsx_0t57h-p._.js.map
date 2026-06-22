@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../src/app/%5Blocale%5D/not-found.tsx"],"sourcesContent":["import { NotFoundPage } from '@/views/NotFoundPage';\n\nexport default function NotFound() {\n  return <NotFoundPage />;\n}\n"],"names":["NotFound"],"mappings":"sDAAA,EAAA,EAAA,CAAA,CAAA,wBAEe,SAASA,EACtB,MAAO,CAAA,EAAA,EAAA,GAAA,EAAC,EAAA,YAAY,CAAA,CAAA,EACtB"}
