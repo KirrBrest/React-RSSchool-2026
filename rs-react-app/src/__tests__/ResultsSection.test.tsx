@@ -48,7 +48,7 @@ describe('ResultsSection', () => {
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('button')).toHaveLength(2);
+      expect(region.getAllByRole('link')).toHaveLength(2);
     });
 
     it('displays no results message when data array is empty', () => {
@@ -120,7 +120,7 @@ describe('ResultsSection', () => {
       });
       const region = withinRenderedRoot(view);
       expect(
-        region.getByRole('button', { name: 'View details for Han Solo' })
+        region.getByRole('link', { name: 'View details for Han Solo' })
       ).toBeInTheDocument();
       expect(region.getByText('Han Solo')).toBeInTheDocument();
       expect(region.queryByText('Smuggler')).not.toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('ResultsSection', () => {
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('button')).toHaveLength(1);
+      expect(region.getAllByRole('link')).toHaveLength(1);
     });
   });
 

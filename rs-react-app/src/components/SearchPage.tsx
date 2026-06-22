@@ -17,7 +17,6 @@ export function SearchPage() {
     isDetailsOpen,
     searchParams,
     updatePageInUrl,
-    openDetails,
     closeDetails,
   } = useDetailsRouting();
 
@@ -25,8 +24,6 @@ export function SearchPage() {
     state,
     handleSearchInputChange,
     handleSearch,
-    handlePageNext,
-    handlePagePrev,
     handleRefreshList,
     triggerSimulatedCrash,
   } = usePeopleList({
@@ -95,13 +92,10 @@ export function SearchPage() {
                     totalCount: listTotalCount,
                     hasNext: listHasNext,
                     hasPrev: listHasPrev,
-                    onNext: handlePageNext,
-                    onPrev: handlePagePrev,
                   }
                 : null
             }
             selectedItemId={selectedDetailsId}
-            onItemSelect={openDetails}
             onMainPanelClick={handleMainPanelClick}
           />
         </div>

@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format:fix": "prettier --write .",
-    "prepare": "git -C .. config core.hooksPath rs-react-app/.husky"
+    "prepare": "node -e \"if(!process.env.CI){require('child_process').execSync('git -C .. config core.hooksPath rs-react-app/.husky',{stdio:'inherit'})}\""
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",

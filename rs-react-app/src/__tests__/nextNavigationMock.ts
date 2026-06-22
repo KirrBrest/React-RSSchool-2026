@@ -119,17 +119,20 @@ vi.mock('@/i18n/navigation', () => ({
     children,
     className,
     onClick,
+    ...rest
   }: {
     href: string;
     children: ReactNode;
     className?: string;
     onClick?: (event: { preventDefault: () => void }) => void;
+    [key: string]: unknown;
   }) =>
     createElement(
       'a',
       {
         href,
         className,
+        ...rest,
         onClick: (event: { preventDefault: () => void }) => {
           if (typeof href === 'string' && href.startsWith('/')) {
             event.preventDefault();

@@ -153,7 +153,7 @@ describe('App', () => {
       renderWithRouter();
       await waitFor(() => {
         expect(
-          screen.getByRole('button', { name: 'View details for Luke Skywalker' })
+          screen.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
     });
@@ -176,7 +176,7 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
       fetchPeople.mockRejectedValueOnce(new Error('SWAPI_HTTP_500'));
@@ -219,7 +219,7 @@ describe('App', () => {
       const { view } = renderWithRouter();
       await waitFor(() => {
         expect(
-          withinRenderedRoot(view).getByRole('button', {
+          withinRenderedRoot(view).getByRole('link', {
             name: 'View details for Luke Skywalker',
           })
         ).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
         expect(router.state.location.search).toBe('?page=2');
@@ -282,7 +282,7 @@ describe('App', () => {
       });
 
       fetchPeople.mockClear();
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      fireEvent.click(root.getByRole('link', { name: 'Previous' }));
       await waitFor(() => {
         expect(router.state.location.search).toBe('?page=1');
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
@@ -300,13 +300,13 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
       });
 
       fetchPeople.mockClear();
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      fireEvent.click(root.getByRole('link', { name: 'Previous' }));
       await waitFor(() => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
@@ -342,7 +342,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
 
       await waitFor(() => {
         expect(router.state.location.search).toBe('?page=2');
@@ -399,11 +399,11 @@ describe('App', () => {
       await waitFor(() => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
         expect(
-          root.getByRole('button', { name: 'Next' })
+          root.getByRole('link', { name: 'Next' })
         ).not.toBeDisabled();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
 
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('sky', 2);
@@ -461,11 +461,11 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -501,12 +501,12 @@ describe('App', () => {
 
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
 
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       const detailsPanel = () =>
         within(root.getByRole('region', { name: 'Person details' }));
@@ -516,7 +516,7 @@ describe('App', () => {
       });
 
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Leia Organa' })
+        root.getByRole('link', { name: 'View details for Leia Organa' })
       );
       await waitFor(() => {
         expect(detailsPanel().getByText('Leia Organa')).toBeInTheDocument();
@@ -524,7 +524,7 @@ describe('App', () => {
 
       fetchPerson.mockClear();
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
 
       await waitFor(() => {
@@ -600,7 +600,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
 
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -653,11 +653,11 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -726,12 +726,12 @@ describe('App', () => {
       await waitFor(() => {
         expect(selectSelectedItems(store.getState())).toHaveLength(1);
       });
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
       await waitFor(() => {
         expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
       });
       expect(selectSelectedItems(store.getState())).toHaveLength(1);
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      fireEvent.click(root.getByRole('link', { name: 'Previous' }));
       await waitFor(() => {
         expect(
           root.getByRole('checkbox', { name: 'Select Luke Skywalker' })

@@ -42,6 +42,16 @@ export default defineConfig([
         {
           paths: [
             {
+              name: 'next/link',
+              message: 'Use Link from @/i18n/navigation instead of next/link.',
+            },
+            {
+              name: 'next/navigation',
+              importNames: ['useRouter', 'usePathname', 'redirect'],
+              message:
+                'Use useRouter, usePathname, and redirect from @/i18n/navigation.',
+            },
+            {
               name: 'jotai',
               message: 'External state managers are not allowed by task requirements.',
             },

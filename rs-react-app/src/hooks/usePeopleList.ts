@@ -94,25 +94,6 @@ export function usePeopleList({
   const listHasNext = totalPages > 0 && listPage < totalPages;
   const listHasPrev = listPage > 1;
 
-  const handlePageStep = useCallback(
-    (step: 1 | -1): void => {
-      const targetPage = pageInUrl + step;
-      if (targetPage < 1 || targetPage > totalPages) {
-        return;
-      }
-      updatePageInUrl(targetPage);
-    },
-    [pageInUrl, totalPages, updatePageInUrl]
-  );
-
-  const handlePageNext = useCallback((): void => {
-    handlePageStep(1);
-  }, [handlePageStep]);
-
-  const handlePagePrev = useCallback((): void => {
-    handlePageStep(-1);
-  }, [handlePageStep]);
-
   const triggerSimulatedCrash = useCallback((): void => {
     setSimulateCrash(true);
   }, []);
@@ -139,8 +120,6 @@ export function usePeopleList({
     state,
     handleSearchInputChange,
     handleSearch,
-    handlePageNext,
-    handlePagePrev,
     handleRefreshList,
     triggerSimulatedCrash,
   };

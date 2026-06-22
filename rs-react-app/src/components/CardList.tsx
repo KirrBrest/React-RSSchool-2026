@@ -7,7 +7,6 @@ import './CardList.css';
 export function CardList({
   items,
   selectedItemId,
-  onItemSelect,
 }: CardListProps) {
   const { items: selectedItems, toggleItem } = useSelectedItemsStore();
 
@@ -28,7 +27,6 @@ export function CardList({
               }
               isChecked={isChecked}
               onToggleCheck={() => toggleItem(item)}
-              onOpenDetails={onItemSelect}
             />
           </li>
         );

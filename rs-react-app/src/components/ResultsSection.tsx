@@ -17,7 +17,6 @@ export function ResultsSection({
   isRefreshDisabled,
   pagination,
   selectedItemId,
-  onItemSelect,
   onMainPanelClick,
 }: ResultsSectionProps) {
   const t = useTranslations('ResultsSection');
@@ -91,7 +90,6 @@ export function ResultsSection({
               <CardList
                 items={items}
                 selectedItemId={selectedItemId}
-                onItemSelect={onItemSelect}
               />
             </>
           )}
@@ -102,8 +100,6 @@ export function ResultsSection({
                 totalCount={pagination.totalCount}
                 hasNext={pagination.hasNext}
                 hasPrev={pagination.hasPrev}
-                onNext={pagination.onNext}
-                onPrev={pagination.onPrev}
               />
             </div>
           )}

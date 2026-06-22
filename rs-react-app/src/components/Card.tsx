@@ -1,9 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useMemo, type ChangeEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import type { CardProps } from '../types';
+import { buildDetailsPath } from '../utils/appNavigation';
 import { getPersonAvatarUrl } from '../utils/personAvatarUrl';
 import './Card.css';
 
@@ -13,28 +16,22 @@ export function Card({
   isDetailsSelected,
   isChecked,
   onToggleCheck,
-  onOpenDetails,
 }: CardProps) {
   const t = useTranslations('Card');
+  const readonlySearchParams = useSearchParams();
   const personLabel = name || 'person';
+  const detailsHref = useMemo(
+    () =>
+      buildDetailsPath(
+        new URLSearchParams(readonlySearchParams.toString()),
+        id
+      ),
+    [id, readonlySearchParams]
+  );
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>): void => {
     event.stopPropagation();
     onToggleCheck();
-  };
-
-  const handleOpenDetails = (event: MouseEvent<HTMLButtonElement>): void => {
-    event.stopPropagation();
-    onOpenDetails(id);
-  };
-
-  const handleOpenDetailsKeyDown = (
-    event: KeyboardEvent<HTMLButtonElement>
-  ): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onOpenDetails(id);
-    }
   };
 
   const classNames = ['result-card'];
@@ -64,16 +61,15 @@ export function Card({
         width={48}
         height={48}
       />
-      <button
-        type="button"
+      <Link
         className="result-card__open"
-        aria-pressed={isDetailsSelected}
+        href={detailsHref}
+        aria-current={isDetailsSelected ? 'page' : undefined}
         aria-label={t('viewDetails', { name: personLabel })}
-        onClick={handleOpenDetails}
-        onKeyDown={handleOpenDetailsKeyDown}
+        onClick={(event) => event.stopPropagation()}
       >
         <span className="result-card__name">{name}</span>
-      </button>
+      </Link>
     </div>
   );
 }

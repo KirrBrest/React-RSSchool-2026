@@ -20,8 +20,6 @@ export type PeoplePaginationProps = {
   totalCount: number;
   hasNext: boolean;
   hasPrev: boolean;
-  onNext: () => void;
-  onPrev: () => void;
 };
 
 export type ResultsSectionProps = {
@@ -34,7 +32,6 @@ export type ResultsSectionProps = {
   isRefreshDisabled: boolean;
   pagination: PeoplePaginationProps | null;
   selectedItemId: string | null;
-  onItemSelect: (id: string) => void;
   onMainPanelClick: () => void;
 };
 
@@ -44,11 +41,9 @@ export type CardProps = {
   isDetailsSelected: boolean;
   isChecked: boolean;
   onToggleCheck: () => void;
-  onOpenDetails: (id: string) => void;
 };
 
 export type CardListProps = {
   items: PersonResultItem[];
   selectedItemId: string | null;
-  onItemSelect: (id: string) => void;
 };
