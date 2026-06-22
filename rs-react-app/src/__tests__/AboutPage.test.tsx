@@ -39,10 +39,4 @@ describe('AboutPage', () => {
     expect(courseLink).toHaveAttribute('href', 'https://rs.school/courses/reactjs');
     expect(courseLink).toHaveAttribute('target', '_blank');
   });
-
-  it('includes navigation to home', async () => {
-    await renderAboutPage();
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
-  });
 });

@@ -1,6 +1,7 @@
 import { render, type RenderOptions } from '@testing-library/react';
 import { Suspense, type ReactNode } from 'react';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
+import { AppNav } from '../components/AppNav';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { SearchPage } from '../components/SearchPage';
 import { PersonDetailsPanel } from '../views/PersonDetailsPanel';
@@ -47,6 +48,7 @@ function createMockRouter() {
 function renderAppShell(content: ReactNode, options?: Omit<RenderOptions, 'wrapper'>) {
   return renderWithProviders(
     <div className="app-shell">
+      <AppNav />
       <div className="app-shell__content">{content}</div>
       <SelectedItemsFlyout />
     </div>,

@@ -2,7 +2,6 @@
 
 import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { AppNav } from './AppNav';
 import { SearchSection } from './SearchSection';
 import { ResultsSection } from './ResultsSection';
 import { useDetailsRouting } from '../hooks/useDetailsRouting';
@@ -69,7 +68,6 @@ export function SearchPage() {
 
   return (
     <div className="app">
-      <AppNav />
       <SearchSection
         onSearch={handleSearch}
         onSearchInputChange={handleSearchInputChange}

@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import { AppNav } from '../components/AppNav';
 import {
   AUTHOR_EMAIL,
   AUTHOR_GITHUB,
@@ -13,7 +12,6 @@ export async function AboutPage() {
 
   return (
     <div className="about-page">
-      <AppNav />
       <main className="about-page__main">
         <h1 className="about-page__title">{t('title')}</h1>
         <section className="about-page__author" aria-labelledby="about-author-heading">

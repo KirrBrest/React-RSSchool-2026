@@ -1,9 +1,7 @@
 .about-page {
   box-sizing: border-box;
-  min-height: 100vh;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem 1.25rem 1.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .about-page__main {

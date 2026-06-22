@@ -8,6 +8,7 @@ import { ThemeProvider } from '../context/ThemeProvider';
 import { IntlTestProvider } from './IntlTestProvider';
 import { SearchPage } from '../components/SearchPage';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
+import { AppNav } from '../components/AppNav';
 import { resetStoreState } from './renderWithRouter';
 import { setNavigationState } from './nextNavigationMock';
 
@@ -26,6 +27,7 @@ function renderShellRoute(initialPath: string, children: React.ReactNode) {
       <ReduxProvider>
         <ThemeProvider>
           <div className="app-shell">
+            <AppNav />
             <div className="app-shell__content">{children}</div>
             <SelectedItemsFlyout />
           </div>
@@ -59,6 +61,8 @@ describe('App routing pages', () => {
     const aboutPage = await AboutPage();
     renderShellRoute('/about', aboutPage);
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
     expect(
       screen.getByRole('link', { name: 'RS School React course' })
     ).toBeInTheDocument();
