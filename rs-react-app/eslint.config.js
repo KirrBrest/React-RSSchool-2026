@@ -1,21 +1,19 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
 import reactPlugin from 'eslint-plugin-react';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage']),
+  globalIgnores(['dist', 'coverage', '.next']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
       reactPlugin.configs.flat.recommended,
       reactPlugin.configs.flat['jsx-runtime'],
       eslintConfigPrettier,
@@ -43,6 +41,16 @@ export default defineConfig([
         'error',
         {
           paths: [
+            {
+              name: 'next/link',
+              message: 'Use Link from @/i18n/navigation instead of next/link.',
+            },
+            {
+              name: 'next/navigation',
+              importNames: ['useRouter', 'usePathname', 'redirect'],
+              message:
+                'Use useRouter, usePathname, and redirect from @/i18n/navigation.',
+            },
             {
               name: 'jotai',
               message: 'External state managers are not allowed by task requirements.',

@@ -1,7 +1,7 @@
 const DEFAULT_QUERY_CACHE_TTL_SECONDS = 300;
 
 export function getQueryCacheTtlSeconds(): number {
-  const raw = import.meta.env.VITE_QUERY_CACHE_TTL_SECONDS;
+  const raw = process.env.NEXT_PUBLIC_QUERY_CACHE_TTL_SECONDS;
   if (raw === undefined || raw === '') {
     return DEFAULT_QUERY_CACHE_TTL_SECONDS;
   }

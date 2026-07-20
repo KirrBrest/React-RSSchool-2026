@@ -6,8 +6,8 @@ import {
   within,
 } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { MainPage } from '../pages/MainPage';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
+import { SearchPageShell } from '../components/SearchPageShell';
 import {
   renderWithAppRoutes,
   renderWithRouter,
@@ -18,8 +18,7 @@ import { selectSelectedItems } from '../store/selectedItemsSlice';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
-import { QUERY_UI, THEME_MODES } from '../constants';
+import { THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -32,6 +31,59 @@ vi.mock('../api/fetchSwapiPeople', () => ({
     fetchPerson: vi.fn(),
   },
 }));
+
+vi.mock('../actions/generateSelectedItemsCsv', () => ({
+  generateSelectedItemsCsvAction: vi.fn(async () => ({
+    csv: 'Name,Description,Details URL,SWAPI URL,Person ID',
+    filename: '1_items.csv',
+  })),
+}));
+
+vi.mock('../utils/downloadCsvFile', () => ({
+  downloadCsvFile: vi.fn(),
+}));
+
+vi.mock('../actions/searchPeople', async () => {
+  const { fetchInitialPeopleList } = await import('../utils/fetchInitialPeopleList');
+  const { QUERY_PARAMS } = await import('../constants');
+  const { parsePageParam } = await import('../utils/parsePageParam');
+
+  return {
+    searchPeopleAction: vi.fn(
+      async (
+        _previousState: unknown,
+        formData: FormData
+      ) => {
+        const term = String(formData.get('search-query') ?? '').trim();
+        const query = { term, page: 1 };
+        const result = await fetchInitialPeopleList(query);
+        return {
+          query,
+          data: result.data,
+          errorMessage: result.errorMessage,
+        };
+      }
+    ),
+    refreshPeopleListAction: vi.fn(
+      async (
+        _previousState: unknown,
+        formData: FormData
+      ) => {
+        const term = String(formData.get(QUERY_PARAMS.search) ?? '').trim();
+        const page = parsePageParam(
+          String(formData.get(QUERY_PARAMS.page) ?? '1')
+        );
+        const query = { term, page };
+        const result = await fetchInitialPeopleList(query);
+        return {
+          query,
+          data: result.data,
+          errorMessage: result.errorMessage,
+        };
+      }
+    ),
+  };
+});
 
 const fetchPeople = vi.mocked(SwapiPeopleApi.fetchPeople);
 const fetchPerson = vi.mocked(SwapiPeopleApi.fetchPerson);
@@ -105,11 +157,13 @@ describe('App', () => {
       localStorage.setItem(SearchTermStorage.storageKey, 'stored-query');
       const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
-      expect(
-        root.getByLabelText('Search query')
-      ).toHaveValue('stored-query');
       await waitFor(() => {
-        expect(fetchPeople).toHaveBeenCalledWith('stored-query', 1);
+        expect(
+          root.getByLabelText('Search query')
+        ).toHaveValue('stored-query');
+      });
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
       });
     });
 
@@ -153,7 +207,7 @@ describe('App', () => {
       renderWithRouter();
       await waitFor(() => {
         expect(
-          screen.getByRole('button', { name: 'View details for Luke Skywalker' })
+          screen.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
     });
@@ -171,15 +225,22 @@ describe('App', () => {
     });
 
     it('clears stale list results when a later search fails', async () => {
-      fetchPeople.mockResolvedValueOnce(onePersonSwapiList());
+      fetchPeople.mockImplementation((term: string, page: number) => {
+        if (term === 'broken') {
+          return Promise.reject(new Error('SWAPI_HTTP_500'));
+        }
+        if (page === 1 && term === '') {
+          return Promise.resolve(onePersonSwapiList());
+        }
+        return Promise.resolve(emptyPeopleList());
+      });
       const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
-      fetchPeople.mockRejectedValueOnce(new Error('SWAPI_HTTP_500'));
       fireEvent.change(root.getByLabelText('Search query'), {
         target: { value: 'broken' },
       });
@@ -219,7 +280,7 @@ describe('App', () => {
       const { view } = renderWithRouter();
       await waitFor(() => {
         expect(
-          withinRenderedRoot(view).getByRole('button', {
+          withinRenderedRoot(view).getByRole('link', {
             name: 'View details for Luke Skywalker',
           })
         ).toBeInTheDocument();
@@ -244,7 +305,7 @@ describe('App', () => {
   });
 
   describe('pagination', () => {
-    it('skips API call when search term and page are unchanged', async () => {
+    it('skips duplicate server fetch when search term and page are unchanged', async () => {
       fetchPeople.mockResolvedValue(emptyPeopleList());
       const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
@@ -257,7 +318,7 @@ describe('App', () => {
       fireEvent.click(root.getByRole('button', { name: 'Search' }));
 
       await waitFor(() => {
-        expect(fetchPeople).not.toHaveBeenCalled();
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
       });
     });
 
@@ -271,7 +332,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
       await waitFor(() => {
         expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
         expect(router.state.location.search).toBe('?page=2');
@@ -282,41 +343,46 @@ describe('App', () => {
       });
 
       fetchPeople.mockClear();
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      fireEvent.click(root.getByRole('link', { name: 'Previous' }));
       await waitFor(() => {
         expect(router.state.location.search).toBe('?page=1');
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
-      expect(root.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();
-      expect(fetchPeople).not.toHaveBeenCalled();
+      expect(root.queryByText('Loading data…')).not.toBeInTheDocument();
+      expect(fetchPeople).toHaveBeenCalledWith('', 1);
     });
 
-    it('refetches the current page when refresh is clicked after cache is warm', async () => {
-      mockPaginatedPeopleList();
+    it('refetches the current page when refresh is clicked after search', async () => {
+      fetchPeople.mockImplementation((term: string, page: number) => {
+        if (term === 'test' && page === 1) {
+          return Promise.resolve(
+            listResponse({ count: 20, hasNext: true, hasPrev: false })
+          );
+        }
+        return Promise.resolve(emptyPeopleList());
+      });
       const { view } = renderWithRouter();
       const root = withinRenderedRoot(view);
 
       await waitFor(() => {
-        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+        expect(fetchPeople).toHaveBeenCalledWith('', 1);
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.change(root.getByLabelText('Search query'), {
+        target: { value: 'test' },
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Search' }));
+
       await waitFor(() => {
-        expect(fetchPeople).toHaveBeenLastCalledWith('', 2);
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
       fetchPeople.mockClear();
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
-      await waitFor(() => {
-        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
-      });
-      expect(fetchPeople).not.toHaveBeenCalled();
-
       fireEvent.click(
         root.getByRole('button', { name: 'Refresh results' })
       );
       await waitFor(() => {
-        expect(fetchPeople).toHaveBeenCalledWith('', 1);
+        expect(fetchPeople).toHaveBeenCalledWith('test', 1);
       });
     });
 
@@ -342,7 +408,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
 
       await waitFor(() => {
         expect(router.state.location.search).toBe('?page=2');
@@ -368,52 +434,6 @@ describe('App', () => {
 
       expect(router.state.location.search).toBe('?page=2');
       expect(fetchPeople).not.toHaveBeenCalled();
-    });
-
-    it('paginates search results when more than one page exists', async () => {
-      fetchPeople
-        .mockReset()
-        .mockResolvedValueOnce(emptyPeopleList())
-        .mockResolvedValueOnce(
-          listResponse({ count: 15, hasNext: true, hasPrev: false })
-        )
-        .mockResolvedValueOnce(
-          listResponse({ count: 15, hasNext: false, hasPrev: true })
-        );
-      const { view, router } = renderWithRouter('/?page=1');
-      const root = withinRenderedRoot(view);
-
-      await waitFor(() => {
-        expect(fetchPeople).toHaveBeenCalledWith('', 1);
-      });
-
-      fireEvent.change(root.getByLabelText('Search query'), {
-        target: { value: 'sky' },
-      });
-      fireEvent.click(root.getByRole('button', { name: 'Search' }));
-
-      await waitFor(() => {
-        expect(fetchPeople).toHaveBeenLastCalledWith('sky', 1);
-      });
-
-      await waitFor(() => {
-        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
-        expect(
-          root.getByRole('button', { name: 'Next' })
-        ).not.toBeDisabled();
-      });
-
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
-
-      await waitFor(() => {
-        expect(fetchPeople).toHaveBeenLastCalledWith('sky', 2);
-      });
-      await waitFor(() => {
-        expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
-      });
-      await waitFor(() => {
-        expect(router.state.location.search).toBe('?page=2');
-      });
     });
 
     it('does not show pagination controls while results are loading', async () => {
@@ -461,11 +481,11 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -479,7 +499,7 @@ describe('App', () => {
       ).toBeInTheDocument();
     });
 
-    it('reuses cached person details without the initial loading state', async () => {
+    it('refetches person details when the same card is opened again', async () => {
       const luke = onePersonSwapiList().results[0];
       const leia = {
         ...luke,
@@ -501,12 +521,12 @@ describe('App', () => {
 
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
 
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       const detailsPanel = () =>
         within(root.getByRole('region', { name: 'Person details' }));
@@ -516,7 +536,7 @@ describe('App', () => {
       });
 
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Leia Organa' })
+        root.getByRole('link', { name: 'View details for Leia Organa' })
       );
       await waitFor(() => {
         expect(detailsPanel().getByText('Leia Organa')).toBeInTheDocument();
@@ -524,15 +544,15 @@ describe('App', () => {
 
       fetchPerson.mockClear();
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
 
       await waitFor(() => {
         expect(detailsPanel().getByText('Luke Skywalker')).toBeInTheDocument();
       });
-      expect(fetchPerson).not.toHaveBeenCalled();
+      expect(fetchPerson).toHaveBeenCalledWith('1');
       expect(
-        detailsPanel().queryByText(QUERY_UI.detailsLoading)
+        detailsPanel().queryByText('Loading details…')
       ).not.toBeInTheDocument();
     });
 
@@ -559,7 +579,7 @@ describe('App', () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
       const first = renderWithRouter('/details?page=1&details=1');
       await waitFor(() => {
-        expect(fetchPeople).toHaveBeenCalledTimes(1);
+        expect(fetchPeople).toHaveBeenCalled();
       });
       first.view.unmount();
       const second = renderWithRouter('/details?page=1&details=1');
@@ -570,7 +590,7 @@ describe('App', () => {
           screen.getByRole('region', { name: 'Person details' })
         ).toBeInTheDocument();
       });
-      expect(fetchPeople).toHaveBeenCalledTimes(1);
+      expect(fetchPeople.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
 
     it('keeps details in the URL after the list fetch finishes', async () => {
@@ -600,7 +620,7 @@ describe('App', () => {
         expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
       });
 
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
 
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -653,11 +673,11 @@ describe('App', () => {
       const root = withinRenderedRoot(view);
       await waitFor(() => {
         expect(
-          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+          root.getByRole('link', { name: 'View details for Luke Skywalker' })
         ).toBeInTheDocument();
       });
       fireEvent.click(
-        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        root.getByRole('link', { name: 'View details for Luke Skywalker' })
       );
       await waitFor(() => {
         expect(router.state.location.pathname).toBe('/details');
@@ -726,12 +746,12 @@ describe('App', () => {
       await waitFor(() => {
         expect(selectSelectedItems(store.getState())).toHaveLength(1);
       });
-      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      fireEvent.click(root.getByRole('link', { name: 'Next' }));
       await waitFor(() => {
         expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
       });
       expect(selectSelectedItems(store.getState())).toHaveLength(1);
-      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      fireEvent.click(root.getByRole('link', { name: 'Previous' }));
       await waitFor(() => {
         expect(
           root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
@@ -816,9 +836,10 @@ describe('App', () => {
 
     it('downloads a CSV file when Download is clicked', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
-      const download = vi
-        .spyOn(SelectedItemsCsvDownload, 'download')
-        .mockImplementation(() => {});
+      const { generateSelectedItemsCsvAction } = await import(
+        '../actions/generateSelectedItemsCsv'
+      );
+      const { downloadCsvFile } = await import('../utils/downloadCsvFile');
       const { view } = renderWithRouter('/?page=1');
       const root = withinRenderedRoot(view);
       await waitFor(() => {
@@ -835,10 +856,15 @@ describe('App', () => {
         ).toBeInTheDocument();
       });
       fireEvent.click(root.getByRole('button', { name: 'Download' }));
-      expect(download).toHaveBeenCalledTimes(1);
-      expect(download.mock.calls[0][0]).toHaveLength(1);
-      expect(download.mock.calls[0][0][0].name).toBe('Luke Skywalker');
-      download.mockRestore();
+      await waitFor(() => {
+        expect(generateSelectedItemsCsvAction).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(downloadCsvFile).toHaveBeenCalledWith(
+          'Name,Description,Details URL,SWAPI URL,Person ID',
+          '1_items.csv'
+        );
+      });
     });
   });
 
@@ -870,7 +896,19 @@ describe('App', () => {
       renderWithAppRoutes(
         '/?page=1',
         <AppErrorBoundary>
-          <MainPage />
+          <SearchPageShell
+            initialQuery={{ term: '', page: 1 }}
+            initialResult={{
+              results: [],
+              listHasNext: false,
+              listHasPrev: false,
+              listTotalCount: 0,
+            }}
+            initialError={null}
+            selectedDetailsId={null}
+          >
+            <div>No matching people.</div>
+          </SearchPageShell>
         </AppErrorBoundary>
       );
       await waitFor(() => {

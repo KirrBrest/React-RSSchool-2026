@@ -1,14 +1,9 @@
 import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { NotFoundPage } from '../pages/NotFoundPage';
+import { NotFoundPage } from '../views/NotFoundPage';
 
 function renderNotFoundPage() {
-  return render(
-    <MemoryRouter>
-      <NotFoundPage />
-    </MemoryRouter>
-  );
+  return render(<NotFoundPage />);
 }
 
 describe('NotFoundPage', () => {

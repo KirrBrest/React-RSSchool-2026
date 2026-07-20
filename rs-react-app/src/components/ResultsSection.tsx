@@ -1,7 +1,9 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { CardList } from './CardList';
 import { LoadingIndicator } from './LoadingIndicator';
 import { PeoplePagination } from './PeoplePagination';
-import { QUERY_UI } from '../constants';
 import type { ResultsSectionProps } from '../types';
 import './ResultsSection.css';
 
@@ -15,9 +17,9 @@ export function ResultsSection({
   isRefreshDisabled,
   pagination,
   selectedItemId,
-  onItemSelect,
   onMainPanelClick,
 }: ResultsSectionProps) {
+  const t = useTranslations('ResultsSection');
   const hasItems = items.length > 0;
   const showError = Boolean(errorMessage);
   const isBusy = isLoading || isFetching;
@@ -25,25 +27,25 @@ export function ResultsSection({
   return (
     <section
       className="results-section"
-      aria-label="Results"
+      aria-label={t('sectionLabel')}
       aria-busy={isBusy}
       aria-live="polite"
     >
       <div className="results-section__inner">
         <div className="results-section__header">
-          <h2 className="results-section__title">Results</h2>
+          <h2 className="results-section__title">{t('title')}</h2>
           {onRefresh !== null && (
             <button
               type="button"
               className="results-section__refresh"
-              aria-label={QUERY_UI.listRefresh}
+              aria-label={t('listRefresh')}
               disabled={isRefreshDisabled}
               onClick={(event) => {
                 event.stopPropagation();
                 onRefresh();
               }}
             >
-              {QUERY_UI.listRefresh}
+              {t('listRefresh')}
             </button>
           )}
         </div>
@@ -55,13 +57,13 @@ export function ResultsSection({
             <div className="results-section__loading">
               <LoadingIndicator />
               <p className="results-section__loading-text">
-                {QUERY_UI.listLoading}
+                {t('listLoading')}
               </p>
             </div>
           )}
           {!isLoading && !hasSearched && (
             <p className="results-section__placeholder">
-              Run a search to load people from SWAPI.
+              {t('initialPlaceholder')}
             </p>
           )}
           {!isLoading && hasSearched && showError && (
@@ -70,7 +72,7 @@ export function ResultsSection({
             </div>
           )}
           {!isLoading && hasSearched && !showError && !hasItems && (
-            <p className="results-section__placeholder">No matching people.</p>
+            <p className="results-section__placeholder">{t('emptyResults')}</p>
           )}
           {!isLoading && hasItems && !showError && (
             <>
@@ -81,14 +83,13 @@ export function ResultsSection({
                 >
                   <LoadingIndicator />
                   <p className="results-section__refreshing-text">
-                    {QUERY_UI.listRefreshing}
+                    {t('listRefreshing')}
                   </p>
                 </div>
               )}
               <CardList
                 items={items}
                 selectedItemId={selectedItemId}
-                onItemSelect={onItemSelect}
               />
             </>
           )}
@@ -99,8 +100,6 @@ export function ResultsSection({
                 totalCount={pagination.totalCount}
                 hasNext={pagination.hasNext}
                 hasPrev={pagination.hasPrev}
-                onNext={pagination.onNext}
-                onPrev={pagination.onPrev}
               />
             </div>
           )}

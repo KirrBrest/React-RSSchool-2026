@@ -1,48 +1,67 @@
-import { useCallback } from 'react';
-import { SELECTED_ITEMS_FLYOUT } from '../constants';
+'use client';
+
+import { useActionState, useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { generateSelectedItemsCsvAction } from '@/actions/generateSelectedItemsCsv';
 import { useSelectedItemsStore } from '../hooks/useSelectedItemsStore';
-import { formatSelectedItemsCount } from '../utils/formatSelectedItemsCount';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
+import { downloadCsvFile } from '../utils/downloadCsvFile';
 import './SelectedItemsFlyout.css';
 
 export function SelectedItemsFlyout() {
+  const t = useTranslations('SelectedItemsFlyout');
   const { count, items, clearItems } = useSelectedItemsStore();
+  const [csvResult, requestCsvDownload, isPending] = useActionState(
+    generateSelectedItemsCsvAction,
+    null
+  );
+
+  useEffect(() => {
+    if (csvResult === null) {
+      return;
+    }
+
+    downloadCsvFile(csvResult.csv, csvResult.filename);
+  }, [csvResult]);
 
   const handleUnselectAll = useCallback((): void => {
     clearItems();
   }, [clearItems]);
 
   const handleDownload = useCallback((): void => {
-    SelectedItemsCsvDownload.download(items);
-  }, [items]);
+    requestCsvDownload({ items, origin: window.location.origin });
+  }, [items, requestCsvDownload]);
 
   if (count === 0) {
     return null;
   }
 
+  const countLabel =
+    count === 1
+      ? t('singleItemCountLabel')
+      : t('pluralCountLabel', { count });
+
   return (
     <aside
       className="selected-items-flyout"
       role="region"
-      aria-label={SELECTED_ITEMS_FLYOUT.regionLabel}
+      aria-label={t('regionLabel')}
     >
-      <p className="selected-items-flyout__count">
-        {formatSelectedItemsCount(count)}
-      </p>
+      <p className="selected-items-flyout__count">{countLabel}</p>
       <div className="selected-items-flyout__actions">
         <button
           type="button"
           className="selected-items-flyout__button selected-items-flyout__button--secondary"
           onClick={handleUnselectAll}
         >
-          {SELECTED_ITEMS_FLYOUT.unselectAllLabel}
+          {t('unselectAllLabel')}
         </button>
         <button
           type="button"
           className="selected-items-flyout__button selected-items-flyout__button--primary"
           onClick={handleDownload}
+          disabled={isPending}
         >
-          {SELECTED_ITEMS_FLYOUT.downloadLabel}
+          {t('downloadLabel')}
         </button>
       </div>
     </aside>

@@ -3,6 +3,7 @@ import type { ThemeMode } from '../types/theme';
 export const QUERY_PARAMS = {
   page: 'page',
   details: 'details',
+  search: 'search',
 };
 
 export const SWAPI_API_BASE = 'https://swapi.py4e.com/api';
@@ -21,39 +22,16 @@ export const THEME_MODES: { light: ThemeMode; dark: ThemeMode } = {
   dark: THEME_MODE_DARK,
 };
 
-export const THEME_TOGGLE = {
-  groupLabel: 'Theme',
-  lightLabel: 'Light',
-  darkLabel: 'Dark',
-};
-
 export const RS_SCHOOL_REACT_COURSE_URL =
   'https://rs.school/courses/reactjs';
 export const AUTHOR_NAME = 'Kiryl Lukashchuk';
-export const AUTHOR_BIO =
-  'I run a construction company and am the father of a large family, where patience and multitasking skills are cultivated—ideal qualities for development. In this project, I tried to prove that I can work equally confidently with both building architecture and application architecture.';
 export const AUTHOR_GITHUB = 'https://github.com/KirrBrest';
 export const AUTHOR_EMAIL = 'Lukashchuk.Kiryl@gmail.com';
+export const AUTHOR_AVATAR_URL = 'https://avatars.githubusercontent.com/KirrBrest';
+export const RS_SCHOOL_LOGO_PATH = '/images/rs-school-logo.svg';
 
 export const SELECTED_ITEMS_CSV = {
   header: 'Name,Description,Details URL,SWAPI URL,Person ID',
   filenameSuffix: '_items.csv',
   mimeType: 'text/csv;charset=utf-8;',
-};
-
-export const QUERY_UI = {
-  listLoading: 'Loading data…',
-  listRefreshing: 'Updating results…',
-  listRefresh: 'Refresh results',
-  detailsLoading: 'Loading details…',
-  detailsRefreshing: 'Updating details…',
-  detailsRefresh: 'Refresh details',
-};
-
-export const SELECTED_ITEMS_FLYOUT = {
-  regionLabel: 'Selected items',
-  unselectAllLabel: 'Unselect all',
-  downloadLabel: 'Download',
-  singleItemCountLabel: '1 item selected',
-  pluralCountSuffix: 'items selected',
 };

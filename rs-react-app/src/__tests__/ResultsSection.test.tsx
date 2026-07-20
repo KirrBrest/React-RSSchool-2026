@@ -1,7 +1,7 @@
 import { fireEvent, render, cleanup } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QUERY_UI } from '../constants';
+import { IntlTestProvider } from './IntlTestProvider';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
@@ -14,9 +14,11 @@ function renderResultsSection(
   props: ComponentProps<typeof ResultsSection>
 ) {
   return render(
-    <ReduxProvider>
-      <ResultsSection {...props} />
-    </ReduxProvider>
+    <IntlTestProvider>
+      <ReduxProvider>
+        <ResultsSection {...props} />
+      </ReduxProvider>
+    </IntlTestProvider>
   );
 }
 
@@ -46,7 +48,7 @@ describe('ResultsSection', () => {
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('button')).toHaveLength(2);
+      expect(region.getAllByRole('link')).toHaveLength(2);
     });
 
     it('displays no results message when data array is empty', () => {
@@ -76,7 +78,7 @@ describe('ResultsSection', () => {
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getByText(QUERY_UI.listLoading)).toBeInTheDocument();
+      expect(region.getByText('Loading data…')).toBeInTheDocument();
       expect(
         region.getByRole('status', { name: 'Loading' })
       ).toBeInTheDocument();
@@ -97,8 +99,8 @@ describe('ResultsSection', () => {
       });
       const region = withinRenderedRoot(view);
       expect(region.getByText('Han Solo')).toBeInTheDocument();
-      expect(region.getByText(QUERY_UI.listRefreshing)).toBeInTheDocument();
-      expect(region.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();
+      expect(region.getByText('Updating results…')).toBeInTheDocument();
+      expect(region.queryByText('Loading data…')).not.toBeInTheDocument();
     });
   });
 
@@ -118,7 +120,7 @@ describe('ResultsSection', () => {
       });
       const region = withinRenderedRoot(view);
       expect(
-        region.getByRole('button', { name: 'View details for Han Solo' })
+        region.getByRole('link', { name: 'View details for Han Solo' })
       ).toBeInTheDocument();
       expect(region.getByText('Han Solo')).toBeInTheDocument();
       expect(region.queryByText('Smuggler')).not.toBeInTheDocument();
@@ -138,7 +140,7 @@ describe('ResultsSection', () => {
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getAllByRole('button')).toHaveLength(1);
+      expect(region.getAllByRole('link')).toHaveLength(1);
     });
   });
 

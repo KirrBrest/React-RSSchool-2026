@@ -1,19 +1,31 @@
-import { fireEvent, render, cleanup } from '@testing-library/react';
+import { fireEvent, render, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { store } from '../store';
 import { toggleSelected } from '../store/selectedItemsSlice';
-import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
 import type { PersonResultItem } from '../types';
-import { resetStoreState } from './renderWithRouter.tsx';
-import { withinRenderedRoot } from './withinRenderedRoot.ts';
+import { resetStoreState } from './renderWithRouter';
+import { withinRenderedRoot } from './withinRenderedRoot';
 
 const luke: PersonResultItem = {
   id: 'https://swapi.py4e.com/api/people/1/',
   name: 'Luke Skywalker',
   description: 'Gender: male',
 };
+
+const generatedCsv = {
+  csv: 'Name,Description,Details URL,SWAPI URL,Person ID\nLuke,Gender: male,/details,url,1',
+  filename: '1_items.csv',
+};
+
+vi.mock('../actions/generateSelectedItemsCsv', () => ({
+  generateSelectedItemsCsvAction: vi.fn(async () => generatedCsv),
+}));
+
+vi.mock('../utils/downloadCsvFile', () => ({
+  downloadCsvFile: vi.fn(),
+}));
 
 function renderFlyout() {
   return render(
@@ -24,9 +36,15 @@ function renderFlyout() {
 }
 
 describe('SelectedItemsFlyout', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     cleanup();
     resetStoreState();
+    const { generateSelectedItemsCsvAction } = await import(
+      '../actions/generateSelectedItemsCsv'
+    );
+    vi.mocked(generateSelectedItemsCsvAction).mockResolvedValue(generatedCsv);
+    const { downloadCsvFile } = await import('../utils/downloadCsvFile');
+    vi.mocked(downloadCsvFile).mockReset();
   });
 
   afterEach(() => {
@@ -61,14 +79,25 @@ describe('SelectedItemsFlyout', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('downloads selected items when Download is clicked', () => {
+  it('downloads selected items when Download is clicked', async () => {
+    const { generateSelectedItemsCsvAction } = await import(
+      '../actions/generateSelectedItemsCsv'
+    );
+    const { downloadCsvFile } = await import('../utils/downloadCsvFile');
+
     store.dispatch(toggleSelected(luke));
-    const download = vi
-      .spyOn(SelectedItemsCsvDownload, 'download')
-      .mockImplementation(() => {});
     const view = renderFlyout();
     const region = withinRenderedRoot(view);
     fireEvent.click(region.getByRole('button', { name: 'Download' }));
-    expect(download).toHaveBeenCalledWith([luke]);
+
+    await waitFor(() => {
+      expect(generateSelectedItemsCsvAction).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(downloadCsvFile).toHaveBeenCalledWith(
+        generatedCsv.csv,
+        generatedCsv.filename
+      );
+    });
   });
 });

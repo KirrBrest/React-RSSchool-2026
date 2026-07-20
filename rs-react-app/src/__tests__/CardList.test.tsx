@@ -1,10 +1,10 @@
 import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CardList } from '../components/CardList';
 import type { PersonResultItem } from '../types';
 import { ReduxProvider } from '../store/ReduxProvider';
-import { resetStoreState } from './renderWithRouter.tsx';
-import { withinRenderedRoot } from './withinRenderedRoot.ts';
+import { resetStoreState } from './renderWithRouter';
+import { withinRenderedRoot } from './withinRenderedRoot';
 
 function renderCardList(
   items: PersonResultItem[],
@@ -12,11 +12,7 @@ function renderCardList(
 ) {
   return render(
     <ReduxProvider>
-      <CardList
-        items={items}
-        selectedItemId={selectedItemId}
-        onItemSelect={vi.fn()}
-      />
+      <CardList items={items} selectedItemId={selectedItemId} />
     </ReduxProvider>
   );
 }
@@ -41,7 +37,7 @@ describe('CardList', () => {
       const view = renderCardList(items);
       const region = withinRenderedRoot(view);
       expect(region.getAllByRole('checkbox')).toHaveLength(3);
-      expect(region.getAllByRole('button')).toHaveLength(3);
+      expect(region.getAllByRole('link')).toHaveLength(3);
     });
   });
 
@@ -53,7 +49,7 @@ describe('CardList', () => {
       const view = renderCardList(items);
       const region = withinRenderedRoot(view);
       expect(
-        region.getByRole('button', { name: 'View details for Leia Organa' })
+        region.getByRole('link', { name: 'View details for Leia Organa' })
       ).toBeInTheDocument();
       expect(region.getByText('Leia Organa')).toBeInTheDocument();
       expect(
@@ -71,7 +67,7 @@ describe('CardList', () => {
         region.getByRole('list', { name: 'Search results' })
       ).toBeInTheDocument();
       expect(region.getAllByRole('checkbox')).toHaveLength(1);
-      expect(region.getAllByRole('button')).toHaveLength(1);
+      expect(region.getAllByRole('link')).toHaveLength(1);
     });
   });
 });

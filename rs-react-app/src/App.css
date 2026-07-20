@@ -1,12 +1,10 @@
 .app {
   box-sizing: border-box;
-  min-height: 100vh;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .app__split {
@@ -23,10 +21,6 @@
 }
 
 @media (min-width: 768px) {
-  .app:has(.app__split--open) {
-    max-width: 1100px;
-  }
-
   .app__split--open {
     flex-direction: row;
     align-items: stretch;

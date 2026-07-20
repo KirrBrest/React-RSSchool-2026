@@ -1,30 +1,13 @@
 import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { Router } from '../routes/Router';
-import { ReduxProvider } from '../store/ReduxProvider';
+import { AboutPage } from '../views/AboutPage';
 import { ThemeProvider } from '../context/ThemeProvider';
-import { AboutPage } from '../pages/AboutPage';
+import { setNavigationState } from './nextNavigationMock';
 
 function renderAboutPage() {
-  return render(
-    <ThemeProvider>
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>
-    </ThemeProvider>
-  );
-}
-
-function renderAboutViaRouter() {
-  return render(
-    <ReduxProvider>
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/about']}>
-          <Router />
-        </MemoryRouter>
-      </ThemeProvider>
-    </ReduxProvider>
+  setNavigationState('/about');
+  return AboutPage().then((page) =>
+    render(<ThemeProvider>{page}</ThemeProvider>)
   );
 }
 
@@ -37,11 +20,17 @@ describe('AboutPage', () => {
     cleanup();
   });
 
-  it('renders author section and external links', () => {
-    renderAboutPage();
+  it('renders author section and external links', async () => {
+    await renderAboutPage();
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Author' })).toBeInTheDocument();
     expect(screen.getByText('Kiryl Lukashchuk')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Photo of Kiryl Lukashchuk' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Rolling Scopes School logo' })
+    ).toBeInTheDocument();
     const githubLink = screen.getByRole('link', { name: 'GitHub profile' });
     expect(githubLink).toHaveAttribute('href', 'https://github.com/KirrBrest');
     expect(githubLink).toHaveAttribute('target', '_blank');
@@ -55,11 +44,5 @@ describe('AboutPage', () => {
     const courseLink = screen.getByRole('link', { name: 'RS School React course' });
     expect(courseLink).toHaveAttribute('href', 'https://rs.school/courses/reactjs');
     expect(courseLink).toHaveAttribute('target', '_blank');
-  });
-
-  it('includes navigation to home via the router layout', () => {
-    renderAboutViaRouter();
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
   });
 });

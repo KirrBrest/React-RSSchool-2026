@@ -1,5 +1,12 @@
-import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { useMemo, type ChangeEvent } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import type { CardProps } from '../types';
+import { buildDetailsPath } from '../utils/appNavigation';
+import { PersonAvatar } from './PersonAvatar';
 import './Card.css';
 
 export function Card({
@@ -8,27 +15,22 @@ export function Card({
   isDetailsSelected,
   isChecked,
   onToggleCheck,
-  onOpenDetails,
 }: CardProps) {
+  const t = useTranslations('Card');
+  const readonlySearchParams = useSearchParams();
   const personLabel = name || 'person';
+  const detailsHref = useMemo(
+    () =>
+      buildDetailsPath(
+        new URLSearchParams(readonlySearchParams.toString()),
+        id
+      ),
+    [id, readonlySearchParams]
+  );
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>): void => {
     event.stopPropagation();
     onToggleCheck();
-  };
-
-  const handleOpenDetails = (event: MouseEvent<HTMLButtonElement>): void => {
-    event.stopPropagation();
-    onOpenDetails(id);
-  };
-
-  const handleOpenDetailsKeyDown = (
-    event: KeyboardEvent<HTMLButtonElement>
-  ): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onOpenDetails(id);
-    }
   };
 
   const classNames = ['result-card'];
@@ -49,18 +51,25 @@ export function Card({
         className="result-card__checkbox"
         checked={isChecked}
         onChange={handleCheckboxChange}
-        aria-label={`Select ${personLabel}`}
+        aria-label={t('selectPerson', { name: personLabel })}
       />
-      <button
-        type="button"
+      <PersonAvatar
+        className="result-card__photo"
+        name={personLabel}
+        dicebearSize={96}
+        alt={t('personPhotoAlt', { name: personLabel })}
+        width={48}
+        height={48}
+      />
+      <Link
         className="result-card__open"
-        aria-pressed={isDetailsSelected}
-        aria-label={`View details for ${personLabel}`}
-        onClick={handleOpenDetails}
-        onKeyDown={handleOpenDetailsKeyDown}
+        href={detailsHref}
+        aria-current={isDetailsSelected ? 'page' : undefined}
+        aria-label={t('viewDetails', { name: personLabel })}
+        onClick={(event) => event.stopPropagation()}
       >
         <span className="result-card__name">{name}</span>
-      </button>
+      </Link>
     </div>
   );
 }

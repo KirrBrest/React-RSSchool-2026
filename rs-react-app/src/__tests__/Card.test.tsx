@@ -21,7 +21,6 @@ describe('Card', () => {
           isDetailsSelected={false}
           isChecked={false}
           onToggleCheck={vi.fn()}
-          onOpenDetails={vi.fn()}
         />
       );
       const region = withinRenderedRoot(view);
@@ -29,7 +28,7 @@ describe('Card', () => {
         region.getByRole('checkbox', { name: 'Select Luke Skywalker' })
       ).toBeInTheDocument();
       expect(
-        region.getByRole('button', { name: 'View details for Luke Skywalker' })
+        region.getByRole('link', { name: 'View details for Luke Skywalker' })
       ).toBeInTheDocument();
       expect(region.getByText('Luke Skywalker')).toBeInTheDocument();
     });
@@ -42,7 +41,6 @@ describe('Card', () => {
           isDetailsSelected={false}
           isChecked={false}
           onToggleCheck={vi.fn()}
-          onOpenDetails={vi.fn()}
         />
       );
       const region = withinRenderedRoot(view);
@@ -50,7 +48,7 @@ describe('Card', () => {
         region.getByRole('checkbox', { name: 'Select person' })
       ).toBeInTheDocument();
       expect(
-        region.getByRole('button', { name: 'View details for person' })
+        region.getByRole('link', { name: 'View details for person' })
       ).toBeInTheDocument();
     });
   });
@@ -58,7 +56,6 @@ describe('Card', () => {
   describe('interactions', () => {
     it('toggles selection only when the checkbox is used', () => {
       const onToggleCheck = vi.fn();
-      const onOpenDetails = vi.fn();
       const view = render(
         <Card
           id="https://swapi.py4e.com/api/people/1/"
@@ -66,7 +63,6 @@ describe('Card', () => {
           isDetailsSelected={false}
           isChecked={false}
           onToggleCheck={onToggleCheck}
-          onOpenDetails={onOpenDetails}
         />
       );
       const region = withinRenderedRoot(view);
@@ -74,74 +70,22 @@ describe('Card', () => {
         region.getByRole('checkbox', { name: 'Select Luke Skywalker' })
       );
       expect(onToggleCheck).toHaveBeenCalledTimes(1);
-      expect(onOpenDetails).not.toHaveBeenCalled();
     });
 
-    it('opens details without toggling selection when the card body is clicked', () => {
-      const onToggleCheck = vi.fn();
-      const onOpenDetails = vi.fn();
+    it('links to the localized details route', () => {
       const view = render(
         <Card
           id="https://swapi.py4e.com/api/people/1/"
           name="Luke Skywalker"
           isDetailsSelected={false}
           isChecked={true}
-          onToggleCheck={onToggleCheck}
-          onOpenDetails={onOpenDetails}
-        />
-      );
-      const region = withinRenderedRoot(view);
-      fireEvent.click(
-        region.getByRole('button', { name: 'View details for Luke Skywalker' })
-      );
-      expect(onOpenDetails).toHaveBeenCalledWith(
-        'https://swapi.py4e.com/api/people/1/'
-      );
-      expect(onToggleCheck).not.toHaveBeenCalled();
-    });
-
-    it('opens details when Enter or Space is pressed on the card button', () => {
-      const onOpenDetails = vi.fn();
-      const view = render(
-        <Card
-          id="1"
-          name="Luke Skywalker"
-          isDetailsSelected={false}
-          isChecked={false}
           onToggleCheck={vi.fn()}
-          onOpenDetails={onOpenDetails}
         />
       );
       const region = withinRenderedRoot(view);
-      const button = region.getByRole('button', {
-        name: 'View details for Luke Skywalker',
-      });
-
-      fireEvent.keyDown(button, { key: 'Enter' });
-      fireEvent.keyDown(button, { key: ' ' });
-
-      expect(onOpenDetails).toHaveBeenCalledTimes(2);
-      expect(onOpenDetails).toHaveBeenCalledWith('1');
-    });
-
-    it('ignores unrelated keys on the card button', () => {
-      const onOpenDetails = vi.fn();
-      const view = render(
-        <Card
-          id="1"
-          name="Luke Skywalker"
-          isDetailsSelected={false}
-          isChecked={false}
-          onToggleCheck={vi.fn()}
-          onOpenDetails={onOpenDetails}
-        />
-      );
-      const region = withinRenderedRoot(view);
-      fireEvent.keyDown(
-        region.getByRole('button', { name: 'View details for Luke Skywalker' }),
-        { key: 'Tab' }
-      );
-      expect(onOpenDetails).not.toHaveBeenCalled();
+      expect(
+        region.getByRole('link', { name: 'View details for Luke Skywalker' })
+      ).toHaveAttribute('href', '/details?page=1&details=1');
     });
   });
 
@@ -154,7 +98,6 @@ describe('Card', () => {
           isDetailsSelected={true}
           isChecked={true}
           onToggleCheck={vi.fn()}
-          onOpenDetails={vi.fn()}
         />
       );
       const region = withinRenderedRoot(view);

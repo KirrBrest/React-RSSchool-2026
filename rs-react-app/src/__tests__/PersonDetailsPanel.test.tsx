@@ -1,13 +1,12 @@
 import { fireEvent, render, screen, cleanup, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QUERY_UI } from '../constants';
-import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
+import { IntlTestProvider } from './IntlTestProvider';
+import { PersonDetailsPanelShell } from '../components/PersonDetailsPanelShell';
+import { TestPersonDetailsContent } from './TestPersonDetailsContent';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
-import { resetSwapiApiState } from '../store';
-import { ReduxProvider } from '../store/ReduxProvider';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
+import { setNavigationState, routerRefresh } from './nextNavigationMock';
 
 vi.mock('../api/fetchSwapiPeople', () => ({
   SwapiPeopleApi: {
@@ -18,21 +17,21 @@ vi.mock('../api/fetchSwapiPeople', () => ({
 const fetchPerson = vi.mocked(SwapiPeopleApi.fetchPerson);
 
 function renderDetailsAt(path: string) {
+  const [pathname, search = ''] = path.split('?');
+  setNavigationState(pathname, search === '' ? '' : `?${search}`);
+
   return render(
-    <ReduxProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/details" element={<PersonDetailsPanel />} />
-        </Routes>
-      </MemoryRouter>
-    </ReduxProvider>
+    <IntlTestProvider>
+      <PersonDetailsPanelShell personId="1">
+        <TestPersonDetailsContent personId="1" />
+      </PersonDetailsPanelShell>
+    </IntlTestProvider>
   );
 }
 
 describe('PersonDetailsPanel', () => {
   beforeEach(() => {
     cleanup();
-    resetSwapiApiState();
     vi.clearAllMocks();
     fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
   });
@@ -44,7 +43,7 @@ describe('PersonDetailsPanel', () => {
   it('shows loading state while person details are fetched', () => {
     fetchPerson.mockReturnValue(new Promise(() => {}));
     renderDetailsAt('/details?details=1');
-    expect(screen.getByText(QUERY_UI.detailsLoading)).toBeInTheDocument();
+    expect(screen.getByText('Loading details…')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
   });
 
@@ -69,17 +68,15 @@ describe('PersonDetailsPanel', () => {
     expect(screen.queryByText('Luke Skywalker')).not.toBeInTheDocument();
   });
 
-  it('refetches person details when refresh is clicked after cache is warm', async () => {
+  it('triggers a router refresh when refresh is clicked', async () => {
     renderDetailsAt('/details?details=1');
     await waitFor(() => {
       expect(screen.getByText('Luke Skywalker')).toBeInTheDocument();
     });
-    fetchPerson.mockClear();
+    routerRefresh.mockClear();
     fireEvent.click(
       screen.getByRole('button', { name: 'Refresh details' })
     );
-    await waitFor(() => {
-      expect(fetchPerson).toHaveBeenCalledWith('1');
-    });
+    expect(routerRefresh).toHaveBeenCalled();
   });
 });

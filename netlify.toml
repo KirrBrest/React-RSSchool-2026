@@ -1,4 +1,13 @@
 [build]
   base = "rs-react-app"
   command = "npm ci && npm run build"
-  publish = "dist"
+  publish = ".next"
+
+[images]
+  remote_images = [
+    "https://api.dicebear.com/.*",
+    "https://avatars.githubusercontent.com/.*",
+  ]
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
