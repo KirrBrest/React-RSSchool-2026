@@ -1,6 +1,7 @@
-import { render, cleanup } from '@testing-library/react';
+import { fireEvent, render, cleanup } from '@testing-library/react';
 import type { ComponentProps } from 'react';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { QUERY_UI } from '../constants';
 import { ResultsSection } from '../components/ResultsSection';
 import type { PersonResultItem } from '../types';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
@@ -39,6 +40,7 @@ describe('ResultsSection', () => {
         items,
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: null,
         pagination: null,
         ...testDetailHandlers,
@@ -52,6 +54,7 @@ describe('ResultsSection', () => {
         items: [],
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: null,
         pagination: null,
         ...testDetailHandlers,
@@ -67,15 +70,35 @@ describe('ResultsSection', () => {
         items: [],
         hasSearched: false,
         isLoading: true,
+        isFetching: false,
         errorMessage: null,
         pagination: null,
         ...testDetailHandlers,
       });
       const region = withinRenderedRoot(view);
-      expect(region.getByText('Loading data…')).toBeInTheDocument();
+      expect(region.getByText(QUERY_UI.listLoading)).toBeInTheDocument();
       expect(
         region.getByRole('status', { name: 'Loading' })
       ).toBeInTheDocument();
+    });
+
+    it('keeps cached items visible while a background fetch runs', () => {
+      const items: PersonResultItem[] = [
+        { id: '1', name: 'Han Solo', description: 'Smuggler' },
+      ];
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        isFetching: true,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
+      const region = withinRenderedRoot(view);
+      expect(region.getByText('Han Solo')).toBeInTheDocument();
+      expect(region.getByText(QUERY_UI.listRefreshing)).toBeInTheDocument();
+      expect(region.queryByText(QUERY_UI.listLoading)).not.toBeInTheDocument();
     });
   });
 
@@ -88,6 +111,7 @@ describe('ResultsSection', () => {
         items,
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: null,
         pagination: null,
         ...testDetailHandlers,
@@ -108,6 +132,7 @@ describe('ResultsSection', () => {
         items,
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: null,
         pagination: null,
         ...testDetailHandlers,
@@ -117,13 +142,69 @@ describe('ResultsSection', () => {
     });
   });
 
+  describe('manual refresh', () => {
+    it('calls onRefresh when the refresh button is clicked', () => {
+      const onRefresh = vi.fn();
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: true,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+        isRefreshDisabled: false,
+        onRefresh,
+      });
+      const region = withinRenderedRoot(view);
+      fireEvent.click(
+        region.getByRole('button', { name: 'Refresh results' })
+      );
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render a refresh button when onRefresh is null', () => {
+      const view = renderResultsSection({
+        items: [],
+        hasSearched: false,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: null,
+        pagination: null,
+        ...testDetailHandlers,
+      });
+      const region = withinRenderedRoot(view);
+      expect(
+        region.queryByRole('button', { name: 'Refresh results' })
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe('error handling', () => {
+    it('hides result cards when an error message is shown', () => {
+      const items: PersonResultItem[] = [
+        { id: '1', name: 'Han Solo', description: 'Smuggler' },
+      ];
+      const view = renderResultsSection({
+        items,
+        hasSearched: true,
+        isLoading: false,
+        isFetching: false,
+        errorMessage: 'Request failed.',
+        pagination: null,
+        ...testDetailHandlers,
+      });
+      const region = withinRenderedRoot(view);
+      expect(region.getByRole('alert')).toHaveTextContent('Request failed.');
+      expect(region.queryByText('Han Solo')).not.toBeInTheDocument();
+    });
     it('displays error message when API call fails', () => {
       const message = AppFetchErrorMessage.fromUnknown(new Error('SWAPI_HTTP_404'));
       const view = renderResultsSection({
         items: [],
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: message,
         pagination: null,
         ...testDetailHandlers,
@@ -140,6 +221,7 @@ describe('ResultsSection', () => {
         items: [],
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: message,
         pagination: null,
         ...testDetailHandlers,
@@ -158,6 +240,7 @@ describe('ResultsSection', () => {
         items: [],
         hasSearched: true,
         isLoading: false,
+        isFetching: false,
         errorMessage: message,
         pagination: null,
         ...testDetailHandlers,

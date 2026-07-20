@@ -1,11 +1,11 @@
-.app-shell {
+.router {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-.app-shell__content {
+.router__content {
   flex: 1 1 auto;
   min-height: 0;
 }

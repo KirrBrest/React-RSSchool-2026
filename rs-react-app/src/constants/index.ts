@@ -41,6 +41,15 @@ export const SELECTED_ITEMS_CSV = {
   mimeType: 'text/csv;charset=utf-8;',
 };
 
+export const QUERY_UI = {
+  listLoading: 'Loading data…',
+  listRefreshing: 'Updating results…',
+  listRefresh: 'Refresh results',
+  detailsLoading: 'Loading details…',
+  detailsRefreshing: 'Updating details…',
+  detailsRefresh: 'Refresh details',
+};
+
 export const SELECTED_ITEMS_FLYOUT = {
   regionLabel: 'Selected items',
   unselectAllLabel: 'Unselect all',

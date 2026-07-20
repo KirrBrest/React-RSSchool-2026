@@ -1,6 +1,7 @@
 import { CardList } from './CardList';
 import { LoadingIndicator } from './LoadingIndicator';
 import { PeoplePagination } from './PeoplePagination';
+import { QUERY_UI } from '../constants';
 import type { ResultsSectionProps } from '../types';
 import './ResultsSection.css';
 
@@ -8,7 +9,10 @@ export function ResultsSection({
   items,
   hasSearched,
   isLoading,
+  isFetching,
   errorMessage,
+  onRefresh,
+  isRefreshDisabled,
   pagination,
   selectedItemId,
   onItemSelect,
@@ -16,15 +20,33 @@ export function ResultsSection({
 }: ResultsSectionProps) {
   const hasItems = items.length > 0;
   const showError = Boolean(errorMessage);
+  const isBusy = isLoading || isFetching;
 
   return (
     <section
       className="results-section"
       aria-label="Results"
-      aria-busy={isLoading}
+      aria-busy={isBusy}
+      aria-live="polite"
     >
       <div className="results-section__inner">
-        <h2 className="results-section__title">Results</h2>
+        <div className="results-section__header">
+          <h2 className="results-section__title">Results</h2>
+          {onRefresh !== null && (
+            <button
+              type="button"
+              className="results-section__refresh"
+              aria-label={QUERY_UI.listRefresh}
+              disabled={isRefreshDisabled}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRefresh();
+              }}
+            >
+              {QUERY_UI.listRefresh}
+            </button>
+          )}
+        </div>
         <div
           className="results-section__content"
           onClick={onMainPanelClick}
@@ -32,7 +54,9 @@ export function ResultsSection({
           {isLoading && (
             <div className="results-section__loading">
               <LoadingIndicator />
-              <p className="results-section__loading-text">Loading data…</p>
+              <p className="results-section__loading-text">
+                {QUERY_UI.listLoading}
+              </p>
             </div>
           )}
           {!isLoading && !hasSearched && (
@@ -48,12 +72,25 @@ export function ResultsSection({
           {!isLoading && hasSearched && !showError && !hasItems && (
             <p className="results-section__placeholder">No matching people.</p>
           )}
-          {!isLoading && hasItems && (
-            <CardList
-              items={items}
-              selectedItemId={selectedItemId}
-              onItemSelect={onItemSelect}
-            />
+          {!isLoading && hasItems && !showError && (
+            <>
+              {isFetching && (
+                <div
+                  className="results-section__refreshing"
+                  aria-live="polite"
+                >
+                  <LoadingIndicator />
+                  <p className="results-section__refreshing-text">
+                    {QUERY_UI.listRefreshing}
+                  </p>
+                </div>
+              )}
+              <CardList
+                items={items}
+                selectedItemId={selectedItemId}
+                onItemSelect={onItemSelect}
+              />
+            </>
           )}
           {!isLoading && hasSearched && !showError && pagination && (
             <div onClick={(event) => event.stopPropagation()}>

@@ -1,17 +1,19 @@
 import { Route, Routes } from 'react-router-dom';
-import App from '../App';
+import { AppNav } from '../components/AppNav';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { AboutPage } from '../pages/AboutPage';
+import { MainPage } from '../pages/MainPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
-import './AppShell.css';
+import './Router.css';
 
-export function AppRoutes() {
+export function Router() {
   return (
-    <div className="app-shell">
-      <div className="app-shell__content">
+    <div className="router">
+      <AppNav />
+      <div className="router__content">
         <Routes>
-          <Route path="/" element={<App />}>
+          <Route path="/" element={<MainPage />}>
             <Route path="details" element={<PersonDetailsPanel />} />
           </Route>
           <Route path="/about" element={<AboutPage />} />

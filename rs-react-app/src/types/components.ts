@@ -28,7 +28,10 @@ export type ResultsSectionProps = {
   items: PersonResultItem[];
   hasSearched: boolean;
   isLoading: boolean;
+  isFetching: boolean;
   errorMessage: string | null;
+  onRefresh: (() => void) | null;
+  isRefreshDisabled: boolean;
   pagination: PeoplePaginationProps | null;
   selectedItemId: string | null;
   onItemSelect: (id: string) => void;

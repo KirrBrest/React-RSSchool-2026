@@ -1,7 +1,7 @@
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PeoplePagination } from '../components/PeoplePagination';
-import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
+import { SWAPI_PAGE_SIZE } from '../constants';
 import { withinRenderedRoot } from './withinRenderedRoot.ts';
 
 describe('PeoplePagination', () => {
@@ -17,7 +17,7 @@ describe('PeoplePagination', () => {
     const view = render(
       <PeoplePagination
         page={2}
-        totalCount={SwapiPeopleApi.pageSize * 3 + 1}
+        totalCount={SWAPI_PAGE_SIZE * 3 + 1}
         hasNext
         hasPrev
         onNext={() => {}}
@@ -32,7 +32,7 @@ describe('PeoplePagination', () => {
     const view = render(
       <PeoplePagination
         page={1}
-        totalCount={SwapiPeopleApi.pageSize}
+        totalCount={SWAPI_PAGE_SIZE}
         hasNext
         hasPrev={false}
         onNext={() => {}}
@@ -50,7 +50,7 @@ describe('PeoplePagination', () => {
     const view = render(
       <PeoplePagination
         page={3}
-        totalCount={SwapiPeopleApi.pageSize * 3}
+        totalCount={SWAPI_PAGE_SIZE * 3}
         hasNext={false}
         hasPrev
         onNext={() => {}}
@@ -70,7 +70,7 @@ describe('PeoplePagination', () => {
     const view = render(
       <PeoplePagination
         page={2}
-        totalCount={SwapiPeopleApi.pageSize * 3}
+        totalCount={SWAPI_PAGE_SIZE * 3}
         hasNext
         hasPrev
         onNext={onNext}

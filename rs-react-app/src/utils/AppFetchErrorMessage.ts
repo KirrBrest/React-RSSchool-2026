@@ -3,6 +3,12 @@ function fromUnknown(reason: unknown): string {
     return 'Something went wrong. Please try again.';
   }
   const { message, name } = reason;
+  if (message === 'SWAPI_INVALID_RESPONSE') {
+    return 'The server returned data in an unexpected format. Please try again later.';
+  }
+  if (message === 'SWAPI_INVALID_PERSON_ID') {
+    return 'This person could not be loaded because the link is invalid.';
+  }
   const httpMatch = /^SWAPI_HTTP_(\d{3})$/.exec(message);
   if (httpMatch) {
     const code = Number(httpMatch[1]);

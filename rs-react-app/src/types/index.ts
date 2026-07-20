@@ -1,6 +1,11 @@
 export type { SwapiPerson, SwapiPeopleListResponse } from './swapi';
 export type { PersonResultItem } from './person';
-export type { AppState, FetchOptions } from './app';
+export type { AppState } from './app';
+export type {
+  PeopleListQueryArg,
+  PeopleListQueryResult,
+  SwapiQueryError,
+} from './swapiApi';
 export type {
   AppErrorBoundaryProps,
   AppErrorBoundaryState,

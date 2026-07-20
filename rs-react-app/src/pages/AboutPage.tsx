@@ -1,4 +1,3 @@
-import { AppNav } from '../components/AppNav';
 import {
   AUTHOR_BIO,
   AUTHOR_EMAIL,
@@ -11,7 +10,6 @@ import './AboutPage.css';
 export function AboutPage() {
   return (
     <div className="about-page">
-      <AppNav />
       <main className="about-page__main">
         <h1 className="about-page__title">About</h1>
         <section className="about-page__author" aria-labelledby="about-author-heading">

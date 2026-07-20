@@ -1,92 +1,95 @@
-import { useCallback, useEffect, useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
-import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
-import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { QUERY_UI } from '../constants';
+import { invalidatePersonCache } from '../store';
+import { useGetPersonQuery } from '../api/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
-import type { DetailsState, PersonDetailsContentProps } from '../types';
+import { rtkQueryErrorMessage } from '../utils/rtkQueryErrorMessage';
+import type { PersonDetailsContentProps } from '../types';
 import './PersonDetailsPanel.css';
 
 function PersonDetailsContent({ personId }: PersonDetailsContentProps) {
-  const [state, setState] = useState<DetailsState>({
-    person: null,
-    isLoading: true,
-    errorMessage: null,
-  });
+  const {
+    data: person,
+    currentData,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useGetPersonQuery(personId);
 
-  useEffect(() => {
-    let cancelled = false;
-    void SwapiPeopleApi.fetchPerson(personId)
-      .then((person) => {
-        if (!cancelled) {
-          setState({ person, isLoading: false, errorMessage: null });
-        }
-      })
-      .catch((reason: unknown) => {
-        if (!cancelled) {
-          setState({
-            person: null,
-            isLoading: false,
-            errorMessage: AppFetchErrorMessage.fromUnknown(reason),
-          });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [personId]);
-
-  const { person, isLoading, errorMessage } = state;
+  const displayPerson = isError ? undefined : (person ?? currentData);
+  const isInitialLoading = isLoading && displayPerson === undefined;
+  const isBackgroundFetching =
+    !isError && isFetching && displayPerson !== undefined;
+  const errorMessage = isError ? rtkQueryErrorMessage(error) : null;
 
   return (
     <>
-      {isLoading && (
+      {isInitialLoading && (
         <div className="person-details__loading">
           <LoadingIndicator />
-          <p className="person-details__loading-text">Loading details…</p>
+          <p className="person-details__loading-text">
+            {QUERY_UI.detailsLoading}
+          </p>
         </div>
       )}
-      {!isLoading && errorMessage !== null && (
+      {!isInitialLoading && errorMessage !== null && (
         <div className="person-details__error" role="alert">
           {errorMessage}
         </div>
       )}
-      {!isLoading && errorMessage === null && person !== null && (
-        <dl className="person-details__list">
-          <div className="person-details__row">
-            <dt>Name</dt>
-            <dd>{person.name}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Gender</dt>
-            <dd>{person.gender}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Birth year</dt>
-            <dd>{person.birth_year}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Height</dt>
-            <dd>{person.height} cm</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Mass</dt>
-            <dd>{person.mass} kg</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Hair color</dt>
-            <dd>{person.hair_color}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Eye color</dt>
-            <dd>{person.eye_color}</dd>
-          </div>
-          <div className="person-details__row">
-            <dt>Skin color</dt>
-            <dd>{person.skin_color}</dd>
-          </div>
-        </dl>
+      {!isInitialLoading && errorMessage === null && displayPerson !== undefined && (
+        <>
+          {isBackgroundFetching && (
+            <div
+              className="person-details__refreshing"
+              aria-live="polite"
+            >
+              <LoadingIndicator />
+              <p className="person-details__refreshing-text">
+                {QUERY_UI.detailsRefreshing}
+              </p>
+            </div>
+          )}
+          <dl className="person-details__list">
+            <div className="person-details__row">
+              <dt>Name</dt>
+              <dd>{displayPerson.name}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Gender</dt>
+              <dd>{displayPerson.gender}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Birth year</dt>
+              <dd>{displayPerson.birth_year}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Height</dt>
+              <dd>{displayPerson.height} cm</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Mass</dt>
+              <dd>{displayPerson.mass} kg</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Hair color</dt>
+              <dd>{displayPerson.hair_color}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Eye color</dt>
+              <dd>{displayPerson.eye_color}</dd>
+            </div>
+            <div className="person-details__row">
+              <dt>Skin color</dt>
+              <dd>{displayPerson.skin_color}</dd>
+            </div>
+          </dl>
+        </>
       )}
     </>
   );
@@ -96,6 +99,10 @@ export function PersonDetailsPanel() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const personId = parseDetailsParam(searchParams.get('details'));
+  const { isLoading, isFetching } = useGetPersonQuery(
+    personId ?? skipToken
+  );
+  const isRefreshDisabled = isLoading || isFetching;
 
   const closeDetails = useCallback((): void => {
     navigate(closeDetailsLocation(searchParams), { replace: true });
@@ -106,17 +113,31 @@ export function PersonDetailsPanel() {
       className="person-details"
       aria-label="Person details"
       aria-busy={personId !== null}
+      aria-live="polite"
     >
       <div className="person-details__header">
         <h2 className="person-details__title">Details</h2>
-        <button
-          type="button"
-          className="person-details__close"
-          aria-label="Close details"
-          onClick={closeDetails}
-        >
-          Close
-        </button>
+        <div className="person-details__actions">
+          {personId !== null && (
+            <button
+              type="button"
+              className="person-details__refresh"
+              aria-label={QUERY_UI.detailsRefresh}
+              disabled={isRefreshDisabled}
+              onClick={() => invalidatePersonCache(personId)}
+            >
+              {QUERY_UI.detailsRefresh}
+            </button>
+          )}
+          <button
+            type="button"
+            className="person-details__close"
+            aria-label="Close details"
+            onClick={closeDetails}
+          >
+            Close
+          </button>
+        </div>
       </div>
       {personId === null && (
         <p className="person-details__placeholder">No person selected.</p>
