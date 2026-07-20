@@ -5,9 +5,9 @@ import {
   type RouteObject,
 } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import App from '../App';
+import { MainPage } from '../pages/MainPage';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
-import { AppRoutes } from '../routes/AppRoutes';
+import { Router } from '../routes/Router';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { store } from '../store';
@@ -16,7 +16,7 @@ import { resetSwapiApiState } from '../store';
 
 export const appHomeRoute: RouteObject = {
   path: '/',
-  element: <App />,
+  element: <MainPage />,
   children: [{ path: 'details', element: <PersonDetailsPanel /> }],
 };
 
@@ -27,7 +27,7 @@ export function resetStoreState(): void {
 
 export function createAppMemoryRouter(initialEntries: string[]) {
   return createMemoryRouter(
-    [{ path: '*', element: <AppRoutes /> }],
+    [{ path: '*', element: <Router /> }],
     { initialEntries }
   );
 }

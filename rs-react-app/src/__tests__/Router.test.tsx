@@ -1,30 +1,30 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AppRoutes } from '../routes/AppRoutes';
+import { Router } from '../routes/Router';
 import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { resetStoreState } from './renderWithRouter.tsx';
 
-vi.mock('../App', () => ({
-  default: function MockApp() {
-    return <div>Mock app home route</div>;
+vi.mock('../pages/MainPage', () => ({
+  MainPage: function MockMainPage() {
+    return <div>Mock main page</div>;
   },
 }));
 
-function renderAppRoutes(initialPath: string) {
+function renderRouter(initialPath: string) {
   return render(
     <ReduxProvider>
       <ThemeProvider>
         <MemoryRouter initialEntries={[initialPath]}>
-          <AppRoutes />
+          <Router />
         </MemoryRouter>
       </ThemeProvider>
     </ReduxProvider>
   );
 }
 
-describe('AppRoutes', () => {
+describe('Router', () => {
   beforeEach(() => {
     cleanup();
     resetStoreState();
@@ -35,12 +35,12 @@ describe('AppRoutes', () => {
   });
 
   it('renders the home route at /', () => {
-    renderAppRoutes('/?page=1');
-    expect(screen.getByText('Mock app home route')).toBeInTheDocument();
+    renderRouter('/?page=1');
+    expect(screen.getByText('Mock main page')).toBeInTheDocument();
   });
 
   it('renders the about route at /about', () => {
-    renderAppRoutes('/about');
+    renderRouter('/about');
     expect(screen.getByRole('heading', { name: 'About' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'RS School React course' })
@@ -48,7 +48,7 @@ describe('AppRoutes', () => {
   });
 
   it('renders the not-found page for unknown paths', () => {
-    renderAppRoutes('/no-such-page');
+    renderRouter('/no-such-page');
     expect(
       screen.getByRole('heading', { name: 'Page not found' })
     ).toBeInTheDocument();
@@ -57,8 +57,8 @@ describe('AppRoutes', () => {
       '/'
     );
     expect(
-      screen.queryByRole('navigation', { name: 'Main navigation' })
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('Mock app home route')).not.toBeInTheDocument();
+      screen.getByRole('navigation', { name: 'Main navigation' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Mock main page')).not.toBeInTheDocument();
   });
 });

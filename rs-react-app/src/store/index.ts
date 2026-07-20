@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { selectedItemsReducer } from './selectedItemsSlice';
-import { swapiApi } from './swapiApi';
+import { swapiApi } from '../api/swapiApi';
 
 export const store = configureStore({
   reducer: {
@@ -27,7 +27,7 @@ export {
 
 export type { SelectedItemsState } from './selectedItemsSlice';
 
-export { useGetPeopleQuery, useGetPersonQuery } from './swapiApi';
+export { useGetPeopleQuery, useGetPersonQuery } from '../api/swapiApi';
 
 export function invalidatePeopleListCache(): void {
   store.dispatch(swapiApi.util.invalidateTags(['PeopleList']));

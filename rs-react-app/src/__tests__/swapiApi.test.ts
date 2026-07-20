@@ -9,7 +9,7 @@ import {
   resetSwapiApiState,
   store,
 } from '../store';
-import { swapiApi } from '../store/swapiApi';
+import { swapiApi } from '../api/swapiApi';
 
 vi.mock('../api/fetchSwapiPeople', () => ({
   SwapiPeopleApi: {

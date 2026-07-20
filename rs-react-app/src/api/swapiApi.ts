@@ -1,5 +1,4 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { getQueryCacheTtlSeconds } from '../config/queryCacheTtl';
 import type {
   PeopleListQueryArg,
@@ -8,6 +7,7 @@ import type {
   SwapiQueryError,
 } from '../types/swapiApi';
 import { SwapiPersonResultMapper } from '../utils/mapSwapiPersonToResult';
+import { SwapiPeopleApi } from './fetchSwapiPeople';
 
 const cacheTtlSeconds = getQueryCacheTtlSeconds();
 

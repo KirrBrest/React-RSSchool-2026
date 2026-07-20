@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { QUERY_UI } from '../constants';
 import { invalidatePersonCache } from '../store';
-import { useGetPersonQuery } from '../store/swapiApi';
+import { useGetPersonQuery } from '../api/swapiApi';
 import { closeDetailsLocation } from '../utils/detailsNavigation';
 import { parseDetailsParam } from '../utils/extractPersonId';
 import { rtkQueryErrorMessage } from '../utils/rtkQueryErrorMessage';

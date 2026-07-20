@@ -1,8 +1,10 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AboutPage } from '../pages/AboutPage';
+import { Router } from '../routes/Router';
+import { ReduxProvider } from '../store/ReduxProvider';
 import { ThemeProvider } from '../context/ThemeProvider';
+import { AboutPage } from '../pages/AboutPage';
 
 function renderAboutPage() {
   return render(
@@ -11,6 +13,18 @@ function renderAboutPage() {
         <AboutPage />
       </MemoryRouter>
     </ThemeProvider>
+  );
+}
+
+function renderAboutViaRouter() {
+  return render(
+    <ReduxProvider>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/about']}>
+          <Router />
+        </MemoryRouter>
+      </ThemeProvider>
+    </ReduxProvider>
   );
 }
 
@@ -43,8 +57,8 @@ describe('AboutPage', () => {
     expect(courseLink).toHaveAttribute('target', '_blank');
   });
 
-  it('includes navigation to home', () => {
-    renderAboutPage();
+  it('includes navigation to home via the router layout', () => {
+    renderAboutViaRouter();
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
   });
