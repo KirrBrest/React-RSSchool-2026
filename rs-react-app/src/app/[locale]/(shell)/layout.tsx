@@ -1,6 +1,6 @@
 import { AppNav } from '@/components/AppNav';
 import { SelectedItemsFlyout } from '@/components/SelectedItemsFlyout';
-import '@/routes/AppShell.css';
+import '@/routes/Router.css';
 
 type ShellLayoutProps = {
   children: React.ReactNode;
@@ -8,9 +8,9 @@ type ShellLayoutProps = {
 
 export default function ShellLayout({ children }: ShellLayoutProps) {
   return (
-    <div className="app-shell">
+    <div className="router">
       <AppNav />
-      <div className="app-shell__content">{children}</div>
+      <div className="router__content">{children}</div>
       <SelectedItemsFlyout />
     </div>
   );

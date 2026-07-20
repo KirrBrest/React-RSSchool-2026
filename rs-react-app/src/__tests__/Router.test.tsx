@@ -26,9 +26,9 @@ function renderShellRoute(initialPath: string, children: React.ReactNode) {
     <IntlTestProvider>
       <ReduxProvider>
         <ThemeProvider>
-          <div className="app-shell">
+          <div className="router">
             <AppNav />
-            <div className="app-shell__content">{children}</div>
+            <div className="router__content">{children}</div>
             <SelectedItemsFlyout />
           </div>
         </ThemeProvider>
@@ -37,7 +37,7 @@ function renderShellRoute(initialPath: string, children: React.ReactNode) {
   );
 }
 
-describe('App routing pages', () => {
+describe('Router', () => {
   beforeEach(() => {
     cleanup();
     resetStoreState();

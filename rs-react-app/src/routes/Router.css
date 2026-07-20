@@ -1,4 +1,4 @@
-.app-shell {
+.router {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -10,12 +10,12 @@
 }
 
 @media (min-width: 768px) {
-  .app-shell:has(.app__split--open) {
+  .router:has(.app__split--open) {
     max-width: 1100px;
   }
 }
 
-.app-shell__content {
+.router__content {
   flex: 1 1 auto;
   min-height: 0;
 }

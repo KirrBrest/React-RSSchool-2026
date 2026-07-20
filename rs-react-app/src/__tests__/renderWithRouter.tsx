@@ -9,13 +9,12 @@ import { clearSelected } from '../store/selectedItemsSlice';
 import { resetSwapiApiState, store } from '../store';
 import { getNavigationState, setNavigationState } from './nextNavigationMock';
 import { SearchPageTestHarness } from './SearchPageTestHarness';
+import { IntlTestProvider } from './IntlTestProvider';
 
 export function resetStoreState(): void {
   store.dispatch(clearSelected());
   resetSwapiApiState();
 }
-
-import { IntlTestProvider } from './IntlTestProvider';
 
 function renderWithProviders(
   ui: ReactNode,
@@ -47,9 +46,9 @@ function createMockRouter() {
 
 function renderAppShell(content: ReactNode, options?: Omit<RenderOptions, 'wrapper'>) {
   return renderWithProviders(
-    <div className="app-shell">
+    <div className="router">
       <AppNav />
-      <div className="app-shell__content">{content}</div>
+      <div className="router__content">{content}</div>
       <SelectedItemsFlyout />
     </div>,
     options

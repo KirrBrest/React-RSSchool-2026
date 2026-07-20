@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QUERY_PARAMS, SWAPI_PAGE_SIZE } from '../constants';
 import { invalidatePeopleListCache } from '../store';
-import { useGetPeopleQuery } from '../store/swapiApi';
+import { useGetPeopleQuery } from '../api/swapiApi';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import type { AppState, PeopleListQueryArg } from '../types';
 import { parsePageParam } from '../utils/parsePageParam';
