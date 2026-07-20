@@ -152,11 +152,7 @@ export function usePeopleList({
     if (isDetailsOpen) {
       closeDetails();
     }
-    if (parsePageParam(searchParams.get(QUERY_PARAMS.page)) === 1) {
-      return;
-    }
-    updatePageInUrl(1, { clearDetails: true });
-  }, [closeDetails, isDetailsOpen, searchParams, updatePageInUrl]);
+  }, [closeDetails, isDetailsOpen]);
 
   const handleSearch = useCallback(
     async (trimmedTerm: string): Promise<void> => {
@@ -174,21 +170,25 @@ export function usePeopleList({
     [closeDetails, fetchAndSetResults, isDetailsOpen, pageInUrl, updatePageInUrl]
   );
 
+  const handlePageStep = useCallback(
+    (step: 1 | -1): void => {
+      const { listPage, listHasNext, listHasPrev } = stateRef.current;
+      const canStep = step === 1 ? listHasNext : listHasPrev;
+      if (!canStep) {
+        return;
+      }
+      updatePageInUrl(listPage + step);
+    },
+    [updatePageInUrl]
+  );
+
   const handlePageNext = useCallback((): void => {
-    const { listPage, listHasNext } = stateRef.current;
-    if (!listHasNext) {
-      return;
-    }
-    updatePageInUrl(listPage + 1, { clearDetails: true });
-  }, [updatePageInUrl]);
+    handlePageStep(1);
+  }, [handlePageStep]);
 
   const handlePagePrev = useCallback((): void => {
-    const { listPage, listHasPrev } = stateRef.current;
-    if (!listHasPrev) {
-      return;
-    }
-    updatePageInUrl(listPage - 1, { clearDetails: true });
-  }, [updatePageInUrl]);
+    handlePageStep(-1);
+  }, [handlePageStep]);
 
   const triggerSimulatedCrash = useCallback((): void => {
     setState((prev) => ({ ...prev, simulateCrash: true }));

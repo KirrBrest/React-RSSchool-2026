@@ -10,11 +10,16 @@ import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import {
   renderWithAppRoutes,
   renderWithRouter,
+  resetStoreState,
 } from './renderWithRouter.tsx';
+import { store } from '../store';
+import { selectSelectedItems } from '../store/selectedItemsSlice';
 import { SwapiPeopleApi } from '../api/fetchSwapiPeople';
 import { SearchTermStorage } from '../storage/searchTermStorage';
 import { HomeListSnapshot } from '../storage/homeListSnapshot';
 import { AppFetchErrorMessage } from '../utils/AppFetchErrorMessage';
+import { SelectedItemsCsvDownload } from '../utils/selectedItemsCsvDownload';
+import { THEME_MODES } from '../constants';
 import type { SwapiPeopleListResponse } from '../types';
 import { emptyPeopleList } from './emptyPeopleList.ts';
 import { onePersonSwapiList } from './onePersonSwapiList.ts';
@@ -49,6 +54,8 @@ describe('App', () => {
     cleanup();
     localStorage.clear();
     HomeListSnapshot.clear();
+    resetStoreState();
+    document.documentElement.dataset.theme = THEME_MODES.dark;
     vi.clearAllMocks();
     fetchPeople.mockResolvedValue(emptyPeopleList());
     fetchPerson.mockResolvedValue(onePersonSwapiList().results[0]);
@@ -56,6 +63,7 @@ describe('App', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete document.documentElement.dataset.theme;
     cleanup();
   });
 
@@ -154,9 +162,9 @@ describe('App', () => {
       const { view } = renderWithRouter();
       await waitFor(() => {
         expect(
-          withinRenderedRoot(view).getByText(
-            'Gender: male · Birth: 19BBY · 172 cm · 77 kg · Hair: blond · Eyes: blue · Skin: fair'
-          )
+          withinRenderedRoot(view).getByRole('button', {
+            name: 'View details for Luke Skywalker',
+          })
         ).toBeInTheDocument();
       });
     });
@@ -262,7 +270,7 @@ describe('App', () => {
       });
     });
 
-    it('resets the page query to 1 when the search input changes', async () => {
+    it('keeps the current page when the search input changes', async () => {
       const { view, router } = renderWithRouter('/?page=2');
       const root = withinRenderedRoot(view);
 
@@ -270,13 +278,14 @@ describe('App', () => {
         expect(fetchPeople).toHaveBeenCalledWith('', 2);
       });
 
+      fetchPeople.mockClear();
+
       fireEvent.change(root.getByLabelText('Search query'), {
         target: { value: 'a' },
       });
 
-      await waitFor(() => {
-        expect(router.state.location.search).toBe('?page=1');
-      });
+      expect(router.state.location.search).toBe('?page=2');
+      expect(fetchPeople).not.toHaveBeenCalled();
     });
 
     it('paginates search results when more than one page exists', async () => {
@@ -437,6 +446,33 @@ describe('App', () => {
       });
     });
 
+    it('keeps the details panel open when paginating', async () => {
+      fetchPeople
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: true, hasPrev: false })
+        )
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        );
+      const { view, router } = renderWithRouter('/details?page=1&details=1');
+      const root = withinRenderedRoot(view);
+
+      await waitFor(() => {
+        expect(root.getByText('Page 1 of 2')).toBeInTheDocument();
+      });
+
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+        expect(router.state.location.search).toContain('details=1');
+        expect(router.state.location.search).toContain('page=2');
+      });
+      expect(
+        root.getByRole('region', { name: 'Person details' })
+      ).toBeInTheDocument();
+    });
+
     it('syncs details from a direct visit to /?page=1&details=1', async () => {
       fetchPeople.mockResolvedValue(onePersonSwapiList());
       const { router } = renderWithRouter('/?page=1&details=1');
@@ -444,6 +480,248 @@ describe('App', () => {
         expect(router.state.location.pathname).toBe('/details');
         expect(router.state.location.search).toContain('details=1');
       });
+    });
+  });
+
+  describe('selected items', () => {
+    it('selects an item via checkbox without opening details', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
+      });
+      expect(router.state.location.pathname).toBe('/');
+      expect(
+        root.queryByRole('region', { name: 'Person details' })
+      ).not.toBeInTheDocument();
+      expect(selectSelectedItems(store.getState())).toHaveLength(1);
+    });
+
+    it('opens details without changing checkbox selection', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('button', { name: 'View details for Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('button', { name: 'View details for Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/details');
+      });
+      expect(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      ).not.toBeChecked();
+      expect(selectSelectedItems(store.getState())).toHaveLength(0);
+    });
+
+    it('removes an item from state when unselected', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).not.toBeChecked();
+      });
+      expect(selectSelectedItems(store.getState())).toHaveLength(0);
+    });
+
+    it('keeps checkbox selections after page navigation', async () => {
+      fetchPeople
+        .mockResolvedValueOnce({
+          ...onePersonSwapiList(),
+          count: 20,
+          next: 'next',
+          previous: null,
+        })
+        .mockResolvedValueOnce(
+          listResponse({ count: 20, hasNext: false, hasPrev: true })
+        )
+        .mockResolvedValueOnce({
+          ...onePersonSwapiList(),
+          count: 20,
+          next: 'next',
+          previous: null,
+        });
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(selectSelectedItems(store.getState())).toHaveLength(1);
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Next' }));
+      await waitFor(() => {
+        expect(root.getByText('Page 2 of 2')).toBeInTheDocument();
+      });
+      expect(selectSelectedItems(store.getState())).toHaveLength(1);
+      fireEvent.click(root.getByRole('button', { name: 'Previous' }));
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeChecked();
+      });
+    });
+  });
+
+  describe('selected items flyout', () => {
+    it('shows the flyout with count after selecting an item', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toHaveTextContent('1 item selected');
+      });
+    });
+
+    it('hides the flyout after Unselect all', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Unselect all' }));
+      await waitFor(() => {
+        expect(
+          root.queryByRole('region', { name: 'Selected items' })
+        ).not.toBeInTheDocument();
+      });
+      expect(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      ).not.toBeChecked();
+    });
+
+    it('keeps the flyout visible after navigating to About', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const { view, router } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toHaveTextContent('1 item selected');
+      });
+      fireEvent.click(root.getByRole('link', { name: 'About' }));
+      await waitFor(() => {
+        expect(router.state.location.pathname).toBe('/about');
+      });
+      expect(
+        root.getByRole('region', { name: 'Selected items' })
+      ).toHaveTextContent('1 item selected');
+    });
+
+    it('downloads a CSV file when Download is clicked', async () => {
+      fetchPeople.mockResolvedValue(onePersonSwapiList());
+      const download = vi
+        .spyOn(SelectedItemsCsvDownload, 'download')
+        .mockImplementation(() => {});
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(
+          root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        root.getByRole('checkbox', { name: 'Select Luke Skywalker' })
+      );
+      await waitFor(() => {
+        expect(
+          root.getByRole('region', { name: 'Selected items' })
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(root.getByRole('button', { name: 'Download' }));
+      expect(download).toHaveBeenCalledTimes(1);
+      expect(download.mock.calls[0][0]).toHaveLength(1);
+      expect(download.mock.calls[0][0][0].name).toBe('Luke Skywalker');
+      download.mockRestore();
+    });
+  });
+
+  describe('theme', () => {
+    it('shows theme controls at the top of the app', async () => {
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      expect(root.getByRole('radio', { name: 'Light' })).toBeInTheDocument();
+      expect(root.getByRole('radio', { name: 'Dark' })).toBeInTheDocument();
+    });
+
+    it('updates the application theme when light is selected', async () => {
+      const { view } = renderWithRouter('/?page=1');
+      const root = withinRenderedRoot(view);
+      await waitFor(() => {
+        expect(fetchPeople).toHaveBeenCalled();
+      });
+      fireEvent.click(root.getByRole('radio', { name: 'Light' }));
+      expect(document.documentElement.dataset.theme).toBe(THEME_MODES.light);
     });
   });
 

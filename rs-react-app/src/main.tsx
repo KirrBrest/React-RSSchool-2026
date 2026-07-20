@@ -4,13 +4,19 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { AppRoutes } from './routes/AppRoutes';
+import { ReduxProvider } from './store/ReduxProvider';
+import { ThemeProvider } from './context/ThemeProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AppErrorBoundary>
-        <AppRoutes />
-      </AppErrorBoundary>
-    </BrowserRouter>
+    <ReduxProvider>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AppErrorBoundary>
+            <AppRoutes />
+          </AppErrorBoundary>
+        </BrowserRouter>
+      </ThemeProvider>
+    </ReduxProvider>
   </StrictMode>
 );

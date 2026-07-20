@@ -7,6 +7,11 @@ import {
 import type { ReactNode } from 'react';
 import App from '../App';
 import { PersonDetailsPanel } from '../pages/PersonDetailsPanel';
+import { AppRoutes } from '../routes/AppRoutes';
+import { ReduxProvider } from '../store/ReduxProvider';
+import { ThemeProvider } from '../context/ThemeProvider';
+import { store } from '../store';
+import { clearSelected } from '../store/selectedItemsSlice';
 
 export const appHomeRoute: RouteObject = {
   path: '/',
@@ -14,8 +19,27 @@ export const appHomeRoute: RouteObject = {
   children: [{ path: 'details', element: <PersonDetailsPanel /> }],
 };
 
+export function resetStoreState(): void {
+  store.dispatch(clearSelected());
+}
+
 export function createAppMemoryRouter(initialEntries: string[]) {
-  return createMemoryRouter([appHomeRoute], { initialEntries });
+  return createMemoryRouter(
+    [{ path: '*', element: <AppRoutes /> }],
+    { initialEntries }
+  );
+}
+
+function renderWithProviders(
+  ui: ReactNode,
+  options?: Omit<RenderOptions, 'wrapper'>
+) {
+  return render(
+    <ReduxProvider>
+      <ThemeProvider>{ui}</ThemeProvider>
+    </ReduxProvider>,
+    options
+  );
 }
 
 export function renderWithRouter(
@@ -23,7 +47,7 @@ export function renderWithRouter(
   options?: Omit<RenderOptions, 'wrapper'>
 ) {
   const router = createAppMemoryRouter([initialPath]);
-  const view = render(<RouterProvider router={router} />, options);
+  const view = renderWithProviders(<RouterProvider router={router} />, options);
   return { view, router };
 }
 
@@ -42,6 +66,6 @@ export function renderWithAppRoutes(
     ],
     { initialEntries: [initialPath] }
   );
-  const view = render(<RouterProvider router={router} />, options);
+  const view = renderWithProviders(<RouterProvider router={router} />, options);
   return { view, router };
 }
